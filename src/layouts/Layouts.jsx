@@ -1,12 +1,17 @@
 import { Outlet } from "react-router-dom";
-import Header from "./Header";
+
+import Sidebar from "../components/Sidebar";
 
 const Layouts = () => {
   return (
-    <>
-      <Header />
-      <Outlet />
-    </>
+    <div className="d-flex min-vh-100">
+      <aside className="position-fixed vh-100">
+        <Sidebar />
+      </aside>
+      <div className="flex-grow-1 ps-5 p-4" style={{ marginLeft: '200px' }}>
+        <Outlet />
+      </div>
+    </div>
   );
 };
 
