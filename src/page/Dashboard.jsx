@@ -7,11 +7,11 @@ import Navbar from "react-bootstrap/Navbar";
 
 function Dashboard() {
   return (
-    <div>
-      <Navbar expand="lg" className="bg-body-tertiary">
+    <div className="kanit-regular bg-white rounded-4">
+      <Navbar expand="lg">
         <Container fluid>
-          <Navbar.Brand style={{ color: "#F26623" }} href="#">
-            Note
+          <Navbar.Brand style={{ color: "#F26623" }} className="fs-3" href="#">
+            NOTE
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="navbarScroll" />
           <Navbar.Collapse id="navbarScroll">
