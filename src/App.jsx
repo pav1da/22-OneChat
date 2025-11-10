@@ -7,6 +7,7 @@ import SignUpPage from "./page/SignUpPage";
 import SignInPage from "./page/SignInPage";
 import Home from "./page/Home";
 import Dashboard from "./page/Dashboard";
+import Inbox from "./page/Inbox";
 
 // stylesheets
 import "./App.css";
@@ -15,21 +16,24 @@ import "./App.css";
 function App() {
   // render
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* ตั้งค่า Route หลักให้ไปที่หน้า Home */}
-        <Route path="/" element={<Home />} />
-        <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/signin" element={<SignInPage />} />
-        <Route path="/home" element={<Home />} />
-        <Route element={<Layouts />}>
-          {/* สร้าง Route สำหรับ Link อื่นๆ ที่เราสร้างไว้ */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/terms" element={<div>หน้า Terms of Service</div>} />
-          <Route path="/privacy" element={<div>หน้า Privacy</div>} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <div>
+      <BrowserRouter>
+        <Routes>
+          {/* ตั้งค่า Route หลักให้ไปที่หน้า Home */}
+          <Route path="/" element={<Home />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/signin" element={<SignInPage />} />
+          <Route path="/home" element={<Home />} />
+          <Route element={<Layouts />}>
+            {/* สร้าง Route สำหรับ Link อื่นๆ ที่เราสร้างไว้ */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/inbox" element={<Inbox />} />
+            <Route path="/terms" element={<div>หน้า Terms of Service</div>} />
+            <Route path="/privacy" element={<div>หน้า Privacy</div>} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </div>
   );
 }
 
