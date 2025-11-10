@@ -1,15 +1,38 @@
-const Dashboard = () => {
+import React, { useState } from "react";
+import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+
+
+function Dashboard() {
   return (
-    <div className="w-100">
-      <h1 className="display-4 fw-bold text-dark mb-4">Dashboard</h1>
-      <p className="lead">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magnam illum
-        ducimus dolorem quaerat, odit illo quibusdam veniam quam labore
-        explicabo temporibus sequi, repudiandae, quasi exercitationem possimus
-        soluta placeat cum animi!
-      </p>
-    </div>
+    <Navbar expand="lg" className="bg-body-tertiary">
+      <Container fluid>
+        <Navbar.Brand href="#">Note</Navbar.Brand>
+        <Navbar.Toggle aria-controls="navbarScroll" />
+        <Navbar.Collapse id="navbarScroll">
+          <Nav
+            className="me-auto my-2 my-lg-0"
+            style={{ maxHeight: '100px' }}
+            navbarScroll
+          >
+          </Nav>
+          <Form className="d-flex">
+            <Form.Control
+              type="search"
+              placeholder="Search"
+              className="me-2"
+              aria-label="Search"
+            />
+            <Button className="w-100" variant="outline-dark light">เรียงลำดับ</Button>
+            <Button className="w-100" variant="outline-dark orange">เรียงลำดับ</Button>
+            </Form>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
-};
+}
 
 export default Dashboard;
