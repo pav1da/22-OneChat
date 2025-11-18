@@ -7,7 +7,7 @@ import SignUpPage from "./page/SignUpPage";
 import SignInPage from "./page/SignInPage";
 import Home from "./page/Home";
 import Dashboard from "./page/Dashboard";
-import Inbox from "./page/Inbox";
+import Inbox from "./page/Inbox/Inbox";
 
 // stylesheets
 import "./App.css";
