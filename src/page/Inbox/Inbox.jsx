@@ -57,7 +57,7 @@ const Inbox = () => {
             <Card>
               <Card.Body className="d-flex align-items-center gap-3">
                 <img
-                  src="./src/assets/Image/Harumasa.png"
+                  src="./src/assets/Image/Customers/Harumasa.png"
                   className="rounded-circle"
                   style={{ width: "55px", height: "55px", objectFit: "cover" }}
                 />
@@ -77,7 +77,7 @@ const Inbox = () => {
           <div className="d-flex gap-3 align-content-center align-items-center">
             {/* Profile */}
             <img
-              src="./src/assets/Image/Harumasa.png"
+              src="./src/assets/Image/Customers/Harumasa.png"
               className="rounded-circle"
               style={{ width: "40px", height: "40px", objectFit: "cover" }}
             />
@@ -92,10 +92,10 @@ const Inbox = () => {
             <center>
               <p style={{ color: "#4E4E4E" }}>25 Dec 2060 02:45 pm</p>
             </center>
-            {/* Customer Massage */}
+            {/* Customers Massage */}
             <div className="d-flex align-content-center align-items-center gap-2">
               <img
-                src="./src/assets/Image/Harumasa.png"
+                src="./src/assets/Image/Customers/Harumasa.png"
                 className="rounded-circle"
                 style={{ width: "40px", height: "40px", objectFit: "cover" }}
               />
@@ -108,7 +108,6 @@ const Inbox = () => {
             </div>
             {/* Admin Massage */}
             <div className="d-flex align-content-center align-items-center gap-2 justify-content-end">
-              
               <div
                 className="align-self-end mb-2 p-3 rounded-4 w-auto"
                 style={{ backgroundColor: "#EFB4AA", color: "black" }}
@@ -116,8 +115,8 @@ const Inbox = () => {
                 สวัสดีครับ
               </div>
               <img
-                // src="./src/assets/Image/.png"
-                className="rounded-circle bg-black"
+                src="./src/assets/Image/Admins/pav1da.png"
+                className="rounded-circle"
                 style={{ width: "40px", height: "40px", objectFit: "cover" }}
               />
             </div>
@@ -156,10 +155,10 @@ const Inbox = () => {
         {/* End Chat Section */}
 
         {/* Start Profile Section */}
-        <div className="w-50 bg-white-translucent align-items-center rounded-4 p-3 d-flex flex-column">
+        <div className="w-50 bg-white-translucent align-items-center rounded-4 pt-3 d-flex flex-column">
           {/* Profile */}
           <img
-            src="./src/assets/Image/Harumasa.png"
+            src="./src/assets/Image/Customers/Harumasa.png"
             className="rounded-circle mt-5"
             style={{ width: "140px", height: "140px", objectFit: "cover" }}
           />
@@ -167,6 +166,20 @@ const Inbox = () => {
           <p className="mt-4">
             Asaba Harumasa &nbsp;<i className="bi bi-pencil"></i>
           </p>
+          {/* ผู้รับผิดชอบ */}
+          <div className="mt-5">
+            <p>ผู้รับผิดชอบ : &nbsp;&nbsp;
+            <img
+              src="./src/assets/Image/Admins/pav1da.png"
+              className="rounded-circle"
+              style={{ width: "40px", height: "40px", objectFit: "cover" }}
+            /> &nbsp; pav1da</p>
+            <hr />
+            {/* Note Section */}
+            <div>
+
+            </div>
+          </div>
         </div>
         {/* End Profile Section */}
       </div>
