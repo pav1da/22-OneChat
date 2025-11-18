@@ -1,14 +1,14 @@
 // src/page/settingpages/Setting.jsx
 
-import { useState } from 'react';
-import { Container, Row, Col, Nav } from 'react-bootstrap';
+import { useState } from "react";
+import { Container, Row, Col, Nav } from "react-bootstrap";
 import {
     PersonCircle, ChevronRight, PersonVcard, ShieldLock, Bell,
     Chat as ChatIcon, Robot, Plug, SlashCircle, FileEarmarkText,
     Telephone, InfoCircle
-} from 'react-bootstrap-icons';
+} from "react-bootstrap-icons";
 
-import './SettingPage.css';
+import "./SettingPage.css";
 
 // ⭐️ 1. Import ไฟล์ลูกทั้งหมดที่คุณสร้าง ⭐️
 // import Profile from './Profile';
