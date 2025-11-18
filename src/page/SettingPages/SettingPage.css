@@ -1,0 +1,271 @@
+
+.settings-page-wrapper {
+    background: linear-gradient(135deg,
+            #ffffff 50%,
+            #fff7f9 80%,
+            #fff5f3 100%);
+    height: 100vh;
+    padding-bottom: 3rem;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.scrollable-col {
+  height: 100%; 
+  overflow-y: auto; /* scrollbar*/
+}
+
+@media (min-width: 768px) {
+    .custom-vertical-divider {
+        border-right: 1px solid #e9ecef;
+    }
+}
+
+.settings-nav .nav-heading {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #6c757d;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+    text-transform: uppercase;
+}
+
+.settings-nav .nav-link {
+    color: #343a40;
+    padding: 0.7rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.settings-nav .nav-link svg {
+    font-size: 1.2rem;
+    color: #6c757d;
+    transition: color 0.2s ease;
+}
+
+/* สไตล์ตอน Hover */
+.settings-nav .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+/* 4. สไตล์ตอน Active */
+.settings-nav .nav-link.active {
+    background-color: #fff8f5;
+    color: #fd7e14;
+    font-weight: 600;
+}
+
+.settings-nav .nav-link.active svg {
+    color: #fd7e14;
+
+}
+
+/* สไตล์ Profile ด้านบนซ้าย */
+.profile-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+
+.profile-placeholder-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    margin-right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* สไตล์ Avatar ด้านขวา */
+.profile-avatar-lg {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-avatar-lg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-edit-icon {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    background-color: #343a40;
+    color: white;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 2px solid white;
+    cursor: pointer;
+}
+
+
+.profile-info-item {
+    padding: 1rem 1.2rem 0.3rem 1.2rem;   
+    border-bottom: 1px solid #e9ecef;
+    width: 100%;
+}
+
+.no-border {
+    border-bottom: none !important;
+}
+
+
+
+
+
+.profile-info-item .label {
+    font-size: 1.3rem;
+    color: #000000;
+    margin-bottom: 0.25rem;
+}
+
+.profile-info-item .value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #6c757d;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+
+/* สไตล์สำหรับหน้า Privacy */
+
+
+/* สไตล์ช่อง Input */
+.form-control-custom {
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.form-control-custom:focus {
+    background-color: #e9ecef;
+    box-shadow: none;
+    border: 1px solid #fd7e14;
+    /* เส้นสีส้มตอนกด */
+}
+
+/* สไตล์ปุ่มสีส้ม */
+.btn-custom-orange {
+    background-color: #fd7e14;
+    border: none;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+}
+
+.btn-custom-orange:hover {
+    background-color: #e67312;
+  
+}
+
+.btn-custom-orange:active,
+.btn-custom-orange:focus {
+    background-color: #e67312 !important;
+    box-shadow: 0 0 0 0.25rem rgba(253, 126, 20, 0.5) !important;
+}
+
+/* สไตล์สวิตช์ Toggle (เพื่อให้เป็นสีส้ม) */
+.form-check-input:checked {
+    background-color: #fd7e14;
+    border-color: #fd7e14;
+}
+
+
+/* เอาเส้นใต้เฉพาะหน้า Chats */
+.chat-item {
+    border-bottom: none !important;
+}
+
+
+.big-item {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+
+/* เพิ่มเฉพาะหน้า Ai */
+.ai-page .profile-info-item {
+    padding: 2rem 1.2rem; 
+}
+
+.connect-page .profile-info-item {
+    padding: 2rem 1.2rem; 
+}
+
+.disconnect-page .profile-info-item {
+    padding: 2rem 1.2rem; 
+}
+
+
+/* สำหรับหน้า Policy */
+.policy-page {
+    font-size: 0.95rem; 
+    line-height: 1.6;  
+}
+
+.policy-page h2 {
+    font-size: 2rem;    
+}
+
+
+.policy-page h4 {
+    font-size: 0.95rem;
+    font-weight: 600;  
+}
+
+
+
+/* สำหรับหน้า About */
+.about-page {
+    font-size: 0.95rem;   
+    line-height: 1.6;     
+    color: #212529;       
+}
+
+.about-page h2 {
+    font-size: 2rem;      
+}
+
+.about-page h4 {
+    font-size: 1rem;      
+    font-weight: 600;
+}
+
+.about-page p {
+    margin-bottom: 1rem;
+}
+
+.about-page ul {
+    padding-left: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.about-page li {
+    margin-bottom: 0.5rem;
+}
+
+
+
+

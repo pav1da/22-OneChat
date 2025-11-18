@@ -1,0 +1,176 @@
+@import url("https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+:root {
+  /* Primary Colors */
+  --primary-color: #f26623;
+  --secondary-color: #fff2ec;
+
+  /* Background Colors */
+  --bg-gradient: linear-gradient(
+    180deg,
+    rgba(239, 215, 170, 0.48) 0%,
+    rgba(239, 181, 170, 0.48) 50%,
+    rgba(239, 170, 195, 0.48) 100%
+  );
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-accent: #e9ecef;
+
+  /* Text Colors */
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-light: #f8f9fa;
+}
+.kanit-thin {
+  font-family: "Kanit", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.kanit-extralight {
+  font-family: "Kanit", sans-serif;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.kanit-light {
+  font-family: "Kanit", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.kanit-regular {
+  font-family: "Kanit", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.kanit-medium {
+  font-family: "Kanit", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.kanit-semibold {
+  font-family: "Kanit", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.kanit-bold {
+  font-family: "Kanit", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.kanit-extrabold {
+  font-family: "Kanit", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+}
+
+.kanit-black {
+  font-family: "Kanit", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.kanit-thin-italic {
+  font-family: "Kanit", sans-serif;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.kanit-extralight-italic {
+  font-family: "Kanit", sans-serif;
+  font-weight: 200;
+  font-style: italic;
+}
+
+.kanit-light-italic {
+  font-family: "Kanit", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.kanit-regular-italic {
+  font-family: "Kanit", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.kanit-medium-italic {
+  font-family: "Kanit", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.kanit-semibold-italic {
+  font-family: "Kanit", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.kanit-bold-italic {
+  font-family: "Kanit", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.kanit-extrabold-italic {
+  font-family: "Kanit", sans-serif;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.kanit-black-italic {
+  font-family: "Kanit", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+}
+
+body {
+  background: var(--bg-gradient), var(--bg-primary);
+}
+
+.auto-resize {
+	overflow: hidden;
+	resize: none;
+}
+
+/* Chat input bar styles */
+.chat-input-bar-container {
+	pointer-events: auto;
+}
+
+.chat-input-bar {
+	background: #fff;
+	border-radius: 12px;
+	padding: 10px;
+	align-items: center;
+}
+
+.chat-input-bar .left-icons button,
+.chat-input-bar button {
+	color: #c5c5c5;
+}
+
+.chat-textarea {
+	background: transparent !important;
+	color: #000!important;
+	border: 1px solid #c5c5c5;
+	padding: 6px 8px !important;
+	height: auto !important;
+	min-height: 36px;
+	max-height: 160px;
+}
+
+.chat-textarea::placeholder {
+	color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.chat-input-bar .left-icons {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}

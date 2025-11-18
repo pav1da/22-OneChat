@@ -2,6 +2,7 @@ import React, { useState } from "react"; // 1. Import useState
 // 2. Import Form (สำหรับปุ่มอัปโหลด)
 import { Container, Row, Col, Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import Dashboard from "./Dashboard";
 
 // ... (สไตล์ logoStyle, orangeButtonStyle, orangeTextColor เหมือนเดิม) ...
 const logoStyle = {
@@ -117,7 +118,7 @@ const Home = () => {
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
                 nisi ut aliquip ex ea commodo consequat.
               </p>
-              <Link to="/signup" className="mt-4 d-inline-block">
+              <Link to="/dashboard" className="mt-4 d-inline-block">
                 <Button style={orangeButtonStyle} size="lg">
                   Get Start
                 </Button>
