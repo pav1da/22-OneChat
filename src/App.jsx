@@ -11,13 +11,14 @@ import Inbox from "./page/Inbox";
 
 // stylesheets
 import "./App.css";
+import Setting from "./page/SettingPages/Setting";
 
 // react function component
 function App() {
   // render
   return (
     <div>
-      <BrowserRouter>
+      <BrowserRouter >
         <Routes>
           {/* ตั้งค่า Route หลักให้ไปที่หน้า Home */}
           <Route path="/" element={<Home />} />
@@ -28,7 +29,7 @@ function App() {
             {/* สร้าง Route สำหรับ Link อื่นๆ ที่เราสร้างไว้ */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/inbox" element={<Inbox />} />
-            <Route path="/terms" element={<div>หน้า Terms of Service</div>} />
+            <Route path="/setting" element={<Setting/>} />
             <Route path="/privacy" element={<div>หน้า Privacy</div>} />
           </Route>
         </Routes>

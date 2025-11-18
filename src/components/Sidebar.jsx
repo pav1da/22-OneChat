@@ -1,5 +1,8 @@
+// 1. Import Link เข้ามา
+import { Link } from "react-router-dom";
 import { Nav } from "react-bootstrap";
 import "./Sidebar.css";
+
 
 const Sidebar = () => {
   return (
@@ -12,32 +15,40 @@ const Sidebar = () => {
           <span className="logo-text">ONE CHAT</span>
         </div>
 
-        {/* Menu */}
+
+        {/* Menu (แก้ไขตรงนี้) */}
         <Nav className="flex-column">
-          <Nav.Link href="#dashboard" className="menu-item active">
+          {/* เปลี่ยน href="#dashboard" เป็น as={Link} และ to="/dashboard" */}
+          <Nav.Link as={Link} to="/dashboard" className="menu-item">
             <i className="bi bi-columns-gap"></i> Dashboard
           </Nav.Link>
-          <Nav.Link href="#inbox" className="menu-item">
+
+
+          {/* เปลี่ยน href="#inbox" เป็น as={Link} และ to="/inbox" */}
+          <Nav.Link as={Link} to="/inbox" className="menu-item">
             <i className="bi bi-inbox me-2"></i> Inbox
           </Nav.Link>
         </Nav>
       </div>
 
-      {/* Bottom Section */}
+
+      {/* Bottom Section (แก้ไขตรงนี้) */}
       <div className="bottom-section">
+        {/* ... (ส่วน Profile เหมือนเดิม) ... */}
         <div className="profile d-flex align-items-center mb-3">
-          <div className="profile-pic me-2"></div>
-          <div>
-            <div className="fw-bold">pav1da</div>
-            <div className="small text-muted">admin</div>
-          </div>
+          {/* ... */}
         </div>
 
+
         <Nav className="flex-column">
-          <Nav.Link href="#setting" className="menu-item">
+          {/* เปลี่ยน href="#setting" เป็น as={Link} และ to="/setting" */}
+          <Nav.Link as={Link} to="/setting" className="menu-item">
             <i className="bi bi-gear me-2"></i> Setting
           </Nav.Link>
-          <Nav.Link href="#logout" className="menu-item">
+
+
+          {/* เปลี่ยน href="#logout" เป็น as={Link} และ to="/signin" (หรือหน้าที่คุณใช้ Log out) */}
+          <Nav.Link as={Link} to="/signin" className="menu-item">
             <i className="bi bi-box-arrow-right me-2"></i> Log out
           </Nav.Link>
         </Nav>
@@ -46,4 +57,6 @@ const Sidebar = () => {
   );
 };
 
+
 export default Sidebar;
+
