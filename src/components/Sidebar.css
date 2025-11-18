@@ -7,6 +7,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: width 0.25s ease;
 }
 
 .logo-box {
@@ -52,4 +53,34 @@
 .bottom-section {
   border-top: 1px solid #eee;
   padding-top: 10px;
+}
+
+/* โหมดย่อ-ขยาย */
+.sidebar-container.collapsed {
+  width: 70px;
+}
+
+.sidebar-container.collapsed .logo-text,
+.sidebar-container.collapsed .menu-text,
+.sidebar-container.collapsed .profile-info {
+  display: none;
+}
+
+.sidebar-container.collapsed .profile {
+  justify-content: center !important;
+}
+
+.toggle-btn {
+  position: absolute;
+  top: 15px;
+  right: -12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
