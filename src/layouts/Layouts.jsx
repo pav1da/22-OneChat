@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+
 import Sidebar from "../components/Sidebar";
 
 const Layouts = () => {
@@ -8,7 +9,10 @@ const Layouts = () => {
   return (
     <div className="d-flex min-vh-100">
       <aside className="position-fixed vh-100">
-        <Sidebar collapsed={collapsed} toggleSidebar={() => setCollapsed(!collapsed)} />
+        <Sidebar
+          collapsed={collapsed}
+          toggleSidebar={() => setCollapsed(!collapsed)}
+        />
       </aside>
 
       {/* ย่อ-ขยาย ขยับตาม sidebar */}
