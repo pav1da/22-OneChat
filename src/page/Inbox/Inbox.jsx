@@ -27,9 +27,9 @@ const Inbox = () => {
   };
 
   return (
-    <div className="kanit-regular h-100">
+    <div className="kanit-regular h-100 d-flex flex-column">
       {/* Start Header Section*/}
-      <div className="d-flex gap-2">
+      <div className="d-flex gap-2 mb-3">
         {/* Return Button */}
         <button className="btn-sm-circle">
           <i className="bi bi-arrow-left"></i>
@@ -41,10 +41,10 @@ const Inbox = () => {
       </div>
       {/* End Header Section */}
 
-      <div className="d-flex gap-2 mt-3" style={{ height: "90%" }}>
+      <div className="d-flex gap-2 mt-3 pb-3 flex-grow-1 h-100">
         {/* Start ChatList Section */}
-        <div className="w-50 bg-white-translucent rounded-4 p-3">
-          <div className="d-flex gap-2">
+        <div className="w-50 bg-white-translucent rounded-4 p-3 d-flex flex-column h-100">
+          <div className="d-flex gap-2 flex-shrink-0">
             <Form.Control
               type="text"
               placeholder="ค้นหาหรือเริ่มการสนทนา"
@@ -53,7 +53,7 @@ const Inbox = () => {
           </div>
           <hr className="mt-2 mb-2" />
           {/* Chat List */}
-          <div className="">
+          <div className="overflow-y-auto flex-grow-1">
             <Card>
               <Card.Body className="d-flex align-items-center gap-3">
                 <img
@@ -72,7 +72,7 @@ const Inbox = () => {
         {/* End ChatList Section */}
 
         {/* Start Chat Section */}
-        <div className="w-100 bg-white-translucent rounded-4 p-3">
+        <div className="w-100 bg-white-translucent rounded-4 p-3 d-flex flex-column h-100">
           {/* Chat Header */}
           <div className="d-flex gap-3 align-content-center align-items-center">
             {/* Profile */}
@@ -87,7 +87,7 @@ const Inbox = () => {
           <hr className="mt-2 mb-2" />
 
           {/* Chat container */}
-          <div className="mt-3">
+          <div className="flex-grow-1 overflow-y-auto">
             {/* Date and Time */}
             <center>
               <p style={{ color: "#4E4E4E" }}>25 Dec 2060 02:45 pm</p>
@@ -123,7 +123,7 @@ const Inbox = () => {
           </div>
 
           {/* Text Section */}
-          <div className="">
+          <div className="flex-shrink-0">
             <hr />
             <div className="d-flex flex-row chat-input-container p-1 ">
               {/* Emoji Button */}
@@ -155,7 +155,7 @@ const Inbox = () => {
         {/* End Chat Section */}
 
         {/* Start Profile Section */}
-        <div className="w-50 bg-white-translucent align-items-center rounded-4 pt-3 d-flex flex-column">
+        <div className="w-50 bg-white-translucent align-items-center rounded-4 pt-3 d-flex flex-column h-100">
           {/* Profile */}
           <img
             src="./src/assets/Image/Customers/Harumasa.png"
@@ -176,8 +176,8 @@ const Inbox = () => {
             /> &nbsp; pav1da</p>
             <hr />
             {/* Note Section */}
-            <div>
-
+            <div className="flex-grow-1 w-100 p-3">
+                Note Section Content Here
             </div>
           </div>
         </div>
