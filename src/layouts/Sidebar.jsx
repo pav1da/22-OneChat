@@ -30,11 +30,12 @@ const Sidebar = () => {
         </div>
 
         <Nav className="flex-column">
-          <Nav.Link href="#dashboard" className="menu-item active d-flex align-items-center">
+          <Nav.Link href="/dashboard" className="menu-item active d-flex align-items-center">
             <i className="bi bi-columns-gap"></i>
             <span className="menu-text ms-2">Dashboard</span>
           </Nav.Link>
-          <Nav.Link href="#inbox" className="menu-item d-flex align-items-center">
+
+          <Nav.Link href="/inbox" className="menu-item d-flex align-items-center">
             <i className="bi bi-inbox"></i>
             <span className="menu-text ms-2">Inbox</span>
           </Nav.Link>
@@ -52,7 +53,7 @@ const Sidebar = () => {
         </div>
 
         <Nav className="flex-column">
-          <Nav.Link href="#setting" className="menu-item d-flex align-items-center">
+          <Nav.Link href="/setting" className="menu-item d-flex align-items-center">
             <i className="bi bi-gear"></i>
             <span className="menu-text ms-2">Setting</span>
           </Nav.Link>

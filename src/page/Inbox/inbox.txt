@@ -1,0 +1,72 @@
+{/* Start Chat Section */}
+        <div className="w-100 bg-white-translucent rounded-4 p-3">
+          {/* Chat Header */}
+          <div className="d-flex gap-3 align-content-center align-items-center">
+            {/* Profile */}
+            <img
+              src="./src/assets/Image/Harumasa.png"
+              className="rounded-circle"
+              style={{ width: "40px", height: "40px", objectFit: "cover" }}
+            />
+            {/* User Name */}
+            <div className="fs-5">Asaba Harumasa</div>
+          </div>
+          <hr className="mt-2 mb-2" />
+
+          {/* Chat container */}
+          <div className="mt-3">
+            {/* Date and Time */}
+            <center>
+              <p>25 Dec 2060 02:45 pm</p>
+            </center>
+            {/* Customer Massage */}
+            <div className="d-flex flex-column">
+              <div
+                className="align-self-start mb-2 p-3 rounded-4 w-auto"
+                style={{ backgroundColor: "#707070", color: "white" }}
+              >
+                สวัสดีครับ ต้องการสั่งซื้อสินค้าครับ
+              </div>
+            </div>
+            {/* Admin Massage */}
+            <div className="d-flex flex-column">
+              <div
+                className="align-self-end mb-2 p-3 rounded-4 w-auto"
+                style={{ backgroundColor: "#EFB4AA", color: "black" }}
+              >
+                สวัสดีครับ
+              </div>
+            </div>
+          </div>
+
+          {/* Text Section */}
+          <div className="">
+            <hr />
+            <div className="d-flex flex-row chat-input-container p-1 ">
+              {/* Emoji Button */}
+              <Button variant="link" className="pt-1 pb-1 pe-1 text-black">
+                <i
+                  className="bi bi-emoji-smile fs-4"
+                  style={{ lineHeight: 1 }}
+                />
+              </Button>
+
+              {/* Text Area */}
+              <Form.Control
+                as="textarea"
+                rows={1}
+                placeholder="พิมพ์ข้อความ"
+                ref={msgRef}
+                onInput={autoResize}
+                className="border-0 custom-search-input w-50 pt-2"
+                style={{
+                  overflow: "hidden",
+                  resize: "none",
+                  minHeight: "40px",
+                  maxHeight: "120px",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        {/* End Chat Section */}
