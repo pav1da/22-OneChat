@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Container, Form, Button, Card } from "react-bootstrap";
+import { Container, Form, Button, Card, Row, Col } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+
+import { user as mockUser } from "../data/mockUser"; 
 
 const pageStyle = {
   display: "flex",
@@ -21,55 +23,70 @@ const logoStyle = {
   borderRadius: "6px",
 };
 
-function SignInPage() {
-  // เรียกใช้ useNavigate
+// 2. รับ prop onLogin
+function SignInPage({ onLogin }) {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const isEmailValid = email.includes("@gmail.com");
-  const isPasswordValid = password.length >= 8;
+  // แก้ Validation ไม่ต้องบังคับ @gmail เพราะใช้ @onechat
+  const isEmailValid = email.includes("@") && email.includes("."); 
+  const isPasswordValid = password.length >= 4; 
   const isFormValid = isEmailValid && isPasswordValid;
 
-  // สร้างฟังก์ชันสำหรับจัดการการ Submit
+  // Login ปกติ (พิมพ์เอง แต่มึงอย่าพิมเลย)
   const handleSignIn = (event) => {
-    // ป้องกันไม่ให้หน้าเว็บโหลดใหม่ (พฤติกรรมปกติของ Form)
     event.preventDefault();
 
-    // ตรวจสอบอีกครั้งว่า Form Valid จริง
-    // (ถึงแม้ปุ่มจะ disable อยู่แล้ว แต่กูกันเหนียว)
-    if (isFormValid) {
-      console.log("Login successful, navigating to home...");
+    // ค้นหา User ใน Mock
+    const foundUser = mockUser.find((u) => u.email === email);
 
-      //คำสั่งให้เด้งไปหน้า Home
-      navigate("/home");
+    if (foundUser) {
+      // ถ้าเจอ: ส่งข้อมูลกลับไป App และย้ายหน้า
+      if(onLogin) onLogin(foundUser);
+      navigate("/dashboard");
+    } else {
+      // ถ้าไม่เจอ
+      alert("กูทำปุ่มลัดให้กดยังเสือกจะพิมเมลไอเชี้ยนี่");
     }
   };
+
+  // Login ลัด 
+  const handleQuickLogin = (role) => {
+     const userToLogin = mockUser.find(u => u.role === role);
+     if(userToLogin && onLogin) {
+         onLogin(userToLogin);
+         navigate("/dashboard");
+     }
+  }
 
   return (
     <div style={pageStyle}>
       <div style={logoStyle}></div>
-      {/* <Card style={{
-                width: '100%',
-                maxWidth: '440px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                border: 'none',
-                borderRadius: '8px'
-            }}> */}
       <Card.Body>
         <Container className="text-center">
           <h1 className="fw-bold mb-5" style={{ color: "#F26623" }}>
             ONE CHAT
           </h1>
           <p className="fs-5 text-dark mb-1">Sign In</p>
-          <p className="text-muted mb-5">
+          <p className="text-muted mb-4">
             to continue to your One Chat account.
           </p>
 
-          <div className="d-flex align-content-center justify-content-center mb-5 mt-5">
-            {/* ผูก Form เข้ากับฟังก์ชัน handleSignIn โดยใช้ onSubmit  */}
-            <Form className="d-grid gap-3" style={{ width: "35%" }} onSubmit={handleSignIn}>
+            {/* ปุ่มลัด */}
+            <div className="mb-4 p-3 bg-light rounded border">
+                <small className="text-muted d-block mb-2">Developer Mode: Login As...</small>
+                <div className="d-flex justify-content-center gap-2 flex-wrap">
+                    <Button variant="danger" size="sm" onClick={() => handleQuickLogin('admin')}>Admin</Button>
+                    <Button variant="dark" size="sm" onClick={() => handleQuickLogin('it')}>IT Support</Button>
+                    <Button variant="primary" size="sm" onClick={() => handleQuickLogin('user')}>User</Button>
+                </div>
+            </div>
+            
+
+          <div className="d-flex align-content-center justify-content-center mb-5">
+            <Form className="d-grid gap-3" style={{ width: "300px" }} onSubmit={handleSignIn}>
               <Form.Group>
                 <Form.Control
                   type="email"
@@ -91,7 +108,6 @@ function SignInPage() {
                 />
               </Form.Group>
 
-              {/*กดปุ่มนี้ มันจะไปสั่งให้ <Form> ทำงาน */}
               <Button
                 variant="dark"
                 type="submit"
@@ -102,6 +118,7 @@ function SignInPage() {
               </Button>
             </Form>
           </div>
+
           <p className="small text-muted mt-3">
             <Link to="/terms" className=" mx-1" style={{ color: "#F26623" }}>
               Forgot password?
@@ -120,7 +137,6 @@ function SignInPage() {
           </p>
         </Container>
       </Card.Body>
-      {/* </Card> */}
     </div>
   );
 }

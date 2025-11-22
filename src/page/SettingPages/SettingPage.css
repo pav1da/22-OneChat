@@ -4,16 +4,19 @@
             #ffffff 50%,
             #fff7f9 80%,
             #fff5f3 100%);
-    height: 100vh;
-    padding-bottom: 3rem;
-    border-radius: 20px;
+    height: calc(100vh - 60px); 
+    overflow: hidden;
+    padding-bottom: 0; 
     display: flex;
     flex-direction: column;
+    border-radius: 24px;
 }
 
 .scrollable-col {
   height: 100%; 
-  overflow-y: auto; /* scrollbar*/
+  overflow-y: auto; 
+  overflow-x: hidden; 
+  padding-bottom: 50px;
 }
 
 @media (min-width: 768px) {

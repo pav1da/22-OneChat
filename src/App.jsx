@@ -1,5 +1,6 @@
 // react dependencies
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react"; // เพิ่ม useEffect
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // user components
 import Layouts from "./layouts/Layouts";
@@ -12,30 +13,60 @@ import Inbox from "./page/Inbox/Inbox";
 // stylesheets
 import "./App.css";
 import Setting from "./page/SettingPages/Setting";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-// react function component
 function App() {
-  // render
-  return (
-    <div>
-      <BrowserRouter >
-        <Routes>
-          {/* ตั้งค่า Route หลักให้ไปที่หน้า Home */}
-          <Route path="/" element={<Home />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/signin" element={<SignInPage />} />
-          <Route path="/home" element={<Home />} />
-          <Route element={<Layouts />}>
-            {/* สร้าง Route สำหรับ Link อื่นๆ ที่เราสร้างไว้ */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/inbox" element={<Inbox />} />
-            <Route path="/setting" element={<Setting/>} />
-            <Route path="/privacy" element={<div>หน้า Privacy</div>} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
-  );
+    // ให้ไปเช็คใน localStorage ก่อนว่ามีของเก่าไหม
+    const [currentUser, setCurrentUser] = useState(() => {
+        const savedUser = localStorage.getItem("myAppUser");
+        if (savedUser) {
+            return JSON.parse(savedUser); // ถ้ามี ให้เอามาใช้เลย
+        }
+        return null; // ถ้าไม่มีก็เป็น null
+    });
+
+    // Login: นอกจาก set State แล้วให้บันทึกลงเครื่อง
+    const handleLogin = (userFromForm) => {
+        setCurrentUser(userFromForm);
+        localStorage.setItem("myAppUser", JSON.stringify(userFromForm));
+    };
+
+    // Logout: ลบออกจากเครื่อง
+    const handleLogout = () => {
+        setCurrentUser(null);
+        localStorage.removeItem("myAppUser");
+    };
+
+    return (
+        <div>
+            <BrowserRouter>
+                <Routes>
+                    {/* --- Public --- */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/signup" element={<SignUpPage onLogin={handleLogin} />} />
+                    <Route path="/signin" element={
+                        currentUser ? <Navigate to="/dashboard" /> : <SignInPage onLogin={handleLogin} />
+                    } />
+
+                   
+                    <Route element={
+                        // ส่ง currentUser เข้าไปเช็คสิทธิ์
+                        <ProtectedRoute user={currentUser} allowedRoles={['admin', 'it', 'user',]}>
+                            <Layouts onLogout={handleLogout} />
+                        </ProtectedRoute>
+                    }>
+                        
+                        <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
+                        <Route path="/inbox" element={<Inbox />} />
+                        <Route path="/setting" element={<Setting user={currentUser} />} />
+                        <Route path="/privacy" element={<div>หน้า Privacy</div>} />
+
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </div>
+    );
 }
 
 export default App;

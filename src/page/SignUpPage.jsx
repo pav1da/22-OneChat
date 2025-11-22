@@ -21,40 +21,42 @@ const logoStyle = {
   borderRadius: "6px",
 };
 
-function SignUpPage() {
+// รับ props onLogin
+function SignUpPage({ onLogin }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const isEmailValid = email.includes("@gmail.com");
-  const isPasswordValid = password.length >= 8;
+  // Validation 
+  const isEmailValid = email.includes("@"); 
+  const isPasswordValid = password.length >= 4;
   const isFormValid = isEmailValid && isPasswordValid;
 
   const handleSignUp = (event) => {
-    // ป้องกันไม่ให้หน้าเว็บโหลดใหม่
     event.preventDefault();
 
-    // ตรวจสอบอีกครั้งว่า Form Valid จริง
-    // (ถึงแม้ปุ่มจะ disable อยู่แล้ว แต่กูกันเหนียวไว้)
     if (isFormValid) {
-      console.log("Login successful, navigating to home...");
+      // สร้าง User ใหม่จำลอง
+      const newUser = {
+          id: Date.now(),
+          name: "New User", 
+          role: "user",     
+          color: "#000000",
+          email: email
+      };
 
-      // คำสั่งให้เด้งไปหน้า Home
-      navigate("/home");
+      alert("สมัครสมาชิกสำเร็จ! ระบบจะพาเข้าสู่หน้า Dashboard");
+
+      // สั่ง Login เลยโดยไม่ต้องไปหน้า Sign In อีก
+      if(onLogin) onLogin(newUser);
+
+      navigate("/dashboard");
     }
   };
 
   return (
     <div style={pageStyle}>
       <div style={logoStyle}></div>
-
-      {/* <Card style={{
-                width: '100%',
-                maxWidth: '440px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                border: 'none',
-                borderRadius: '8px'
-            }}> */}
 
       <Card.Body>
         <Container className="text-center" >
@@ -66,7 +68,7 @@ function SignUpPage() {
             Sign up and start create your account.
           </p>
           <div className="d-flex align-content-center justify-content-center mb-5 mt-5">
-            <Form className="d-grid gap-3" style={{ width: "35%" }} onSubmit={handleSignUp}>
+            <Form className="d-grid gap-3" style={{ width: "300px" }} onSubmit={handleSignUp}>
               <Form.Group>
                 <Form.Control
                   type="email"
@@ -88,7 +90,6 @@ function SignUpPage() {
                 />
               </Form.Group>
 
-              {/*กดปุ่มนี้มันจะไปสั่งให้ <Form> ทำงาน */}
               <Button
                 variant="dark"
                 type="submit"
@@ -99,6 +100,8 @@ function SignUpPage() {
               </Button>
             </Form>
           </div>
+          
+          
           <p className="small text-muted mt-3">
             By creating an account, you agree to our
             <Link to="/terms" className=" mx-1" style={{ color: "#F26623" }}>
@@ -110,17 +113,6 @@ function SignUpPage() {
             </Link>
             .
           </p>
-
-          {/* <div className="d-flex align-items-center my-4">
-                            <hr className="flex-grow-1" />
-                            <span className="mx-3 text-muted small">or</span>
-                            <hr className="flex-grow-1" />
-                        </div> */}
-
-          {/* <Button variant="light" className="w-100 border d-flex justify-content-center align-items-center gap-2" size="lg">
-                            <i className="bi bi-google"></i>
-                            Continue with Google
-                        </Button> */}
 
           <p className="mt-4">
             Already have an account?
@@ -134,7 +126,6 @@ function SignUpPage() {
           </p>
         </Container>
       </Card.Body>
-      {/* </Card> */}
     </div>
   );
 }

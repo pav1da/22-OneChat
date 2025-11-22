@@ -1,4 +1,3 @@
-// src/page/settingpages/Setting.jsx
 
 import { useState } from "react";
 import { Container, Row, Col, Nav } from "react-bootstrap";
@@ -10,44 +9,51 @@ import {
 
 import "./SettingPage.css";
 
-// ⭐️ 1. Import ไฟล์ลูกทั้งหมดที่คุณสร้าง ⭐️
-// import Profile from './Profile';
 import Privacy from './Privacy';
-import Account from './Account'; 
-import Notifications from './Notifications'; 
+import Account from './Account';
+import Notifications from './Notifications';
 import Chats from './Chats';
 import Ai from './Ai';
-import Connect from './Connect'; 
-import Disconnect from './Disconnect'; 
+import Connect from './Connect';
+import Disconnect from './Disconnect';
 import Policy from './Policy';
 import Contact from './Contact';
 import About from './About';
 
-function Setting() {
-   
+function Setting({ user }) {
+
     const [activeKey, setActiveKey] = useState('profile');
+
+
+
+    // ถ้า Role ของ user ตรงกับที่กำหนด ให้คืนค่า true (แสดงผล)
+    const allow = (roles) => {
+        if (!user) return false; // ถ้าไม่มี user ไม่ให้เห็น
+        if (user.role === 'it') return true; // it เห็นหมด
+        return roles.includes(user.role);
+    };
 
     const handleSelect = (selectedKey) => {
         setActiveKey(selectedKey);
     };
 
-    
+
     const renderContent = () => {
         switch (activeKey) {
             case 'account':
-                return <Account />; 
+                return <Account />;
             case 'Privacy':
-                return <Privacy />; 
+                return <Privacy />;
             case 'notifications':
-                return <Notifications />; 
+                return <Notifications />;
             case 'chat':
                 return <Chats />;
             case 'ai':
                 return <Ai />;
             case 'connect':
-                return <Connect />;
+                return allow([]) ? <Connect /> : null;
             case 'disconnect':
-                return <Disconnect />;
+                return allow([]) ? <Disconnect /> : null;
             case 'policy':
                 return <Policy />;
             case 'contact':
@@ -55,9 +61,9 @@ function Setting() {
             case 'about':
                 return <About />;
 
-            
+
             default:
-                return <Account />; 
+                return <Account />;
         }
     };
 
@@ -71,7 +77,7 @@ function Setting() {
                     {/* ===== คอลัมน์ซ้าย: เมนู (Left Menu) ===== */}
                     <Col md={4} lg={3} className="custom-vertical-divider pe-md-4 scrollable-col">
 
-                        
+
                         <div
                             className={`profile-nav-item d-flex align-items-center mb-4 p-3 ${activeKey === 'profile' ? 'active' : ''}`}
                             onClick={() => handleSelect('profile')} // สั่งให้ State เปลี่ยน
@@ -86,11 +92,11 @@ function Setting() {
                             <ChevronRight size={20} className="text-muted" />
                         </div>
 
-                        
+
                         <Nav
                             className="flex-column settings-nav "
                             activeKey={activeKey}
-                            onSelect={handleSelect} 
+                            onSelect={handleSelect}
                         >
                             <div className="nav-heading">ข้อมูลส่วนตัว</div>
                             <Nav.Link eventKey="account">
@@ -112,13 +118,18 @@ function Setting() {
                                 <Robot /> เอไอ เมต้าแชท
                             </Nav.Link>
 
-                            <div className="nav-heading">การเชื่อมต่อบัญชี</div>
-                            <Nav.Link eventKey="connect">
-                                <Plug /> เชื่อมต่อบัญชีใหม่
-                            </Nav.Link>
-                            <Nav.Link eventKey="disconnect">
-                                <SlashCircle /> ยกเลิกการเชื่อมต่อ
-                            </Nav.Link>
+
+                            {allow([]) && (
+                                <>
+                                    <div className="nav-heading">การเชื่อมต่อบัญชี</div>
+                                    <Nav.Link eventKey="connect">
+                                        <Plug /> เชื่อมต่อบัญชีใหม่
+                                    </Nav.Link>
+                                    <Nav.Link eventKey="disconnect">
+                                        <SlashCircle /> ยกเลิกการเชื่อมต่อ
+                                    </Nav.Link>
+                                </>
+                            )}
 
                             <div className="nav-heading">ข้อมูลเกี่ยวกับแอป</div>
                             <Nav.Link eventKey="policy">

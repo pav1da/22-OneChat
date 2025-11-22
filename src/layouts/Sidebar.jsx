@@ -1,7 +1,9 @@
 import { Nav } from "react-bootstrap";
+import { Link } from "react-router-dom"; 
 import "./Sidebar.css";
 
-const Sidebar = ({ collapsed, toggleSidebar }) => {
+
+const Sidebar = ({ collapsed, toggleSidebar, onLogout }) => {
   return (
     <div
       className={`sidebar-container d-flex flex-column justify-content-between p-3 ${
@@ -18,15 +20,17 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         {/* ปุ่มกดย่อ/ขยาย*/}
         <div className="toggle-btn mt-2 mb-4 " onClick={toggleSidebar}>
           {collapsed ? (
-            <i class="bi bi-chevron-right"></i>
+            <i className="bi bi-chevron-right"></i>
           ) : (
-            <i class="bi bi-chevron-left"></i>
+            <i className="bi bi-chevron-left"></i>
           )}
         </div>
 
         <Nav className="flex-column">
+         
           <Nav.Link
-            href="/dashboard"
+            as={Link} 
+            to="/dashboard"
             className="menu-item active d-flex align-items-center"
           >
             <i className="bi bi-columns-gap"></i>
@@ -34,7 +38,8 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
           </Nav.Link>
 
           <Nav.Link
-            href="/inbox"
+            as={Link}
+            to="/inbox"
             className="menu-item d-flex align-items-center"
           >
             <i className="bi bi-inbox"></i>
@@ -55,14 +60,18 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
 
         <Nav className="flex-column">
           <Nav.Link
-            href="/setting"
+            as={Link}
+            to="/setting"
             className="menu-item d-flex align-items-center"
           >
             <i className="bi bi-gear"></i>
             <span className="menu-text ms-2">Setting</span>
           </Nav.Link>
+          
+          
           <Nav.Link
-            href="#logout"
+            onClick={onLogout}
+            style={{ cursor: "pointer" }} 
             className="menu-item d-flex align-items-center"
           >
             <i className="bi bi-box-arrow-right"></i>
