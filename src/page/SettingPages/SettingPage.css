@@ -70,6 +70,63 @@
 
 }
 
+
+/* =========================================
+   อัปเดตใหม่: Sidebar ด้านซ้าย (ให้เหมือนรูปเป๊ะๆ)
+   ========================================= */
+
+/* ปรับพื้นที่ Sidebar */
+.settings-sidebar {
+    background-color: transparent;
+}
+
+/* แก้ไขหัวข้อหมวดหมู่ (เช่น "ทั่วไป", "ตั้งค่าผู้ใช้") */
+.settings-nav .nav-heading {
+    font-size: 0.85rem;
+    color: #999; /* สีเทาอ่อนลง */
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    font-weight: 400;
+    text-transform: none; /* ไม่บังคับตัวพิมพ์ใหญ่ */
+}
+
+/* สไตล์ลิงก์ปกติ (ตอนยังไม่กด) */
+.settings-nav .nav-link {
+    color: #333; /* สีตัวอักษรเข้มขึ้น */
+    font-weight: 500;
+    padding: 10px 1rem;
+    border-radius: 12px; /* มุมมนกว่าเดิม */
+    display: flex;
+    align-items: center;
+    gap: 12px; /* ระยะห่างไอคอนกับตัวหนังสือ */
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
+    border: 1px solid transparent; /* เตรียมเส้นขอบไว้ */
+    background-color: transparent;
+}
+
+/* Hover (ตอนเอาเมาส์ชี้) */
+.settings-nav .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #000;
+}
+
+/* --- สไตล์ตอน Active (หน้าที่เลือกอยู่) --- */
+/* ใช้ !important เพื่อให้มั่นใจว่าทับของเก่าแน่นอน */
+.settings-nav .nav-link.active {
+    background-color: #fff5f0 !important; /* พื้นหลังสีส้มจางๆ */
+    color: #fd7e14 !important; /* ตัวหนังสือสีส้ม */
+    border: 1px solid #fd7e14 !important; /* เส้นขอบสีส้ม */
+    font-weight: 600;
+}
+
+/* เปลี่ยนสีไอคอนเมื่อ Active */
+.settings-nav .nav-link.active svg {
+    fill: #fd7e14 !important;
+    color: #fd7e14 !important;
+}
+
 /* สไตล์ Profile ด้านบนซ้าย */
 .profile-nav-item {
     display: flex;
@@ -196,10 +253,6 @@
 }
 
 
-/* เอาเส้นใต้เฉพาะหน้า Chats */
-.chat-item {
-    border-bottom: none !important;
-}
 
 
 .big-item {
@@ -269,6 +322,68 @@
     margin-bottom: 0.5rem;
 }
 
+/* =========================================
+   เพิ่มใหม่สำหรับหน้า Chats (เพื่อให้เหมือนรูป)
+   ========================================= */
+
+/* 1. สไตล์ปุ่ม "แก้ไข" สีเทาเข้ม */
+.btn-edit-dark {
+    background-color: #424242;  /* สีเทาเข้มตามภาพ */
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;      /* ความมนของขอบปุ่ม */
+    padding: 6px 20px;       /* ขนาดปุ่ม */
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-dark:hover {
+    background-color: #2b2b2b; /* เข้มขึ้นเมื่อเอาเมาส์ชี้ */
+    color: #ffffff;
+}
+
+/* 2. ปรับแต่งรายการในหน้า Chat ให้ระยะห่างสวยงาม */
+.chat-page-container .profile-info-item {
+    border-bottom: none; /* เอาเส้นขีดล่างเดิมออก (เพราะเราจะขีดเส้นแบ่งโซนเอง) */
+    padding-top: 1.2rem;
+    padding-bottom: 1.2rem;
+}
+
+/* 3. ปรับขนาดตัวหนังสือหัวข้อและคำอธิบาย */
+.chat-text-group h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.chat-text-group p {
+    font-size: 0.9rem;
+    color: #9e9e9e; /* สีเทาอ่อนสำหรับคำอธิบาย */
+}
+
+/* 4. เส้นขีดคั่นกลาง (Divider) */
+.chat-divider {
+    border-top: 1px solid #e9ecef;
+    margin: 10px 0;
+}
 
 
 
+
+
+/* กล่องสีเทาจำลอง (Placeholder) ในหน้า AI */
+.gray-input-placeholder {
+    width: 100%;
+    height: 50px; /* ความสูงของกล่อง */
+    background-color: #eef0f2; /* สีเทาอ่อนๆ ตามภาพ */
+    border-radius: 12px; /* ความมนของมุม */
+    margin-top: 10px;
+}
+
+/* ปรับแต่งเพิ่มเติมให้ text-muted สีตรงกับภาพมากขึ้น */
+.text-muted {
+    color: #a0a0a0 !important;
+}

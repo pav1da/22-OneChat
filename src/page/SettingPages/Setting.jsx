@@ -1,34 +1,32 @@
-
 import { useState } from "react";
 import { Container, Row, Col, Nav } from "react-bootstrap";
 import {
-    PersonCircle, ChevronRight, PersonVcard, ShieldLock, Bell,
-    Chat as ChatIcon, Robot, Plug, SlashCircle, FileEarmarkText,
-    Telephone, InfoCircle
-} from "react-bootstrap-icons";
+    Person,
+    Link45deg,
+    Bell,
+    ChatDots,
+    FileText,
+    InfoCircle,
+    Send
+} from "react-bootstrap-icons"; 
 
 import "./SettingPage.css";
 
-import Privacy from './Privacy';
 import Account from './Account';
 import Notifications from './Notifications';
 import Chats from './Chats';
 import Ai from './Ai';
 import Connect from './Connect';
-import Disconnect from './Disconnect';
 import Policy from './Policy';
 import Contact from './Contact';
 import About from './About';
 
 function Setting({ user }) {
+    const [activeKey, setActiveKey] = useState('account'); 
 
-    const [activeKey, setActiveKey] = useState('profile');
-
-
-
-    // ถ้า Role ของ user ตรงกับที่กำหนด ให้คืนค่า true (แสดงผล)
+    // ฟังก์ชันตรวจสอบสิทธิ์
     const allow = (roles) => {
-        if (!user) return false; // ถ้าไม่มี user ไม่ให้เห็น
+        if (!user) return false;
         if (user.role === 'it') return true; // it เห็นหมด
         return roles.includes(user.role);
     };
@@ -37,119 +35,91 @@ function Setting({ user }) {
         setActiveKey(selectedKey);
     };
 
-
     const renderContent = () => {
         switch (activeKey) {
-            case 'account':
-                return <Account />;
-            case 'Privacy':
-                return <Privacy />;
-            case 'notifications':
-                return <Notifications />;
-            case 'chat':
-                return <Chats />;
-            case 'ai':
-                return <Ai />;
-            case 'connect':
-                return allow([]) ? <Connect /> : null;
-            case 'disconnect':
-                return allow([]) ? <Disconnect /> : null;
-            case 'policy':
-                return <Policy />;
-            case 'contact':
-                return <Contact />;
-            case 'about':
-                return <About />;
-
-
-            default:
-                return <Account />;
+            case 'account': return <Account />;
+            
+            // ป้องกันการเข้าถึงเนื้อหาด้วย (เผื่อคนกดเล่น)
+            case 'connect': return allow([]) ? <Connect /> : null; 
+            
+            case 'notifications': return <Notifications />;
+            case 'chat': return <Chats />;
+            case 'ai': return <Ai />;
+            case 'policy': return <Policy />;
+            case 'contact': return <Contact />;
+            case 'about': return <About />;
+            default: return <Account />;
         }
     };
 
     return (
         <div className="settings-page-wrapper">
             <Container fluid className="h-100 d-flex flex-column">
-                <h1 className="fw-bold mb-4 pt-3" style={{ marginLeft: '20px', marginTop: '20px' }}>Setting</h1>
-                <hr className="my-4" />
-
-                <Row className="flex-grow-1" style={{ overflow: 'hidden' }}>
+                
+                <Row className="flex-grow-1 h-100">
                     {/* ===== คอลัมน์ซ้าย: เมนู (Left Menu) ===== */}
-                    <Col md={4} lg={3} className="custom-vertical-divider pe-md-4 scrollable-col">
-
-
-                        <div
-                            className={`profile-nav-item d-flex align-items-center mb-4 p-3 ${activeKey === 'profile' ? 'active' : ''}`}
-                            onClick={() => handleSelect('profile')} // สั่งให้ State เปลี่ยน
-                            style={{ cursor: 'pointer' }} // เพิ่มให้รู้ว่ากดได้
-                        >
-                            <div className="profile-placeholder-sm">
-                                <PersonCircle size={28} className="text-muted" />
-                            </div>
-                            <div className="flex-grow-1">
-                                <h5 className="fw-bold m-0">Profile</h5>
-                            </div>
-                            <ChevronRight size={20} className="text-muted" />
-                        </div>
-
+                    <Col md={3} lg={3} className="custom-vertical-divider pe-0 py-4 scrollable-col settings-sidebar">
+                        
+                        <h4 className="fw-bold mb-4 px-3" style={{ fontSize: '1.5rem' }}>Setting</h4>
 
                         <Nav
-                            className="flex-column settings-nav "
+                            className="flex-column settings-nav px-2"
                             activeKey={activeKey}
                             onSelect={handleSelect}
                         >
-                            <div className="nav-heading">ข้อมูลส่วนตัว</div>
+                            {/* --- กลุ่ม 1: ตั้งค่าผู้ใช้ --- */}
+                            <div className="nav-heading mt-2">ตั้งค่าผู้ใช้</div>
+                            
                             <Nav.Link eventKey="account">
-                                <PersonVcard /> บัญชี
-                            </Nav.Link>
-                            <Nav.Link eventKey="Privacy">
-                                <ShieldLock /> ความเป็นส่วนตัว
+                                <Person size={20} /> บัญชีของฉัน
                             </Nav.Link>
 
-                            <div className="nav-heading">ทั่วไป</div>
+                            {/* ========== แก้ไขตรงนี้ ========== */}
+                            {/* ใช้ allow([]) เพื่อให้เห็นแค่ IT เท่านั้น (User/Admin จะไม่เห็น) */}
+                            {allow([]) && (
+                                <Nav.Link eventKey="connect">
+                                    <Link45deg size={20} /> เชื่อมต่อบัญชีใหม่
+                                </Nav.Link>
+                            )}
+                            {/* =============================== */}
+
+
+                            {/* --- กลุ่ม 2: ทั่วไป --- */}
+                            <div className="nav-heading mt-4">ทั่วไป</div>
+                            
                             <Nav.Link eventKey="notifications">
-                                <Bell /> การแจ้งเตือน
+                                <Bell size={18} /> การแจ้งเตือน
                             </Nav.Link>
 
                             <Nav.Link eventKey="chat">
-                                <ChatIcon /> แชท
+                                <ChatDots size={18} /> แชท
                             </Nav.Link>
+
                             <Nav.Link eventKey="ai">
-                                <Robot /> เอไอ เมต้าแชท
+                                <span style={{ fontWeight: 'bold', fontSize: '0.9rem', marginRight: '4px' }}>AI</span> เอไอ เมต้าแชท
                             </Nav.Link>
 
 
-                            {allow([]) && (
-                                <>
-                                    <div className="nav-heading">การเชื่อมต่อบัญชี</div>
-                                    <Nav.Link eventKey="connect">
-                                        <Plug /> เชื่อมต่อบัญชีใหม่
-                                    </Nav.Link>
-                                    <Nav.Link eventKey="disconnect">
-                                        <SlashCircle /> ยกเลิกการเชื่อมต่อ
-                                    </Nav.Link>
-                                </>
-                            )}
-
-                            <div className="nav-heading">ข้อมูลเกี่ยวกับแอป</div>
+                            {/* --- กลุ่ม 3: ข้อมูลเกี่ยวกับแอป --- */}
+                            <div className="nav-heading mt-4">ข้อมูลเกี่ยวกับแอป</div>
+                            
                             <Nav.Link eventKey="policy">
-                                <FileEarmarkText /> นโยบายความเป็นส่วนตัว
+                                <FileText size={18} /> นโยบายความเป็นส่วนตัว
                             </Nav.Link>
+
                             <Nav.Link eventKey="contact">
-                                <Telephone /> ติดต่อเรา
+                                <Send size={18} style={{ transform: 'rotate(-45deg)' }}/> ติดต่อเรา
                             </Nav.Link>
+
                             <Nav.Link eventKey="about">
-                                <InfoCircle /> เกี่ยวกับ One Chat
+                                <InfoCircle size={18} /> เกี่ยวกับ One Chat
                             </Nav.Link>
                         </Nav>
                     </Col>
 
                     {/* ===== คอลัมน์ขวา: เนื้อหา (Content) ===== */}
-                    <Col md={8} lg={9} className="ps-md-5 mt-4 mt-md-0 scrollable-col">
-
-                        {/* เรียกใช้ฟังก์ชันสลับหน้า */}
+                    <Col md={9} lg={9} className="ps-md-5 py-4 scrollable-col bg-white">
                         {renderContent()}
-
                     </Col>
                 </Row>
             </Container>
@@ -157,4 +127,4 @@ function Setting({ user }) {
     );
 }
 
-export default Setting; 
+export default Setting;

@@ -1,36 +1,41 @@
 
-import { ChevronRight } from 'react-bootstrap-icons';
 
-const Connect  = () => {
-    return ( 
-
-        <div className='connect-page'>
-
-            <div className="profile-info-item d-flex justify-content-between align-items-center">
-                   
-                    <div>
-                      <h5 className="mb-1">ตั้งค่า AI Meta Chat</h5>
-                      <p className="text-muted mb-0" style={{ fontSize: '0.9em' }}>
-                        ตั้งค่าโหมดต่างๆใน AI Meta Chat
-                      </p>
-                    </div>
-                    <ChevronRight size={20} className="text-muted" />
-                  </div>
+const Connect = () => {
+    return (
+        <div className="px-3 pt-2" style={{maxWidth: '800px', marginLeft: '110px'}}>
             
-                  {/* ตั้งค่า คำตอบเริ่มต้น */}
-                  <div className="profile-info-item d-flex justify-content-between align-items-center">
-                    <h5 className="mb-0">ตั้งค่า คำตอบเริ่มต้น</h5>
-                    <ChevronRight size={20} className="text-muted" />
-                  </div>
-            
-                  {/* ตั้งค่า คำตอบสำหรับคำถามที่พบบ่อย */}
-                  <div className="profile-info-item d-flex justify-content-between align-items-center">
-                    <h5 className="mb-0">ตั้งค่า คำตอบสำหรับคำถามที่พบบ่อย</h5>
-                    <ChevronRight size={20} className="text-muted" />
-                  </div>
-        
+            {/* ส่วนหัวข้อ: การเชื่อมต่อ */}
+            <div className="mb-4">
+                <h5 className="mb-1 font-weight-bold" style={{ fontSize: '1.1rem' }}>การเชื่อมต่อ</h5>
+                <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
+                    อธิบายคร่าวๆ
+                </p>
+            </div>
+
+            {/* กล่องที่ 1: บัญชีที่เชื่อมต่อ */}
+            <div className="d-flex justify-content-between align-items-center border rounded-3 p-3 mb-3 bg-white">
+                <div>
+                    <h6 className="mb-1 font-weight-bold" style={{ fontSize: '1rem' }}>บัญชีที่เชื่อมต่อ</h6>
+                    <p className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>0 คำตอบ</p>
+                </div>
+                <button className="btn-edit-dark">
+                    เชื่อมต่อ
+                </button>
+            </div>
+
+            {/* กล่องที่ 2: แพลตฟอร์มที่เชื่อมต่อ */}
+            <div className="d-flex justify-content-between align-items-center border rounded-3 p-3 mb-3 bg-white">
+                <div>
+                    <h6 className="mb-1 font-weight-bold" style={{ fontSize: '1rem' }}>แพลตฟอร์มที่เชื่อมต่อ</h6>
+                    <p className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>0 คำตอบ</p>
+                </div>
+                <button className="btn-edit-dark">
+                    เชื่อมต่อ
+                </button>
+            </div>
+
         </div>
-     );
+    );
 }
- 
-export default Connect ;
+
+export default Connect;

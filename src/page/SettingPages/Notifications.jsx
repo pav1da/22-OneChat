@@ -1,75 +1,95 @@
-
 import { Stack, Form } from 'react-bootstrap';
 
-
 function Notifications() {
+    // Style สำหรับหัวข้อตัวหนา
+    const titleStyle = {
+        fontSize: '1rem',
+        fontWeight: '600',
+        color: '#212529',
+        marginBottom: '4px'
+    };
+
+    // Style สำหรับคำอธิบายตัวเล็กสีเทา
+    const descStyle = {
+        fontSize: '0.85rem',
+        color: '#adb5bd'
+    };
+
+    // Style สำหรับ Dropdown
+    const selectStyle = {
+        backgroundColor: '#F8F9FA', // สีพื้นหลังเทาอ่อนๆ
+        border: '1px solid #dee2e6',
+        borderRadius: '8px',
+        padding: '10px 15px',
+        fontSize: '0.95rem',
+        color: '#495057',
+        maxWidth: '100%' // หรือกำหนด width: '500px' ถ้าอยากให้สั้นลง
+    };
+
     return (
-        <div >
+        <div className="p-2" style={{marginLeft: '120px'}}>
+            <Stack gap={4} style={{ maxWidth: '750px' }}>
 
-           
-            <Stack gap={3} className="mt-4 profile-info-list" style={{ maxWidth: '1200px' }}> 
-
-                {/* --- 1. การแจ้งเตือน --- */}
-                <div className="profile-info-item d-flex justify-content-between align-items-center">
+                {/* --- 1. การแจ้งเตือนหลัก --- */}
+                <div className="d-flex justify-content-between align-items-start">
                     <div>
-                        <div className="value" style={{ color: '#212529', fontWeight: '700', fontSize: '1.1rem' }}>การแจ้งเตือน</div>
-                        <div className="label mt-1" style={{ color: '#A8A8A8', fontSize: '0.95rem' }}>เปิด/ปิด การใช้งานการแจ้งเตือนทั้งหมด</div>
+                        <div style={titleStyle}>การแจ้งเตือน</div>
+                        <div style={descStyle}>เปิด/ปิด การใช้งานการแจ้งเตือนทั้งหมด</div>
                     </div>
-                    <Form.Check
-                        type="switch"
-                        id="notify-all"
+                    <Form.Check 
+                        type="switch" 
+                        id="notify-all" 
+                        style={{ transform: 'scale(1.2)' }} // ขยายสวิตช์นิดนึงให้กดง่าย
+                        defaultChecked // สมมติว่าเปิดอยู่
                     />
                 </div>
 
-                {/* --- 2. การแจ้งเตือนในแอปฯ --- */}
-                <div className="profile-info-item d-flex justify-content-between align-items-center">
+                {/* --- 2. Web & Mobile Push --- */}
+                <div className="d-flex justify-content-between align-items-start">
                     <div>
-                        <div className="value" style={{ color: '#212529', fontWeight: '700', fontSize: '1.1rem' }}>การแจ้งเตือนในแอปฯ (Web & Mobile Push)</div>
-                        <div className="label mt-1" style={{ fontSize: '0.95rem', color: '#A8A8A8' }}>เปิด/ปิด การใช้งานการแจ้งเตือนภายในแอปทั้งหมด</div>
+                        <div style={titleStyle}>การแจ้งเตือนในแอป (Web & Mobile Push)</div>
+                        <div style={descStyle}>เปิด/ปิด การใช้งานการแจ้งเตือนภายในแอปทั้งหมด</div>
                     </div>
-                    <Form.Check
-                        type="switch"
-                        id="notify-push"
+                    <Form.Check 
+                        type="switch" 
+                        id="notify-push" 
+                        style={{ transform: 'scale(1.2)' }}
+                        defaultChecked
                     />
                 </div>
 
-                {/* --- 3. การแจ้งเตือนผ่าน E-mail --- */}
-                <div className="profile-info-item d-flex justify-content-between align-items-center">
+                {/* --- 3. Email --- */}
+                <div className="d-flex justify-content-between align-items-start border-bottom pb-4">
                     <div>
-                        <div className="value" style={{ color: '#212529', fontWeight: '700', fontSize: '1.1rem' }}>การแจ้งเตือนผ่าน E-mail</div>
-                        <div className="label mt-1" style={{ fontSize: '0.95rem', color: '#A8A8A8' }}>เปิด/ปิด การแจ้งเตือนผ่าน E-mail</div>
+                        <div style={titleStyle}>การแจ้งเตือนผ่าน E-mail</div>
+                        <div style={descStyle}>เปิด/ปิด การใช้งานการแจ้งเตือนผ่าน E-mail</div>
                     </div>
-                    <Form.Check
-                        type="switch"
-                        id="notify-email"
+
+
+                    <Form.Check 
+                        type="switch" 
+                        id="notify-email" 
+                        style={{ transform: 'scale(1.2)' }}
                     />
                 </div>
 
-               
-                {/* (เราจะใช้ .nav-heading ที่มีอยู่แล้ว) */}
-                <div className="nav-heading" style={{ textTransform: 'none', fontSize: '1.1rem', fontWeight: '700', marginTop: '1rem', paddingLeft: 0, paddingBottom: 0, marginLeft: '20px' }}>
-                    ปิดการแจ้งเตือนชั่วคราว
-                </div>
-
-                
-                <div className="profile-info-item d-flex justify-content-between align-items-center">
-                    <div className="value" style={{ color: '#A8A8A8', fontSize: '1.1rem' }}>ปิดการแจ้งเตือน 1 ชั่วโมง</div>
-                    <Form.Check
-                        type="switch"
-                        id="notify-snooze-1h"
-                    />
-                </div>
-
-                <div className="profile-info-item d-flex justify-content-between align-items-center">
-                    <div className="value" style={{ color: '#A8A8A8', fontSize: '1.1rem' }}>ปิดการแจ้งเตือนถึง 8.00 น.</div>
-                    <Form.Check
-                        type="switch"
-                        id="notify-snooze-8am"
-                    />
+                {/* --- 4. ปิดการแจ้งเตือนชั่วคราว (Snooze) - เปลี่ยนเป็น Dropdown ตามรูป --- */}
+                <div className="mt-2">
+                    <div style={titleStyle}>ปิดการแจ้งเตือนชั่วคราว</div>
+                    <div style={descStyle} className="mb-3">
+                        One Chat จะไม่ส่งแจ้งเตือนไปที่อุปกรณ์ของคุณเลือกใช้การตั้งค่านี้ เพื่อควบคุมระยะเวลาปิดการแจ้งเตือนชั่วคราว
+                    </div>
+                    
+                    <Form.Select style={selectStyle} aria-label="Snooze duration">
+                        <option value="1">1 ชั่วโมง</option>
+                        <option value="2">2 ชั่วโมง</option>
+                        <option value="4">4 ชั่วโมง</option>
+                        <option value="8">8 ชั่วโมง</option>
+                        <option value="until_8am">จนถึง 8.00 น.</option>
+                    </Form.Select>
                 </div>
 
             </Stack>
-
         </div>
     );
 }

@@ -75,7 +75,7 @@ function SignInPage({ onLogin }) {
           </p>
 
             {/* ปุ่มลัด */}
-            <div className="mb-4 p-3 bg-light rounded border">
+            <div className="mb-4 p-3 bg-light rounded border mx-auto" style={{maxWidth: '320px'}}>
                 <small className="text-muted d-block mb-2">Developer Mode: Login As...</small>
                 <div className="d-flex justify-content-center gap-2 flex-wrap">
                     <Button variant="danger" size="sm" onClick={() => handleQuickLogin('admin')}>Admin</Button>
