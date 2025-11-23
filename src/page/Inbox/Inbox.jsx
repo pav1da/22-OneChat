@@ -1,23 +1,21 @@
-import React, { useRef, useEffect } from "react";
-import {
-  Badge,
-  Button,
-  Card,
-  Col,
-  Container,
-  Form,
-  Row,
-} from "react-bootstrap";
+import { useRef, useEffect } from "react";
+import { Badge, Button, Form } from "react-bootstrap";
 import "./inbox.css";
+import ChatList from "./chatList/ChatList";
 
 const Inbox = () => {
   const msgRef = useRef(null);
+  const endRef = useRef(null);
 
   useEffect(() => {
     if (msgRef.current) {
       msgRef.current.style.height = "auto";
       msgRef.current.style.height = msgRef.current.scrollHeight + "px";
     }
+  }, []);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   const autoResize = (e) => {
@@ -27,7 +25,7 @@ const Inbox = () => {
   };
 
   return (
-    <div className="kanit-regular h-100 d-flex flex-column">
+    <div className="kanit-regular height-fix d-flex flex-column">
       {/* Start Header Section*/}
       <div className="d-flex gap-2 mb-3">
         {/* Return Button */}
@@ -35,104 +33,146 @@ const Inbox = () => {
           <i className="bi bi-arrow-left"></i>
         </button>
         {/* Title */}
-        <div className="w-100 rounded-5 p-2 ps-4 d-flex align-items-center fs-5 bg-white-translucent">
+        <div className="w-100 rounded-5 ps-4 d-flex align-items-center fs-5 bg-white-translucent">
           All Chats
         </div>
       </div>
       {/* End Header Section */}
-
-      <div className="d-flex gap-2 mt-3 pb-3 flex-grow-1 h-100">
+      <div className="d-flex gap-2 flex-grow-1 h-100">
         {/* Start ChatList Section */}
-        <div className="w-50 bg-white-translucent rounded-4 p-3 d-flex flex-column h-100">
-          <div className="d-flex gap-2 flex-shrink-0">
+        <div className="bg-white-translucent rounded-4 p-3 w-50 d-flex flex-column h-100">
+          {/* Start Search Section */}
+          <div className="d-flex gap-2 flex-shrink-0 align-items-center border-bottom border-secondary-subtle pb-3">
+            {/* Search Bar */}
             <Form.Control
-              type="text"
-              placeholder="ค้นหาหรือเริ่มการสนทนา"
+              placeholder="Search"
               className="custom-search-input"
             />
+            {/* Sort */}
+            <div className="custom-icon-sort">
+              <i className="bi bi-arrow-down-up"></i>
+            </div>
           </div>
-          <hr className="mt-2 mb-2" />
-          {/* Chat List */}
-          <div className="overflow-y-auto flex-grow-1">
-            <Card>
-              <Card.Body className="d-flex align-items-center gap-3">
-                <img
-                  src="./src/assets/Image/Customers/Harumasa.png"
-                  className="rounded-circle"
-                  style={{ width: "55px", height: "55px", objectFit: "cover" }}
-                />
-                <div className="w-75">
-                  <div>Asaba Harumasa</div>
-                  <Badge className="bg-warning p-1.5">On-Going</Badge>
-                </div>
-              </Card.Body>
-            </Card>
+          {/* End Search Section */}
+
+          {/* Start Chat List */}
+          <div className="list">
+            <ChatList />
           </div>
         </div>
         {/* End ChatList Section */}
 
         {/* Start Chat Section */}
         <div className="w-100 bg-white-translucent rounded-4 p-3 d-flex flex-column h-100">
-          {/* Chat Header */}
-          <div className="d-flex gap-3 align-content-center align-items-center">
-            {/* Profile */}
-            <img
-              src="./src/assets/Image/Customers/Harumasa.png"
-              className="rounded-circle"
-              style={{ width: "40px", height: "40px", objectFit: "cover" }}
-            />
-            {/* User Name */}
-            <div className="fs-5">Asaba Harumasa</div>
-          </div>
-          <hr className="mt-2 mb-2" />
-
-          {/* Chat container */}
-          <div className="flex-grow-1 overflow-y-auto">
-            {/* Date and Time */}
-            <center>
-              <p style={{ color: "#4E4E4E" }}>25 Dec 2060 02:45 pm</p>
-            </center>
-            {/* Customers Massage */}
-            <div className="d-flex align-content-center align-items-center gap-2">
+          {/* Start Top Section */}
+          <div className="d-flex gap-3 custom-top-chat pb-3 mx-1 border-secondary-subtle border-bottom">
+            <div className="d-flex gap-3">
+              {/* Profile */}
               <img
                 src="./src/assets/Image/Customers/Harumasa.png"
-                className="rounded-circle"
-                style={{ width: "40px", height: "40px", objectFit: "cover" }}
+                className="rounded-circle "
+                style={{ width: "46px", height: "46px", objectFit: "cover" }}
               />
-              <div
-                className="align-self-start mb-2 p-3 rounded-4 w-auto"
-                style={{ backgroundColor: "#707070", color: "white" }}
-              >
-                สวัสดีครับ ต้องการสั่งซื้อสินค้าครับ
+              {/* Username */}
+              <span style={{ fontSize: "18px" }} className="pt-2">
+                Harumasa
+              </span>
+              {/* Status */}
+            </div>
+            <div className="d-flex gap-3 align-items-center">
+              <Badge className="bg-warning custom-badge-top">
+                กำลังดำเนินการ
+              </Badge>
+              <i className="bi bi-three-dots-vertical fs-5"></i>
+            </div>
+          </div>
+          {/* End Top Section */}
+
+          {/* Chat container */}
+          <div className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2">
+            <div className="message">
+              <img src="./src/assets/Image/Customers/Harumasa.png" alt="" />
+              <div className="texts">
+                <p>
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nam
+                  beatae ea praesentium tempore dicta harum, debitis ipsum dolor
+                  corporis. Cupiditate quis provident reprehenderit sit quas
+                  corrupti vero. Aperiam, autem quaerat.
+                </p>
               </div>
             </div>
-            {/* Admin Massage */}
-            <div className="d-flex align-content-center align-items-center gap-2 justify-content-end">
-              <div
-                className="align-self-end mb-2 p-3 rounded-4 w-auto"
-                style={{ backgroundColor: "#EFB4AA", color: "black" }}
-              >
-                สวัสดีครับ
+            <div className="message own">
+              <div className="texts">
+                <p>
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nam
+                  beatae ea praesentium tempore dicta harum, debitis ipsum dolor
+                  corporis. Cupiditate quis provident reprehenderit sit quas
+                  corrupti vero. Aperiam, autem quaerat.
+                </p>
               </div>
-              <img
-                src="./src/assets/Image/Admins/pav1da.png"
-                className="rounded-circle"
-                style={{ width: "40px", height: "40px", objectFit: "cover" }}
-              />
             </div>
+            <div className="message">
+              <img src="./src/assets/Image/Customers/Harumasa.png" alt="" />
+              <div className="texts">
+                <p>
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nam
+                  beatae ea praesentium tempore dicta harum, debitis ipsum dolor
+                  corporis. Cupiditate quis provident reprehenderit sit quas
+                  corrupti vero. Aperiam, autem quaerat.
+                </p>
+              </div>
+            </div>
+            <div className="message own">
+              <div className="texts">
+                <p>
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nam
+                  beatae ea praesentium tempore dicta harum, debitis ipsum dolor
+                  corporis. Cupiditate quis provident reprehenderit sit quas
+                  corrupti vero. Aperiam, autem quaerat.
+                </p>
+              </div>
+            </div>
+            <div className="message">
+              <img src="./src/assets/Image/Customers/Harumasa.png" alt="" />
+              <div className="texts">
+                <p>
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nam
+                  beatae ea praesentium tempore dicta harum, debitis ipsum dolor
+                  corporis. Cupiditate quis provident reprehenderit sit quas
+                  corrupti vero. Aperiam, autem quaerat.
+                </p>
+              </div>
+            </div>
+            <div className="message own">
+              <div className="texts">
+                <img
+                  src="https://www.shutterstock.com/image-photo/awesome-pic-natureza-600nw-2408133899.jpg"
+                  alt=""
+                />
+                <p>
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nam
+                  beatae ea praesentium tempore dicta harum, debitis ipsum dolor
+                  corporis. Cupiditate quis provident reprehenderit sit quas
+                  corrupti vero. Aperiam, autem quaerat.
+                </p>
+              </div>
+            </div>
+            <div ref={endRef}></div>
           </div>
 
           {/* Text Section */}
-          <div className="flex-shrink-0">
-            <hr />
-            <div className="d-flex flex-row chat-input-container p-1 ">
-              {/* Emoji Button */}
-              <Button variant="link" className="pt-1 pb-1 pe-1 text-black">
-                <i
-                  className="bi bi-emoji-smile fs-4"
-                  style={{ lineHeight: 1 }}
-                />
-              </Button>
+          <div className="flex-shrink-0 pt-3">
+            <div className="d-flex flex-row p-1 pe-3 gap-1 align-items-center custom-bottom-chat">
+              {/* Icons Button */}
+              <div className="d-flex ps-2">
+                {/* Emoji Icon */}
+                <Button variant="link" className="text-black p-1">
+                  <i
+                    className="bi bi-emoji-smile fs-4"
+                    style={{ lineHeight: 1 }}
+                  />
+                </Button>
+              </div>
 
               {/* Text Area */}
               <Form.Control
@@ -141,7 +181,7 @@ const Inbox = () => {
                 placeholder="พิมพ์ข้อความ"
                 ref={msgRef}
                 onInput={autoResize}
-                className="border-0 custom-search-input w-50 pt-2"
+                className="w-100 pt-2 custom-text-input"
                 style={{
                   overflow: "hidden",
                   resize: "none",
@@ -149,6 +189,24 @@ const Inbox = () => {
                   maxHeight: "120px",
                 }}
               />
+              {/* Icons Button */}
+              <div className="d-flex ps-2">
+                {/* Mic Icon */}
+                <Button variant="link" className="text-black p-1">
+                  <i class="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
+                </Button>
+                {/* Image Icon */}
+                <Button variant="link" className="text-black p-1">
+                  <i class="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
+                </Button>
+                {/* Card Message Icon */}
+                <Button variant="link" className="text-black p-1">
+                  <i class="bi bi-sticky fs-4" style={{ lineHeight: 1 }}></i>
+                </Button>
+              </div>
+
+              {/* Send Button */}
+              {/* <Button style={{ padding: "8px 18px", maxHeight: "42px"}}>Send</Button> */}
             </div>
           </div>
         </div>
@@ -168,16 +226,19 @@ const Inbox = () => {
           </p>
           {/* ผู้รับผิดชอบ */}
           <div className="mt-5">
-            <p>ผู้รับผิดชอบ : &nbsp;&nbsp;
-            <img
-              src="./src/assets/Image/Admins/pav1da.png"
-              className="rounded-circle"
-              style={{ width: "40px", height: "40px", objectFit: "cover" }}
-            /> &nbsp; pav1da</p>
+            <p>
+              ผู้รับผิดชอบ : &nbsp;&nbsp;
+              <img
+                src="./src/assets/Image/Admins/pav1da.png"
+                className="rounded-circle"
+                style={{ width: "40px", height: "40px", objectFit: "cover" }}
+              />{" "}
+              &nbsp; pav1da
+            </p>
             <hr />
             {/* Note Section */}
             <div className="flex-grow-1 w-100 p-3">
-                Note Section Content Here
+              Note Section Content Here
             </div>
           </div>
         </div>
