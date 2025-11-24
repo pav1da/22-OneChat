@@ -3,7 +3,7 @@ import { Form } from 'react-bootstrap';
 
 function Ai() {
     return (
-        <div className="px-3 pt-2" style={{maxWidth: '700px', marginLeft: '150px'}}>
+        <div className="px-3 pt-2" style={{maxWidth: '700px', margin: '0 auto'}}>
             
             {/* 1. ส่วนหัวข้อด้านบน */}
             <div className="mb-4">

@@ -1,8 +1,8 @@
 
-
 const Connect = () => {
     return (
-        <div className="px-3 pt-2" style={{maxWidth: '800px', marginLeft: '110px'}}>
+        // แก้ตรง style: เปลี่ยน marginLeft เป็น margin: '0 auto' เพื่อจัดกึ่งกลาง
+        <div className="px-3 pt-2" style={{ maxWidth: '800px', margin: '0 auto' }}>
             
             {/* ส่วนหัวข้อ: การเชื่อมต่อ */}
             <div className="mb-4">
