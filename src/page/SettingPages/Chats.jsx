@@ -10,7 +10,7 @@ function Chats() {
     ];
 
     return (
-        <div className="px-3" style={{maxWidth: '700px', marginLeft: '150px'}}>
+        <div className="px-3" style={{maxWidth: '700px', margin: '0 auto'}}>
 
             <div className="pt-2">
                 {chatSettings.map((item, index) => (

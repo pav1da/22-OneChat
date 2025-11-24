@@ -17,18 +17,21 @@ function Notifications() {
 
     // Style สำหรับ Dropdown
     const selectStyle = {
-        backgroundColor: '#F8F9FA', // สีพื้นหลังเทาอ่อนๆ
+        backgroundColor: '#F8F9FA',
         border: '1px solid #dee2e6',
         borderRadius: '8px',
         padding: '10px 15px',
         fontSize: '0.95rem',
         color: '#495057',
-        maxWidth: '100%' // หรือกำหนด width: '500px' ถ้าอยากให้สั้นลง
+        maxWidth: '100%' 
     };
 
     return (
-        <div className="p-2" style={{marginLeft: '120px'}}>
-            <Stack gap={4} style={{ maxWidth: '750px' }}>
+        // ลบ style margin เดิมที่ wrapper ออก เพื่อให้ไม่ดันไปทางขวา
+        <div className="p-2"> 
+            
+            {/* เพิ่ม margin: '0 auto' ที่นี่ เพื่อจัดกึ่งกลาง Stack ที่มีความกว้าง 750px */}
+            <Stack gap={4} style={{ maxWidth: '750px', margin: '0 auto' }}>
 
                 {/* --- 1. การแจ้งเตือนหลัก --- */}
                 <div className="d-flex justify-content-between align-items-start">
@@ -39,8 +42,8 @@ function Notifications() {
                     <Form.Check 
                         type="switch" 
                         id="notify-all" 
-                        style={{ transform: 'scale(1.2)' }} // ขยายสวิตช์นิดนึงให้กดง่าย
-                        defaultChecked // สมมติว่าเปิดอยู่
+                        style={{ transform: 'scale(1.2)' }} 
+                        defaultChecked 
                     />
                 </div>
 
@@ -64,8 +67,6 @@ function Notifications() {
                         <div style={titleStyle}>การแจ้งเตือนผ่าน E-mail</div>
                         <div style={descStyle}>เปิด/ปิด การใช้งานการแจ้งเตือนผ่าน E-mail</div>
                     </div>
-
-
                     <Form.Check 
                         type="switch" 
                         id="notify-email" 
@@ -73,7 +74,7 @@ function Notifications() {
                     />
                 </div>
 
-                {/* --- 4. ปิดการแจ้งเตือนชั่วคราว (Snooze) - เปลี่ยนเป็น Dropdown ตามรูป --- */}
+                {/* --- 4. ปิดการแจ้งเตือนชั่วคราว (Snooze) --- */}
                 <div className="mt-2">
                     <div style={titleStyle}>ปิดการแจ้งเตือนชั่วคราว</div>
                     <div style={descStyle} className="mb-3">
