@@ -28,7 +28,7 @@ function Notifications() {
 
     return (
         // ลบ style margin เดิมที่ wrapper ออก เพื่อให้ไม่ดันไปทางขวา
-        <div className="p-2"> 
+        <div className="p-2 mt-3"> 
             
             {/* เพิ่ม margin: '0 auto' ที่นี่ เพื่อจัดกึ่งกลาง Stack ที่มีความกว้าง 750px */}
             <Stack gap={4} style={{ maxWidth: '750px', margin: '0 auto' }}>
