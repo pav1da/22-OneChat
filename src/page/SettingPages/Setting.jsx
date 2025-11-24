@@ -8,7 +8,7 @@ import {
     FileText,
     InfoCircle,
     Send
-} from "react-bootstrap-icons"; 
+} from "react-bootstrap-icons";
 
 import "./SettingPage.css";
 
@@ -22,7 +22,7 @@ import Contact from './Contact';
 import About from './About';
 
 function Setting({ user }) {
-    const [activeKey, setActiveKey] = useState('account'); 
+    const [activeKey, setActiveKey] = useState('account');
 
     // ฟังก์ชันตรวจสอบสิทธิ์
     const allow = (roles) => {
@@ -37,29 +37,35 @@ function Setting({ user }) {
 
     const renderContent = () => {
         switch (activeKey) {
-            case 'account': return <Account />;
-            
+            // 👇 แก้บรรทัดนี้ครับ (เดิมเป็น <Account /> เฉยๆ)
+            case 'account':
+                return <Account currentUserId={user?.id} />;
+
             // ป้องกันการเข้าถึงเนื้อหาด้วย (เผื่อคนกดเล่น)
-            case 'connect': return allow([]) ? <Connect /> : null; 
-            
+            case 'connect': return allow([]) ? <Connect /> : null;
+
+            // ... (ส่วนอื่นๆ เหมือนเดิม)
             case 'notifications': return <Notifications />;
             case 'chat': return <Chats />;
             case 'ai': return <Ai />;
             case 'policy': return <Policy />;
             case 'contact': return <Contact />;
             case 'about': return <About />;
-            default: return <Account />;
+
+            // 👇 แก้บรรทัดนี้ด้วยครับ (Default case)
+            default:
+                return <Account currentUserId={user?.id} />;
         }
     };
 
     return (
         <div className="settings-page-wrapper">
             <Container fluid className="h-100 d-flex flex-column">
-                
+
                 <Row className="flex-grow-1 h-100">
                     {/* ===== คอลัมน์ซ้าย: เมนู (Left Menu) ===== */}
                     <Col md={3} lg={3} className="custom-vertical-divider pe-0 py-4 scrollable-col settings-sidebar">
-                        
+
                         <h4 className="fw-bold mb-4 px-3" style={{ fontSize: '1.5rem' }}>Setting</h4>
 
                         <Nav
@@ -69,7 +75,7 @@ function Setting({ user }) {
                         >
                             {/* --- กลุ่ม 1: ตั้งค่าผู้ใช้ --- */}
                             <div className="nav-heading mt-2">ตั้งค่าผู้ใช้</div>
-                            
+
                             <Nav.Link eventKey="account">
                                 <Person size={20} /> บัญชีของฉัน
                             </Nav.Link>
@@ -86,7 +92,7 @@ function Setting({ user }) {
 
                             {/* --- กลุ่ม 2: ทั่วไป --- */}
                             <div className="nav-heading mt-4">ทั่วไป</div>
-                            
+
                             <Nav.Link eventKey="notifications">
                                 <Bell size={18} /> การแจ้งเตือน
                             </Nav.Link>
@@ -102,13 +108,13 @@ function Setting({ user }) {
 
                             {/* --- กลุ่ม 3: ข้อมูลเกี่ยวกับแอป --- */}
                             <div className="nav-heading mt-4">ข้อมูลเกี่ยวกับแอป</div>
-                            
+
                             <Nav.Link eventKey="policy">
                                 <FileText size={18} /> นโยบายความเป็นส่วนตัว
                             </Nav.Link>
 
                             <Nav.Link eventKey="contact">
-                                <Send size={18} style={{ transform: 'rotate(-45deg)' }}/> ติดต่อเรา
+                                <Send size={18} style={{ transform: 'rotate(-45deg)' }} /> ติดต่อเรา
                             </Nav.Link>
 
                             <Nav.Link eventKey="about">
