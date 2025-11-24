@@ -1,0 +1,23 @@
+.custom-card-chat {
+  border: none;
+  outline: none;
+  background-color: transparent;
+}
+
+.custom-card-chat:hover {
+  background-color: #fff2ec;
+  border: 1px solid #f26623;
+}
+
+.custom-badge {
+  padding: 5px 15px;
+  align-content: center;
+  font-weight: normal;
+}
+
+.custom-text {
+  font-size: 14px;
+  color: #777777;
+}
+
+
