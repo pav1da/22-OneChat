@@ -236,7 +236,7 @@ function Dashboard() {
                 }}
                 onClick={() => { handleShow(); }}
               >
-                สร้างโม้ต <i className="bi bi-plus"></i>
+                สร้างโน๊ต <i className="bi bi-plus"></i>
               </button>
             </div>
           </Navbar.Collapse>
