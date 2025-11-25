@@ -64,8 +64,19 @@ function Dashboard() {
           >
             <Card.Body className="d-flex flex-column justify-content-between p-4">
               
-              <div className="flex-grow-1 overflow-auto mb-3">
-                <Card.Text style={{ fontSize: "0.95rem", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>
+              {/* ส่วนเนื้อหาที่มี Scrollbar ภายใน Card (ถ้าข้อความยาวมาก) */}
+              <div 
+                  className="flex-grow-1 mb-3" 
+                  style={{ maxHeight: '150px', overflowY: 'auto' }} 
+              >
+                <Card.Text 
+                    style={{ 
+                        fontSize: "0.95rem", 
+                        lineHeight: "1.6", 
+                        whiteSpace: "pre-wrap",
+                        overflowWrap: 'break-word' 
+                    }}
+                >
                   {note.content}
                 </Card.Text>
               </div>
@@ -172,7 +183,7 @@ function Dashboard() {
         </Modal.Footer>
       </Modal>
 
-      {/* Navbar และ Controls (สี่เหลี่ยมขอบมนทั้งหมด) */}
+      {/* Navbar และ Controls */}
       <Navbar expand="lg" className="mb-4 bg-white rounded-4 px-2">
         <Container fluid>
           <Navbar.Brand className="fs-4 fw-bold" href="#">
@@ -184,11 +195,10 @@ function Dashboard() {
             <Nav className="me-auto my-2 my-lg-0" navbarScroll></Nav>
 
             <div className="d-flex gap-3 align-items-center">
-              {/* ช่องค้นหา - สี่เหลี่ยมขอบมน */}
+              {/* ช่องค้นหา - สี่เหลี่ยมขอบมน, ไอคอนจัดกลาง */}
               <InputGroup style={{width: '250px'}}> 
                 <InputGroup.Text 
-                  // ปรับ padding ด้านขวา (pe-2) เพื่อให้ไอคอนไม่ชิดขอบช่องพิมพ์
-                  className="bg-white border-0 rounded-start-3 py-2 ps-3 pe-3"
+                  className="bg-white border-0 rounded-start-3 py-2 ps-3 pe-2"
                   style={{
                       boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                       display: 'flex', 
@@ -200,8 +210,7 @@ function Dashboard() {
                 </InputGroup.Text>
                 <Form.Control
                   type="search"
-                  placeholder="ค้นหา..." // เพิ่มข้อความ Placeholder
-                  // ปรับ padding ด้านซ้าย (ps-2) เพื่อให้ข้อความไม่ชิดขอบไอคอน
+                  placeholder="ค้นหา..."
                   className="rounded-end-3 bg-white border-0 py-2 pe-3 ps-2" 
                   style={{boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}} 
                   aria-label="Search"
@@ -236,18 +245,20 @@ function Dashboard() {
                 }}
                 onClick={() => { handleShow(); }}
               >
-                สร้างโน๊ต <i className="bi bi-plus"></i>
+                สร้างโม้ต <i className="bi bi-plus"></i>
               </button>
             </div>
           </Navbar.Collapse>
         </Container>
       </Navbar>
       
-      {/* Grid Display */}
+      {/* Grid Display - พื้นที่ Grid หลักที่มี Scrollbar (กลับมาใส่ div ห่อหุ้ม) */}
       <Container fluid>
-        <Row className="g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4">
-            {cells}
-        </Row>
+        <div style={{ maxHeight: '85vh', overflowY: 'auto' }}>
+          <Row className="g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4">
+              {cells}
+          </Row>
+        </div>
       </Container>
     </div>
   );
