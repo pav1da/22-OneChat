@@ -1,115 +1,128 @@
-import { Nav } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./Sidebar.css";
 
 
-const Sidebar = ({ collapsed, toggleSidebar, onLogout }) => {
+const Sidebar = ({ toggleSidebar, onLogout }) => {
   return (
-    <div
-      className={`sidebar-container d-flex flex-column justify-content-between p-3 ${collapsed ? "collapsed" : ""
-        }`}
-    >
-      {/* Top Section */}
+    <div className="sidebar-container d-flex flex-column">
+
+      {/* Top Section: Logo */}
       <div className="top-section">
-        <div className="d-flex align-items-center mb-3">
-          <div className="logo-box me-2"></div>
-          {/* <span className="logo-text">ONE CHAT</span> */}
-        </div>
-
-        {/* ปุ่มกดย่อ/ขยาย*/}
-        {/* <div className="toggle-btn mt-2 mb-4 " onClick={toggleSidebar}>
-          {collapsed ? (
-            <i className="bi bi-chevron-right"></i>
-          ) : (
-            <i className="bi bi-chevron-left"></i>
-          )}
-        </div> */}
-
-        <Nav className="flex-column">
-          {/* Inbox */}
-          <Nav.Link
-            as={Link}
-            to="/inbox"
-            className="menu-item"
-          >
-            <img src="src/assets/Icon/icon-chat.png" className="menu-pic" alt="" />
-            <span className="menu-text ">Inbox</span>
-          </Nav.Link>
-
-          {/* Card Message */}
-          <Nav.Link
-            as={Link}
-            to="/dashboard"
-            className="menu-item"
-          >
-            <img src="src/assets/Icon/icon-card-message.png" className="menu-pic" alt="" />
-            <span className="menu-text ">Card Message</span>
-          </Nav.Link>
-
-
-          {/* Note */}
-          <Nav.Link
-            as={Link}
-            to="/dashboard"
-            className="menu-item"
-          >
-            <img src="src/assets/Icon/icon-note.png" className="menu-pic" alt="" />
-            <span className="menu-text ">Note</span>
-          </Nav.Link>
-
-          {/* Member */}
-          <Nav.Link
-            as={Link}
-            to="/dashboard"
-            className="menu-item"
-          >
-            <img src="src/assets/Icon/icon-user-edit.png" className="menu-pic" alt="" />
-            <span className="menu-text ">Member</span>
-          </Nav.Link>
-
-          {/* Log */}
-          <Nav.Link
-            as={Link}
-            to="/dashboard"
-            className="menu-item"
-          >
-            <img src="src/assets/Icon/icon-chat.png" className="menu-pic" alt="" />
-            <span className="menu-text ">Log</span>
-          </Nav.Link>
-        </Nav>
+        <img src="src/assets/Image/Customers/Harumasa.png" className="logo-box" alt="" />
       </div>
 
-      {/* Bottom Section */}
-      <div className="bottom-section">
-        <div className="profile d-flex align-items-center mb-3">
-          <div className="profile-pic me-2"></div>
-          <div className="profile-info">
-            {/* <div className="fw-bold">pav1da</div>
-            <div className="small text-muted">admin</div> */}
-          </div>
-        </div>
+      {/* Middle Section: Menu + Profile */}
+      <div className="middle-section d-flex flex-column align-items-center">
+        {/* Inbox */}
+        <NavLink
+          to="/inbox"
+          className={({ isActive }) =>
+            "menu-item justify-content-center " + (isActive ? "active" : "")
+          }        >
+          <img src="src/assets/Icon/icon-chat.png" className="menu-pic" alt="" />
+          <span className="menu-text">Inbox</span>
+        </NavLink>
 
-        <Nav className="flex-column">
-          {/* Menu */}
-          <Nav.Link
-            as={Link}
-            to="/setting"
-            className="menu-item "
-          >
+        {/* Note */}
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) =>
+            "menu-item justify-content-center " + (isActive ? "active" : "")
+          }        >
+          <img src="src/assets/Icon/icon-note.png" className="menu-pic" alt="" />
+          <span className="menu-text">Note</span>
+        </NavLink>
+
+        {/* Card Message */}
+        <NavLink
+          to=""
+          className={({ isActive }) =>
+            "menu-item justify-content-center " + (isActive ? "active" : "")
+          }        >
+          <img src="src/assets/Icon/icon-card-message.png" className="menu-pic" alt="" />
+          <span className="menu-text ">Card Message</span>
+        </NavLink>
+
+
+        {/* Notification */}
+        <NavLink
+          to=""
+          className={({ isActive }) =>
+            "menu-item justify-content-center " + (isActive ? "active" : "")
+          }        >
+          <img src="src/assets/Icon/icon-note.png" className="menu-pic" alt="" />
+          <span className="menu-text ">Notification </span>
+        </NavLink>
+
+        {/* Member */}
+        <NavLink
+          to=""
+          className={({ isActive }) =>
+            "menu-item justify-content-center " + (isActive ? "active" : "")
+          }        >
+          <img src="src/assets/Icon/icon-user-edit.png" className="menu-pic" alt="" />
+          <span className="menu-text ">Member</span>
+        </NavLink>
+
+        {/* Profile */}
+        <NavLink
+          to=""
+          className={({ isActive }) =>
+            "menu-item justify-content-center " + (isActive ? "active" : "")
+          }        >
+          <img src="src/assets/Image/Customers/Harumasa.png" className="menu-pic" alt="" />
+          {/* <span className="menu-text "></span> */}
+        </NavLink>
+
+      </div>
+
+
+
+
+
+
+      {/* Bottom Section: Dropup */}
+      <div className="bottom-section d-flex flex-column align-items-center">
+        <div className="btn-group dropup w-100 mb-2">
+          <button className="menu-item menu-btn dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="src/assets/Icon/icon-menu.png" className="menu-pic" alt="" />
             <span className="menu-text">Menu</span>
-          </Nav.Link>
+          </button>
 
-          {/* AI Chat */}
-          <Nav.Link
-            onClick={onLogout}
-            style={{ cursor: "pointer" }}
-            className="menu-item "
-          >
-            <img src="src/assets/Icon/icon-ai.png"className="menu-pic" alt="" />
-            <span className="menu-text">AI Chat</span>
-          </Nav.Link>
-        </Nav>
+          <ul className="dropdown-menu">
+            <li>
+              <NavLink to="/setting" className="dropdown-item d-flex align-items-center gap-2">
+                <img src="src/assets/Icon/icon-menu.png" width="18" alt="" /> การตั้งค่า
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/logs" className="dropdown-item d-flex align-items-center gap-2">
+                <img src="src/assets/Icon/icon-history.png" width="18" alt="" /> ตรวจสอบบันทึก
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/mode" className="dropdown-item d-flex align-items-center gap-2">
+                <img src="src/assets/Icon/icon-menu.png" width="18" alt="" /> สลับโหมด
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/logout" className="dropdown-item d-flex align-items-center gap-2">
+                <img src="src/assets/Icon/icon-menu.png" width="18" alt="" /> ออกจากระบบ
+              </NavLink>
+            </li>
+          </ul>
+        </div>
+
+        {/* AI Chat */}
+        <NavLink
+          to=""
+          className={({ isActive }) =>
+            "menu-item justify-content-center " + (isActive ? "active" : "")
+          }        >
+          <img src="src/assets/Icon/icon-ai.png" className="menu-pic" alt="" />
+          <span className="menu-text ">AI Chat </span>
+        </NavLink>
       </div>
     </div>
   );

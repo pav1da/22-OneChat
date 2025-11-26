@@ -15,7 +15,8 @@ function Dashboard() {
   const handleShow = () => setShow(true);
 
   return (
-    <div className="kanit-regular bg-white rounded-4">
+    
+    <div className="main-content flex-grow-1 p-3 kanit-regular bg-white rounded-4">
       {/* Modal */}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>

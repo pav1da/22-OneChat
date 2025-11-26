@@ -1,74 +1,54 @@
 /* ===== Sidebar Container ===== */
 .sidebar-container {
-  width: 70px;
+  width: 80px;
   height: 960px;
   margin-left: 20px;
   margin-top: 20px;
-  background-color: #ffffff;
+  background-color: #fff;
   border-radius: 15px;
   border-right: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  transition: width 0.25s ease;
-  padding: 20px 0px;
+  padding: 20px 0;
 }
 
-.
 
-/* .sidebar-container.collapsed { width: 70px; } */
 /* ===== Logo Section ===== */
-.logo-wrapper {
+.top-section {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .logo-box {
-  width: 35px;
-  height: 35px;
-  background-color: #f26623;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  width: 100%;
+  height: auto;
   max-width: 35px;
-  flex-shrink: 0;
+  max-height: 35px;
+  object-fit: cover;
 }
-
-.logo-text {
-  font-weight: 700;
-  color: #f26623;
-  font-size: 18px;
-}
-
-/* ===== Toggle Button ===== */
-/* .toggle-btn { width: 30px; height: 30px; background: #ffffff; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 10px; align-self: center; transition: all 0.25s ease; } */
-/* ===== Menu Items ===== */
-.menu-item {
-  color: #000 !important;
+/* ===== Middle Section: Menu + Profile  ===== */
+.middle-section {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  align-items: center;
+  /* พื้นที่ตรงกลาง */
+  flex-grow: 1;
+  /* จัดเมนู+โปรไฟล์ให้อยู่กลางแนวตั้ง */
+  justify-content: center;
+  
+}
+/* ===== Menu Item  ===== */
+.menu-item {
+  display: flex;
+  justify-content: center;
   align-items: center;
   width: 100%;
-  padding: 10px 2px;
-  border-radius: 8px;
+  padding: 15px 0;
   margin-bottom: 8px;
-  transition: 0.2s;
-}
-
-.menu-item:hover {
-  /* background-color: #fff3ec; */
-  color: #f26623 !important;
-}
-
-.menu-item.active {
-  background-color: #fff3ec;
-  color: #f26623 !important;
-  font-weight: 600;
-}
-
-.menu-item:hover .menu-text {
-  opacity: 1;
-  transform: translateX(0);
+  border-radius: 8px;
+  color: #000 !important;
+  position: relative;
 }
 
 .menu-pic {
@@ -78,42 +58,72 @@
 }
 
 .menu-text {
-  position: relative;
+  position: absolute;
+  left: 70px;
   background-color: white;
-  left: calc(5px + 1px);
   font-size: 16px;
-  padding: 10px 10px;
   font-weight: 400;
+  padding: 5px 10px;
   border-radius: 5px;
   white-space: nowrap;
   opacity: 0;
   transform: translateX(10px);
   transition: opacity 0.2s ease, transform 0.3s ease;
   pointer-events: none;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+
 }
 
-/* ===== Profile Section ===== */
+.menu-item:hover {
+  color: #f26623 !important;
+}
+
+.menu-item.active {
+  background-color: #fff3ec;
+  color: #f26623 !important;
+  font-weight: 600;
+  border: 2px solid #f26623;
+  width: 50px;
+  box-sizing: border-box;
+}
+
+.menu-item:hover .menu-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+/* ===== Profile ===== */
 .profile {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
 }
 
-.profile-pic {
-  width: 35px;
-  height: 35px;
-  background-color: #000;
-  border-radius: 50%;
-}
-
-/* ซ่อนข้อความตอนย่อ*/
-/* .sidebar-container.collapsed .logo-text, .sidebar-container.collapsed .menu-text, .sidebar-container.collapsed .profile-info { display: none; } */
 /* ===== Bottom Section ===== */
 .bottom-section {
-  border-top: 1px solid #eee;
-  padding-top: 10px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
+  /* ดันไปด้านล่างสุด */
+  margin-top: auto;
+  
 }
+
+/* ===== Dropup Menu ===== */
+.menu-btn {
+  background: transparent;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* ซ่อนลูกศร bootstrap */
+.dropdown-toggle::after {
+  display: none !important;
+}
+
+
+
