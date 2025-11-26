@@ -2,13 +2,13 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 
-const Layouts = ({ onLogout }) => {
+const Layouts = ({ onLogout, user }) => {
   return (
     // 1. Container แม่: ล็อคความสูงเต็มจอ (100vh) และห้ามเลื่อน (overflow: hidden)
     <div className="d-flex" style={{height: '100vh', width: '100vw', overflow: 'hidden' }}> 
        
       <aside>
-        <Sidebar onLogout={onLogout} />
+        <Sidebar onLogout={onLogout} currentUser={user}/>
       </aside>
 
       {/* 2. Main Content (กล่องขาว): กำหนดให้ Scroll ได้เฉพาะในนี้ */}

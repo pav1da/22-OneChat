@@ -60,7 +60,7 @@ function App() {
                     }>
                         
                         <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
-                        <Route path="/inbox" element={<Inbox />} />
+                        <Route path="/inbox" element={<Inbox currentUser={currentUser} />} />
                         <Route path="/setting" element={<Setting user={currentUser} />} />
                         {/* <Route path="/log" element={<Log/>} /> */}
                         <Route path="notification" element={<Notifiacation/>}/>

@@ -3,11 +3,15 @@ import { Link, useLocation } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Sidebar.css";
 
-const profilePic = "https://i.pravatar.cc/150?img=12";
 
-const Sidebar = ({ onLogout }) => {
+
+const Sidebar = ({ onLogout, currentUser }) => {
     const location = useLocation();
     const isActive = (path) => location.pathname.startsWith(path);
+
+    // 2. เช็คว่ามี currentUser ไหม? ถ้ามีให้ใช้รูปของเขา ถ้าไม่มีใช้รูป default
+    // เครื่องหมาย ?. คือการกัน Error (ถ้า currentUser เป็น null จะไม่พัง)
+    const userImage = currentUser?.image || defaultProfile;
 
     return (
         <div className="sidebar-container d-flex flex-column justify-content-between">
@@ -15,14 +19,11 @@ const Sidebar = ({ onLogout }) => {
             {/* ================= ส่วนบน ================= */}
             {/* เพิ่ม pt-4 เป็น pt-5 เพื่อดันโลโก้ลงมาอีกนิด */}
             <div className="d-flex flex-column align-items-center w-100 pt-4">
-
-                {/* 1. LOGO */}
-                {/* เพิ่ม mb-4 เป็น mb-5 เพื่อเว้นระยะห่างจากโลโก้ถึงเมนูแรกให้มากขึ้น */}
                 <div className="brand-logo mb-5">
                     <img
-                        src="/public/sb-logo.png"   // เปลี่ยนเป็น path รูปของคุณ
+                        src="/public/sb-logo.png"
                         alt="Logo"
-                        style={{ width: '90%', height: 'auto' }} // ปรับขนาดรูปตามต้องการ
+                        style={{ width: '90%', height: 'auto' }}
                     />
                 </div>
 
@@ -44,7 +45,7 @@ const Sidebar = ({ onLogout }) => {
 
                     <Nav.Link
                         as={Link}
-                        to="/notification"  
+                        to="/notification"
                         className={`sidebar-item ${isActive('/notificationpage') ? 'active' : ''}`}
                     >
                         <i className="bi bi-bell"></i>
@@ -64,7 +65,16 @@ const Sidebar = ({ onLogout }) => {
 
                 {/* รูปโปรไฟล์ */}
                 <div className="sidebar-profile">
-                    <img src={profilePic} alt="Profile" />
+                    <img 
+                        src={userImage} 
+                        alt="Profile" 
+                        style={{ 
+                            width: '50px',     // บังคับขนาด
+                            height: '50px',    // บังคับขนาด
+                            borderRadius: '50%', // ทำเป็นวงกลม
+                            objectFit: 'cover'   // กันภาพเบี้ยว
+                        }}
+                    />
                 </div>
 
                 {/* Setting */}
