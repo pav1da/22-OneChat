@@ -193,15 +193,15 @@ const Inbox = () => {
               <div className="d-flex ps-2">
                 {/* Mic Icon */}
                 <Button variant="link" className="text-black p-1">
-                  <i class="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
+                  <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
                 </Button>
                 {/* Image Icon */}
                 <Button variant="link" className="text-black p-1">
-                  <i class="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
+                  <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
                 </Button>
                 {/* Card Message Icon */}
                 <Button variant="link" className="text-black p-1">
-                  <i class="bi bi-sticky fs-4" style={{ lineHeight: 1 }}></i>
+                  <i className="bi bi-sticky fs-4" style={{ lineHeight: 1 }}></i>
                 </Button>
               </div>
 
