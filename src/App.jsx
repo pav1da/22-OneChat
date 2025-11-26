@@ -55,7 +55,7 @@ function App() {
                     <Route element={
                         // ส่ง currentUser เข้าไปเช็คสิทธิ์
                         <ProtectedRoute user={currentUser} allowedRoles={['admin', 'it', 'user',]}>
-                            <Layouts onLogout={handleLogout} />
+                            <Layouts onLogout={handleLogout} user={currentUser} />
                         </ProtectedRoute>
                     }>
                         
