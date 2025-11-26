@@ -117,17 +117,6 @@
 
 /* --- ส่วนอื่นๆ คงเดิม --- */
 
-.brand-logo {
-    width: 45px;
-    height: 45px;
-    background-color: #F26623;
-    border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(242, 102, 35, 0.2);
-}
 
 .sidebar-item {
     width: 45px;
