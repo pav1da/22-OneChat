@@ -201,7 +201,10 @@ const Inbox = () => {
                 </Button>
                 {/* Card Message Icon */}
                 <Button variant="link" className="text-black p-1">
-                  <i className="bi bi-sticky fs-4" style={{ lineHeight: 1 }}></i>
+                  <i
+                    className="bi bi-sticky fs-4"
+                    style={{ lineHeight: 1 }}
+                  ></i>
                 </Button>
               </div>
 
@@ -232,13 +235,17 @@ const Inbox = () => {
                 src="./src/assets/Image/Admins/pav1da.png"
                 className="rounded-circle"
                 style={{ width: "40px", height: "40px", objectFit: "cover" }}
-              />{" "}
+              />
               &nbsp; pav1da
             </p>
             <hr />
             {/* Note Section */}
-            <div className="flex-grow-1 w-100 p-3">
-              Note Section Content Here
+            <div className="flex-grow-1 w-100">
+              {/* Title */}
+              <div className="d-flex justify-content-between">
+                <p>โน๊ต</p>
+                <i className="bi bi-plus"></i>
+              </div>
             </div>
           </div>
         </div>
