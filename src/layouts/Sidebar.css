@@ -1,108 +1,180 @@
-/* ===== Sidebar Container ===== */
+/* =========================================
+   Sidebar.css - ฉบับ Clean (Fixed 80px)
+   ========================================= */
+
+/* Container หลักของ Sidebar */
 .sidebar-container {
-  width: 220px;
-  height: 100vh;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: width 0.25s ease;
-  padding: 20px;
-  position: relative;
+    width: 80px;
+    /* ลดความสูงลงเพื่อเว้นขอบล่างให้ลอยสวยๆ */
+    height: calc(100vh - 60px); 
+    background-color: #ffffff;
+    
+    position: fixed;
+    top: 30px; /* ดันลงมาจากขอบบน 30px ให้ดูสมดุลกับด้านล่าง */
+    left: 20px;
+    z-index: 1000;
+    
+    box-sizing: border-box;
+    border-radius: 24px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+
+    /* ไม่ต้องใส่ padding ตรงนี้ เพราะเราใช้ pt-5/pb-5 ใน Bootstrap class แล้ว */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
 }
 
-.sidebar-container.collapsed {
-  width: 70px;
+/* --- LOGO (กล่องส้ม) --- */
+.brand-logo {
+    width: 48px;
+    height: 48px;
+    background-color: #F26623;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* ไม่ต้องใส่ margin ตรงนี้ เราใช้ class mb-5 แทน */
+    box-shadow: 0 4px 10px rgba(242, 102, 35, 0.3);
 }
 
-/* ===== Logo Section ===== */
-.logo-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.sidebar-item {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #9E9E9E; /* สีเทาอ่อน */
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    margin: 0 !important;
+    text-decoration: none;
 }
 
-.logo-box {
-  width: 35px;
-  height: 35px;
-  background-color: #f26623;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  max-width: 35px;
-  flex-shrink: 0;
+.sidebar-item i {
+    font-size: 1.5rem; /* ขยายไอคอนให้ใหญ่ขึ้นนิดนึง เพื่อให้เต็มตาสวยงาม */
 }
 
-.logo-text {
-  font-weight: 700;
-  color: #f26623;
-  font-size: 18px;
+.sidebar-item:hover {
+    color: #F26623;
+    background-color: #fff5f0;
 }
 
-/* ===== Toggle Button ===== */
-.toggle-btn {
-  width: 30px;
-  height: 30px;
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 10px;
-  align-self: center;
-  transition: all 0.25s ease;
+.sidebar-item.active {
+    color: #000;
+    background-color: transparent;
 }
 
-/* ===== Menu Items ===== */
-.menu-item {
-  color: #000 !important;
-  font-weight: 500;
-  padding: 10px 15px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: 0.2s;
+.sidebar-item.active i {
+    font-weight: bold;
+    -webkit-text-stroke: 0.7px currentColor; /* ทำให้ไอคอนหนาเข้มขึ้น */
 }
 
-.menu-item:hover {
-  background-color: #fff3ec;
-  color: #f26623 !important;
+.sidebar-profile {
+    width: 45px; /* ขยายรูปโปรไฟล์ให้ใหญ่ขึ้นอีกนิด */
+    height: 45px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.menu-item.active {
-  background-color: #fff3ec;
-  color: #f26623 !important;
-  font-weight: 600;
+.sidebar-profile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-/* ===== Profile Section ===== */
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+
+/* Sidebar.css  */
+
+
+.sidebar-container {
+    width: 80px; 
+    
+    /* ✅ 1. แก้ height ให้เป็น -40px (เพื่อให้เท่ากับ Layout) */
+    /* จากเดิมอาจจะเป็น -60px หรือค่าอื่น */
+    height: calc(100vh - 40px); 
+    
+    background-color: #ffffff;
+    position: fixed;
+    z-index: 1000;
+    
+    /* ✅ 2. แก้ top ให้เป็น 20px (เพื่อให้เริ่มจุดเดียวกับ Layout) */
+    top: 20px; 
+    
+    left: 20px; /* ระยะห่างจากซ้าย */
+
+    box-sizing: border-box;
+    border-radius: 24px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
 }
 
-.profile-pic {
-  width: 35px;
-  height: 35px;
-  background-color: #000;
-  border-radius: 50%;
+/* --- ส่วนอื่นๆ คงเดิม --- */
+
+.brand-logo {
+    width: 45px;
+    height: 45px;
+    background-color: #F26623;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(242, 102, 35, 0.2);
 }
 
-/* ซ่อนข้อความตอนย่อ*/
-.sidebar-container.collapsed .logo-text,
-.sidebar-container.collapsed .menu-text,
-.sidebar-container.collapsed .profile-info {
-  display: none;
+.sidebar-item {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #999;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
+    position: relative;
+    text-decoration: none;
 }
 
-/* ===== Bottom Section ===== */
-.bottom-section {
-  border-top: 1px solid #eee;
-  padding-top: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
+.sidebar-item i {
+    font-size: 1.4rem;
+}
+
+.sidebar-item:hover {
+    color: #F26623;
+    background-color: #fff5f0;
+}
+
+.sidebar-item.active {
+    color: #000;
+    background-color: transparent;
+}
+
+.sidebar-item.active i {
+    font-weight: bold; 
+    -webkit-text-stroke: 0.5px currentColor;
+}
+
+.sidebar-profile {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    margin-bottom: 10px;
+}
+
+.sidebar-profile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
