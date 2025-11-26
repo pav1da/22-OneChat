@@ -133,3 +133,7 @@
 body {
   background: var(--bg-gradient), var(--bg-primary);
 }
+
+.no-caret-toggle::after {
+    display: none !important; 
+}

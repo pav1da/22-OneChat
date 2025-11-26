@@ -1,21 +1,21 @@
 export const user = [
     {
         id: 1,
-        name: "IT",
+        name: "pav1da",
         role: "it",
         color: "#9C27B0",
-        email: "it@onechat.com",
-        phone: "089-999-9999",
-        image: "/img/PM.jpg" 
+        email: "pav1da.it@onechat.com",
+        phone: "099-999-9999",
+        image: "/src/assets/Image/Admins/pav1da.png" 
     },
     {
         id: 2,
-        name: "Admin A",
+        name: "miotar",
         role: "admin",
         color: "#FF0000",
-        email: "admin@onechat.com",
-        phone: "081-111-1111",
-        image: "/img/admin.jpg"
+        email: "miotar.admin@onechat.com",
+        phone: "011-111-1111",
+        image: "/src/assets/Image/Admins/miotar.png"
     },
     {
         id: 3,
