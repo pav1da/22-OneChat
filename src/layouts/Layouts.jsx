@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 const Layouts = ({ onLogout }) => {
   return (
     // 1. Container แม่: ล็อคความสูงเต็มจอ (100vh) และห้ามเลื่อน (overflow: hidden)
-    <div className="d-flex" style={{ backgroundColor: '#FFF5F0', height: '100vh', width: '100vw', overflow: 'hidden' }}> 
+    <div className="d-flex" style={{height: '100vh', width: '100vw', overflow: 'hidden' }}> 
        
       <aside>
         <Sidebar onLogout={onLogout} />
@@ -13,7 +13,7 @@ const Layouts = ({ onLogout }) => {
 
       {/* 2. Main Content (กล่องขาว): กำหนดให้ Scroll ได้เฉพาะในนี้ */}
       <div
-        className="flex-grow-1 p-4"
+        className="flex-grow-1"
         style={{
           // --- จัดตำแหน่ง (Position) ---
           marginLeft: "100px", 

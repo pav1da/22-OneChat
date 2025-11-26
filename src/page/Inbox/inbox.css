@@ -19,7 +19,7 @@
 }
 
 .height-fix {
-  height: calc(100vh - 100px);
+  height: calc(100vh - 110px);
 }
 
 /* background opacity 80% */

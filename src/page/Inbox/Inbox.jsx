@@ -25,7 +25,7 @@ const Inbox = () => {
   };
 
   return (
-    <div className="kanit-regular height-fix d-flex flex-column">
+    <div className="kanit-regular height-fix d-flex flex-column mx-4">
       {/* Start Header Section*/}
       <div className="d-flex gap-2 mb-3">
         {/* Return Button */}

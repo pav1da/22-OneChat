@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Form, Row, Col } from 'react-bootstrap';
+import "./notification.css"
 
 // ข้อมูลจำลอง (Mock Data) - แก้ไขรูปภาพและข้อความตรงนี้ได้เลย
 const mockNotifications = [
@@ -29,10 +30,10 @@ function NotificationPage() {
     const [filterAction, setFilterAction] = useState("");
 
     return (
-        <Container fluid className="px-4 py-3" style={{ backgroundColor: '#fff', minHeight: '100%', }}>
+        <Container fluid className="px-4 py-3 mx-4 page-wrap">
 
             {/* --- ส่วนหัว (Header) --- */}
-            <div className="d-flex flex-wrap justify-content-between align-items-center mb-4" >
+            <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 mx-3 mt-3" >
                 {/* หัวข้อสีส้ม */}
                 <h4 className="fw-bold mb-3 mb-md-0" style={{ color: '#F26623' }}>
                     Notification

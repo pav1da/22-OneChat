@@ -14,21 +14,21 @@ const Sidebar = ({ onLogout }) => {
 
             {/* ================= ส่วนบน ================= */}
             {/* เพิ่ม pt-4 เป็น pt-5 เพื่อดันโลโก้ลงมาอีกนิด */}
-            <div className="d-flex flex-column align-items-center w-100 pt-5">
+            <div className="d-flex flex-column align-items-center w-100 pt-4">
 
                 {/* 1. LOGO */}
                 {/* เพิ่ม mb-4 เป็น mb-5 เพื่อเว้นระยะห่างจากโลโก้ถึงเมนูแรกให้มากขึ้น */}
                 <div className="brand-logo mb-5">
                     <img
-                        src="/public/logo.svg"   // เปลี่ยนเป็น path รูปของคุณ
+                        src="/public/sb-logo.png"   // เปลี่ยนเป็น path รูปของคุณ
                         alt="Logo"
-                        style={{ width: '60%', height: 'auto' }} // ปรับขนาดรูปตามต้องการ
+                        style={{ width: '90%', height: 'auto' }} // ปรับขนาดรูปตามต้องการ
                     />
                 </div>
 
                 {/* 2. เมนูหลัก */}
                 {/* เปลี่ยน gap-3 เป็น gap-4 เพื่อให้ไอคอนแต่ละอันห่างกันสวยงาม */}
-                <Nav className="flex-column w-100 align-items-center gap-4">
+                <Nav className="flex-column w-100 align-items-center gap-2">
 
                     <Nav.Link as={Link} to="/inbox" className={`sidebar-item ${isActive('/inbox') ? 'active' : ''}`}>
                         <i className="bi bi-chat-dots"></i>
@@ -44,7 +44,7 @@ const Sidebar = ({ onLogout }) => {
 
                     <Nav.Link
                         as={Link}
-                        to="/notificationpage"  
+                        to="/notification"  
                         className={`sidebar-item ${isActive('/notificationpage') ? 'active' : ''}`}
                     >
                         <i className="bi bi-bell"></i>

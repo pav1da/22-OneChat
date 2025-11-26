@@ -1,0 +1,3 @@
+.db-height {
+    height: calc(100vh - 45px);
+}
