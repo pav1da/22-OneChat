@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Badge, Button, Form } from "react-bootstrap";
 import "./inbox.css";
 import ChatList from "./chatList/ChatList";
@@ -6,6 +6,11 @@ import ChatList from "./chatList/ChatList";
 const Inbox = () => {
   const msgRef = useRef(null);
   const endRef = useRef(null);
+  const [notes, setNotes] = useState([]);
+  const [newNote, setNewNote] = useState("");
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [editingText, setEditingText] = useState("");
 
   useEffect(() => {
     if (msgRef.current) {
@@ -22,6 +27,38 @@ const Inbox = () => {
     const el = e.target;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
+  };
+
+  const handleAddNote = () => {
+    if (newNote.trim()) {
+      setNotes([...notes, { id: Date.now(), text: newNote, date: new Date() }]);
+      setNewNote("");
+      setIsAddingNote(false);
+    }
+  };
+
+  const handleDeleteNote = (id) => {
+    setNotes(notes.filter(note => note.id !== id));
+  };
+
+  const handleEditNote = (note) => {
+    setEditingNoteId(note.id);
+    setEditingText(note.text);
+  };
+
+  const handleSaveEdit = (id) => {
+    if (editingText.trim()) {
+      setNotes(notes.map(note => 
+        note.id === id ? { ...note, text: editingText } : note
+      ));
+      setEditingNoteId(null);
+      setEditingText("");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setEditingText("");
   };
 
   return (
@@ -201,22 +238,16 @@ const Inbox = () => {
                 </Button>
                 {/* Card Message Icon */}
                 <Button variant="link" className="text-black p-1">
-                  <i
-                    className="bi bi-sticky fs-4"
-                    style={{ lineHeight: 1 }}
-                  ></i>
+                  <i className="bi bi-sticky fs-4" style={{ lineHeight: 1 }}></i>
                 </Button>
               </div>
-
-              {/* Send Button */}
-              {/* <Button style={{ padding: "8px 18px", maxHeight: "42px"}}>Send</Button> */}
             </div>
           </div>
         </div>
         {/* End Chat Section */}
 
         {/* Start Profile Section */}
-        <div className="w-50 bg-white-translucent align-items-center rounded-4 pt-3 d-flex flex-column h-100">
+        <div className="w-50 bg-white-translucent align-items-center rounded-4 pt-3 d-flex flex-column h-100 overflow-y-auto">
           {/* Profile */}
           <img
             src="./src/assets/Image/Customers/Harumasa.png"
@@ -228,23 +259,134 @@ const Inbox = () => {
             Asaba Harumasa &nbsp;<i className="bi bi-pencil"></i>
           </p>
           {/* ผู้รับผิดชอบ */}
-          <div className="mt-5">
+          <div className="mt-5 w-100 px-4">
             <p>
               ผู้รับผิดชอบ : &nbsp;&nbsp;
               <img
                 src="./src/assets/Image/Admins/pav1da.png"
                 className="rounded-circle"
                 style={{ width: "40px", height: "40px", objectFit: "cover" }}
-              />
+              />{" "}
               &nbsp; pav1da
             </p>
             <hr />
             {/* Note Section */}
-            <div className="flex-grow-1 w-100">
-              {/* Title */}
-              <div className="d-flex justify-content-between">
-                <p>โน๊ต</p>
-                <i className="bi bi-plus"></i>
+            <div className="w-100">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <p className="mb-0">โน๊ต</p>
+                <Button 
+                  variant="link" 
+                  className="text-black p-0"
+                  onClick={() => setIsAddingNote(!isAddingNote)}
+                >
+                  <i 
+                    className="bi bi-plus fs-4"
+                    style={{ cursor: "pointer" }}
+                  ></i>
+                </Button>
+              </div>
+
+              {/* Add Note Form */}
+              {isAddingNote && (
+                <div className="mb-3">
+                  <Form.Control
+                    style={{borderRadius: 20}}
+                    as="textarea"
+                    rows={3}
+                    placeholder="เขียนโน๊ต..."
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    className="mb-2"
+                  />
+                  <div className="d-flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="primary"
+                      onClick={handleAddNote}
+                    >
+                      บันทึก
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="secondary"
+                      onClick={() => {
+                        setIsAddingNote(false);
+                        setNewNote("");
+                      }}
+                    >
+                      ยกเลิก
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Notes List */}
+              <div className="d-flex flex-column gap-2">
+                {notes.map((note) => (
+                  <div 
+                    key={note.id} 
+                    className="border rounded-3 p-3 bg-white"
+                  >
+                    {editingNoteId === note.id ? (
+                      // Edit Mode
+                      <div>
+                        <Form.Control
+                          as="textarea"
+                          rows={3}
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          className="mb-2"
+                        />
+                        <div className="d-flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="primary"
+                            onClick={() => handleSaveEdit(note.id)}
+                          >
+                            บันทึก
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="secondary"
+                            onClick={handleCancelEdit}
+                          >
+                            ยกเลิก
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      // View Mode
+                      <div>
+                        <p className="mb-2" style={{ whiteSpace: "pre-wrap" }}>
+                          {note.text}
+                        </p>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <small className="text-muted">
+                            {note.date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })} {note.date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
+                          </small>
+                          <div className="d-flex gap-2">
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="text-secondary p-0"
+                              onClick={() => handleEditNote(note)}
+                            >
+                              <i className="bi bi-pencil" style={{ fontSize: "16px" }}></i>
+                            </Button>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="text-secondary p-0"
+                              onClick={() => handleDeleteNote(note.id)}
+                            >
+                              <i className="bi bi-trash" style={{ fontSize: "16px" }}></i>
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
