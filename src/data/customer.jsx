@@ -1,13 +1,17 @@
 const customers = [
   {
-    name: "Asaba Harumasa",
-    img: "./src/assets/Image/Harumasa.png",
-    status: "On-Going",
+    id: 1,
+    name: "Harumasa",
+    img: "./src/assets/Image/Customers/Harumasa.png",
+    inprocess: true,
+    last: "Hello World"
   },
   {
+    id: 2,
     name: "Jane Doe",
-    img: "./src/assets/Image/JaneDoe.png",
-    status: "Completed",
+    img: "./src/assets/Image/Customers/JaneDoe.png",
+    inprocess: true,
+    last: "Hello World"
   },
 ];
 
