@@ -1,22 +1,21 @@
 /* ===== Sidebar Container ===== */
 .sidebar-container {
-  width: 70px;
-  height: 960px;
-  margin-left: 20px;
-  margin-top: 20px;
+  width: 220px;
+  height: 100vh;
   background-color: #ffffff;
-  border-radius: 15px;
   border-right: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transition: width 0.25s ease;
-  padding: 20px 0px;
+  padding: 20px;
+  position: relative;
 }
 
-.
+.sidebar-container.collapsed {
+  width: 70px;
+}
 
-/* .sidebar-container.collapsed { width: 70px; } */
 /* ===== Logo Section ===== */
 .logo-wrapper {
   display: flex;
@@ -41,22 +40,33 @@
 }
 
 /* ===== Toggle Button ===== */
-/* .toggle-btn { width: 30px; height: 30px; background: #ffffff; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 10px; align-self: center; transition: all 0.25s ease; } */
+.toggle-btn {
+  width: 30px;
+  height: 30px;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  align-self: center;
+  transition: all 0.25s ease;
+}
+
 /* ===== Menu Items ===== */
 .menu-item {
   color: #000 !important;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  width: 100%;
-  padding: 10px 2px;
+  font-weight: 500;
+  padding: 10px 15px;
   border-radius: 8px;
   margin-bottom: 8px;
   transition: 0.2s;
 }
 
 .menu-item:hover {
-  /* background-color: #fff3ec; */
+  background-color: #fff3ec;
   color: #f26623 !important;
 }
 
@@ -64,32 +74,6 @@
   background-color: #fff3ec;
   color: #f26623 !important;
   font-weight: 600;
-}
-
-.menu-item:hover .menu-text {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.menu-pic {
-  width: 35px;
-  height: 35px;
-  object-fit: contain;
-}
-
-.menu-text {
-  position: relative;
-  background-color: white;
-  left: calc(5px + 1px);
-  font-size: 16px;
-  padding: 10px 10px;
-  font-weight: 400;
-  border-radius: 5px;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateX(10px);
-  transition: opacity 0.2s ease, transform 0.3s ease;
-  pointer-events: none;
 }
 
 /* ===== Profile Section ===== */
@@ -107,7 +91,12 @@
 }
 
 /* ซ่อนข้อความตอนย่อ*/
-/* .sidebar-container.collapsed .logo-text, .sidebar-container.collapsed .menu-text, .sidebar-container.collapsed .profile-info { display: none; } */
+.sidebar-container.collapsed .logo-text,
+.sidebar-container.collapsed .menu-text,
+.sidebar-container.collapsed .profile-info {
+  display: none;
+}
+
 /* ===== Bottom Section ===== */
 .bottom-section {
   border-top: 1px solid #eee;
