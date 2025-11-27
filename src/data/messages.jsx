@@ -17,7 +17,7 @@ export const initialChatMessages = {
         { id: 5, sender: 'customer', text: 'ต้องการให้จัดส่งที่ พระราม 3 มีค่าบริการเท่าไหร่คะ'},
         { id: 6, sender: 'own', text: 'รับทราบค่ะ ส่งพื้นที่พระราม 3 ค่าจัดส่ง 80 บาท รวมยอด 2,070  บาท 📌 ช่องทางชำระเงิน: PromptPay / โอนบัญชีธนาคาร เมื่อชำระแล้วรบกวนส่งสลิปนะคะ'},
         { id: 7, sender: 'customer', text: ' ชำระแล้วค่ะ (แนบสลิป)'},
-        { id: 8, sender: 'own', text: ' ได้รับยอดเรียบร้อยค่ะ ขอบพระคุณมากนะคะ 🙏'},
+        { id: 8, sender: 'own', text: 'ได้รับยอดเรียบร้อยค่ะ ขอบพระคุณมากนะคะ 🙏'},
     ],
     // ID 3: Jane Doe
     '3': [ 
@@ -42,6 +42,7 @@ export const initialChatMessages = {
         { id: 4, sender: 'own', text: 'ได้เลยค่า 🥰 จะจัดเตรียมไว้ให้ ตามชื่อคุณมิน สะดวกมารับช่วงเวลาไหนเอ่ย?'},
         { id: 5, sender: 'customer', text: 'บ่าย 3 ค่ะ'},
         { id: 6, sender: 'own', text: 'รับทราบค่ะ 15.00 น. นะคะ ขอบพระคุณมากค่ะ'},
+        { id: 5, sender: 'customer', text: 'ระเบิดลงแล้ว!'},
     ],
     // ID 6: Ichigo
     '6': [
