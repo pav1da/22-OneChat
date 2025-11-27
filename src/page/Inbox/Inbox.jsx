@@ -437,5 +437,4 @@ const Inbox = ({ currentUser }) => {
         </div>
     );
 };
-
 export default Inbox;
