@@ -145,7 +145,7 @@ const Member = () => {
     return (
         <div
             className="kanit-regular h-100 d-flex flex-column bg-white rounded-4 py-4 px-5"
-            style={{ paddingLeft: "6%", paddingRight: "6%", overflowY: "auto" }}
+            style={{ marginLeft: '20px' , maxWidth: '97%' }}
             onClick={() => setActivePopupId(null)}
         >
             {/* TEAM HEADER */}
