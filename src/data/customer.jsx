@@ -45,7 +45,7 @@ const customers = [
     id: 7,
     name: "Jinx",
     img: "./src/assets/Image/Customers/Jinx.png",
-    inprocess: false, 
+    inprocess: null, 
     last: " "
   },
 ];
