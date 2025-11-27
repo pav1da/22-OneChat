@@ -157,7 +157,7 @@ const Member = () => {
             </div>
 
 
-             <hr className="mb-4 mt-2" style={{ borderTop: '1px solid #666666ff' }} />
+            <hr className="mb-4 mt-2" style={{ borderTop: '1px solid #666666ff' }} />
 
 
             {/* TEAM LIST */}
