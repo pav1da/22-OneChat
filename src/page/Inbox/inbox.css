@@ -22,19 +22,13 @@
   height: calc(100vh - 110px);
 }
 
-/* background opacity 80% */
-.bg-white-translucent {
-  /* สีขาว (255, 255, 255) ความทึบแสง 80% (0.80) */
-  background-color: rgba(255, 255, 255, 0.8) !important;
-}
-
 /* Return Custom Bottom  */
 .btn-sm-circle {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   border: 0px;
-  background-color: rgba(255, 255, 255, 0.8) !important;
+  background-color: white;
 }
 
 .btn-sm-circle:hover {
@@ -43,7 +37,7 @@
 }
 
 .custom-search-input {
-  background-color: #f5f5f5;
+  background-color: white;
   border: 1px solid #c5c5c5;
   padding: 8px 15px;
 }
@@ -53,6 +47,17 @@
   outline: none !important;
 
   border-color: #f26623 !important;
+}
+
+.custom-edit-name{
+  font-size: 18px;
+  text-align: center;
+}
+
+.custom-edit-name:focus{
+  box-shadow: none !important;
+  outline: none !important;
+  border-color: #c5c5c5;
 }
 
 .custom-text-input {
@@ -67,7 +72,7 @@
 }
 
 .custom-icon-sort {
-  background-color: #f5f5f5;
+  background-color: white;
   align-items: center;
   border: 1px solid #c5c5c5;
   padding: 8px 15px;

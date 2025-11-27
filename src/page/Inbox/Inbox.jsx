@@ -145,7 +145,7 @@ const Inbox = ({ currentUser }) => {
           <i className="bi bi-arrow-left"></i>
         </button>
         {/* หัวข้อ อาจจะชื่อร้านที่รับผิดชอบ */}
-        <div className="w-100 rounded-5 ps-4 d-flex align-items-center fs-5 bg-white-translucent">
+        <div className="w-100 rounded-5 ps-4 d-flex align-items-center fs-5 bg-white">
           All Chats
         </div>
       </div>
@@ -153,7 +153,7 @@ const Inbox = ({ currentUser }) => {
       <div className="d-flex gap-2 flex-grow-1 height-fix">
         {/* Start ChatList Section */}
         <div
-          className="bg-white-translucent rounded-4 p-3 d-flex flex-column h-100"
+          className="bg-white rounded-4 p-3 d-flex flex-column h-100"
           style={{ minWidth: "350px", maxWidth: "300px" }}
         >
           {/* Start Search Section */}
@@ -180,7 +180,7 @@ const Inbox = ({ currentUser }) => {
         {/* End ChatList Section */}
 
         {/* Start Chat Section */}
-        <div className="flex-grow-1 bg-white-translucent rounded-4 p-3 d-flex flex-column h-100">
+        <div className="flex-grow-1 bg-white rounded-4 p-3 d-flex flex-column h-100">
           {/* Start Top Section */}
           <div className="d-flex gap-3 custom-top-chat pb-3 mx-1 border-secondary-subtle border-bottom">
             <div className="d-flex gap-3">
@@ -323,7 +323,7 @@ const Inbox = ({ currentUser }) => {
         {selectedCustomer && (
           <div
             key={selectedCustomer.id}
-            className="bg-white-translucent align-items-center rounded-4 pt-3 d-flex flex-column h-100"
+            className="bg-white align-items-center rounded-4 pt-3 d-flex flex-column h-100"
             style={{ minWidth: "300px", maxWidth: "250px" }}
           >
             {/* Profile */}
@@ -350,7 +350,7 @@ const Inbox = ({ currentUser }) => {
                       handleNameSave();
                     }
                   }}
-                  style={{ fontSize: "18px", textAlign: "center" }}
+                  className="custom-edit-name"
                   autoFocus
                 />
               ) : (

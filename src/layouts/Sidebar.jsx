@@ -17,7 +17,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
     };
 
     return (
-        <div className="sidebar-container d-flex flex-column justify-content-between">
+        <div className="kanit-regular sidebar-container d-flex flex-column justify-content-between">
 
             {/* ================= ส่วนบน (Logo & Menu) เหมือนเดิม ================= */}
             <div className="d-flex flex-column align-items-center w-100 pt-4">
@@ -71,25 +71,25 @@ const Sidebar = ({ onLogout, currentUser }) => {
                     <Dropdown.Menu className="mb-2 shadow border-0 rounded-4 p-2" style={{ minWidth: '220px' }}>
 
                         {/* 1. Setting */}
-                        <Dropdown.Item as={Link} to="/setting">
+                        <Dropdown.Item as={Link} to="/setting" className="py-3">
                             <i className="bi bi-gear me-2"></i> Setting
                         </Dropdown.Item>
 
                         {/* 2. Log (ตรวจสอบบันทึก) */}
                         {/* อย่าลืมไปเปิด Route /log ใน App.js ด้วยนะครับ */}
-                        <Dropdown.Item as={Link} to="/log">
+                        <Dropdown.Item as={Link} to="/log" className="py-3">
                             <i className="bi bi-file-earmark-text me-2"></i> ตรวจสอบบันทึก
                         </Dropdown.Item>
 
                         {/* 3. สลับโหมด (Light/Dark) */}
-                        <Dropdown.Item onClick={handleThemeToggle}>
+                        <Dropdown.Item onClick={handleThemeToggle} className="py-3">
                             <i className="bi bi-moon-stars me-2"></i> สลับโหมด (Light/Dark)
                         </Dropdown.Item>
 
                         <Dropdown.Divider />
 
-                        {/* 4. ออกจากระบบ (ย้ายจากปุ่มหูฟังมาไว้ที่นี่) */}
-                        <Dropdown.Item onClick={onLogout} className="text-danger">
+                        {/* 4. ออกจากระบบ */}
+                        <Dropdown.Item onClick={onLogout} className="text-danger py-3">
                             <i className="bi bi-box-arrow-right me-2"></i> ออกจากระบบ
                         </Dropdown.Item>
 
