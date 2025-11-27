@@ -144,15 +144,15 @@ const Member = () => {
     // ================== 5. RENDER UI ==================
     return (
         <div
-            className="kanit-regular h-100 d-flex flex-column bg-white rounded-4 py-4 px-5"
+            className="kanit-regular h-100 d-flex flex-column bg-white rounded-4 py-4 px-5 mx-2"
             style={{ paddingLeft: "6%", paddingRight: "6%", overflowY: "auto" }}
             onClick={() => setActivePopupId(null)}
         >
             {/* TEAM HEADER */}
             <div className="d-flex justify-content-between align-items-center mb-2">
-                <h4 className="mb-0" style={{ color: "#FF7A00" }}>
+                <p className="mb-0 fs-3" style={{ color: "#FF7A00" }}>
                     Team
-                </h4>
+                </p>
 
                 <div className="d-flex gap-2">
                     <div className="position-relative">
@@ -207,18 +207,17 @@ const Member = () => {
                                 style={{ backgroundColor: "#fff", cursor: "pointer" }}
                                 onClick={() => toggleTeam(team.id)}
                             >
-                                <div>
-                                    <div className="fs-5">{team.name}</div>
+                                <div className="px-3">
+                                    <div className="fs-5 py-1">{team.name}</div>
                                     <div
-                                        className="text-muted"
-                                        style={{ fontSize: "0.85rem" }}
+                                        className="text-muted fs-6 py-1"
                                     >
                                         สมาชิก {membersInTeam.length} คน
                                     </div>
                                 </div>
                                 
                                 {/* 🔴 ส่วนขวาของ Header: ปุ่มลบทีม + ลูกศร */}
-                                <div className="d-flex align-items-center gap-3">
+                                <div className="d-flex align-items-center gap-3 px-3">
                                     <Button
                                         variant="light"
                                         size="sm"
@@ -242,7 +241,7 @@ const Member = () => {
                             {/* Team Members */}
                             {team.isOpen && (
                                 <div
-                                    className="bg-light border-top"
+                                    className="bg-light border-top py-2"
                                     style={{ backgroundColor: "#f8f9fa" }}
                                 >
                                     {membersInTeam.length > 0 ? (
@@ -260,21 +259,21 @@ const Member = () => {
                                                         alt={member.name}
                                                         className="rounded-circle"
                                                         style={{
-                                                            width: "40px",
-                                                            height: "40px",
+                                                            width: "45px",
+                                                            height: "45px",
                                                             objectFit: "cover",
                                                         }}
                                                     />
                                                     <div>
-                                                        <div>
+                                                        <div className="fs-5">
                                                             {member.name}
                                                         </div>
                                                         <small
                                                             className={
                                                                 member.role ===
                                                                     "หัวหน้า"
-                                                                    ? "text-primary"
-                                                                    : "text-muted"
+                                                                    ? "text-primary fs-6"
+                                                                    : "text-muted fs-6"
                                                             }
                                                         >
                                                             {member.role}
@@ -308,7 +307,7 @@ const Member = () => {
                                                                     right: 0,
                                                                     top: "100%",
                                                                     zIndex: 10,
-                                                                    minWidth: "120px",
+                                                                    minWidth: "200px",
                                                                 }}
                                                             >
                                                                 <div
@@ -344,9 +343,9 @@ const Member = () => {
 
             {/* ================= SECTION: ALL MEMBERS (ส่วนนี้เหมือนเดิม) ================= */}
             <div className="d-flex justify-content-between align-items-center mb-2">
-                <h4 className="mb-0" style={{ color: "#FF7A00" }}>
+                <p className="mb-0 fs-3" style={{ color: "#FF7A00" }}>
                     Member
-                </h4>
+                </p>
 
                 <div className="d-flex gap-2">
                     {/* Search */}
@@ -398,7 +397,7 @@ const Member = () => {
                 {displayMembers.map((member) => (
                     <div
                         key={member.id}
-                        className="d-flex align-items-center px-3 py-3"
+                        className="d-flex align-items-center px-3 py-3 fs-6"
                         style={{ backgroundColor: "white" }}
                     >
                         {/* Name */}
@@ -411,8 +410,8 @@ const Member = () => {
                                 alt={member.name}
                                 className="rounded-circle"
                                 style={{
-                                    width: "40px",
-                                    height: "40px",
+                                    width: "45px",
+                                    height: "45px",
                                     objectFit: "cover",
                                 }}
                             />

@@ -29,12 +29,12 @@ function NotificationPage() {
     const [filterAction, setFilterAction] = useState("");
 
     return (
-        <Container fluid className="px-5 py-4 mx-4 page-wrap">
+        <Container fluid className="kanit-regular px-5 py-4 mx-4 page-wrap">
 
             {/* --- ส่วนหัว (Header) --- */}
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 mx-3 mt-3" >
                 {/* หัวข้อสีส้ม */}
-                <h4 className="fw-bold mb-3 mb-md-0" style={{ color: '#F26623' }}>
+                <h4 className="mb-3 mb-md-0 fs-3" style={{ color: '#F26623' }}>
                     Notification
                 </h4>
 
@@ -43,7 +43,7 @@ function NotificationPage() {
 
                     {/* กรองโดยผู้ใช้ */}
                     <div className="d-flex align-items-center gap-2">
-                        <span style={{ fontSize: '0.9rem', fontWeight: '500', whiteSpace: 'nowrap' }}>กรองโดยผู้ใช้ :</span>
+                        <span className='fs-6' style={{ whiteSpace: 'nowrap' }}>กรองโดยผู้ใช้ :</span>
                         <Form.Select
                             size="m"
                             className='custom-filters'
@@ -58,7 +58,7 @@ function NotificationPage() {
 
                     {/* กรองโดยการกระทำ */}
                     <div className="d-flex align-items-center gap-2">
-                        <span style={{ fontSize: '0.9rem', fontWeight: '500', whiteSpace: 'nowrap' }}>กรองโดยการกระทำ :</span>
+                        <span className='fs-6' style={{ whiteSpace: 'nowrap' }}>กรองโดยการกระทำ :</span>
                         <Form.Select
                             size="m"
                             className='custom-filters'
@@ -117,17 +117,16 @@ function NotificationPage() {
 
                         {/* ข้อความ */}
                         <div>
-                            <div style={{ fontSize: '1rem', fontWeight: '600', color: '#000', marginBottom: '4px' }}>
+                            <div className='fs-5' style={{ color: '#000', marginBottom: '4px' }}>
                                 {item.text}
                             </div>
-                            <div style={{ fontSize: '0.85rem', color: '#666' }}>
+                            <div className="fs-6" style={{ color: '#666' }}>
                                 วันที่ {item.date}
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
-
         </Container>
     );
 }

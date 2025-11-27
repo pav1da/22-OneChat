@@ -223,9 +223,8 @@ function Dashboard() {
               {/* ช่องค้นหา - สี่เหลี่ยมขอบมน, ไอคอนจัดกลาง */}
               <InputGroup style={{ width: "250px" }}>
                 <InputGroup.Text
-                  className="bg-white border-0 rounded-start-3 py-2 ps-3 pe-2"
+                  className="bg-white border-1 rounded-start-3 py-2 ps-3 pe-2"
                   style={{
-                    boxShadow: "1px 1px 0px rgba(0,0,0,0.1)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -236,22 +235,18 @@ function Dashboard() {
                 <Form.Control
                   type="search"
                   placeholder="ค้นหา..."
-                  className="rounded-end-3 border-0 custom-search"
-                  style={{
-                    boxShadow: "1px 1px 0px rgba(0,0,0,0.1)"
-                  }}
+                  className="rounded-end-3 border-1 custom-search"
                   aria-label="Search"
                 />
               </InputGroup>
 
               {/* ปุ่มเรียงลำดับ - สี่เหลี่ยมขอบมน */}
               <Button
-                variant="light"
-                className="d-flex align-items-center gap-1 rounded-3 border-0 px-3 py-2"
+                className="d-flex align-items-center gap-1 rounded-3 border-1 px-4 py-2"
                 style={{
                   background: "#ffffff",
                   color: "#6c757d",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  borderColor : "#c5c5c5"
                 }}
               >
                 <i className="bi bi-arrow-down-up"></i>
@@ -266,9 +261,8 @@ function Dashboard() {
                   border: "0px",
                   color: "white",
                   whiteSpace: "nowrap",
-                  padding: "8px 20px",
-                  fontWeight: "500",
-                  boxShadow: "0 2px 5px rgba(242, 102, 35, 0.4)",
+                  padding: "8px 25px",
+                  alignContent : "center"
                 }}
                 onClick={() => {
                   handleShow();
