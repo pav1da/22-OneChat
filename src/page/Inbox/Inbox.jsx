@@ -87,12 +87,11 @@ const Inbox = ({ currentUser }) => {
       ],
     }));
 
-    // 2. อัปเดต State customer เพื่ออัปเดต 'last' field สำหรับ ChatList preview
     setCustomer((prevCustomers) =>
       prevCustomers.map((c) =>
         c.id === selectedCustomer.id ? { ...c, last: trimmedMessage } : c
       )
-    ); // 3. เคลียร์ช่องพิมพ์และเลื่อนหน้าจอ
+    );
 
     setNewMessage("");
     if (msgRef.current) {

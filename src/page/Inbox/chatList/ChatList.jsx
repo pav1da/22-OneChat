@@ -30,7 +30,7 @@ const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
           return (
             <Card.Body
               onClick={() => onChatSelect(cus.id)}
-              className={`d-flex align-items-center gap-3 ${
+              className={`d-flex align-items-center ${
                 isSelected ? "selected-chat-item" : ""
               }`}
               key={cus.id}
@@ -38,7 +38,7 @@ const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
               {/* Profile Picture */}
               <img
                 src={cus.img}
-                className="rounded-circle custom-img"
+                className="rounded-circle custom-img me-3"
                 style={{
                   width: "60px",
                   height: "60px",
@@ -49,7 +49,7 @@ const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
 
               <div
                 className="d-flex flex-column gap-2 flex-grow-1 chat-text-container"
-                style={{ height: "50px" }}
+                style={{ height: "60px" }}
               >
                 <div 
                   style={{
@@ -71,7 +71,7 @@ const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
                     {cus.status}
                   </Badge>
                 </div>
-                <p className="custom-text">{cus.last}</p>
+                <p className="custom-text text-truncate mb-0" style={{width:"200px"}}>{cus.last}</p>
               </div>
             </Card.Body>
           );
