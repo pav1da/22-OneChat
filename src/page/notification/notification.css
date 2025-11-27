@@ -1,0 +1,19 @@
+.page-wrap {
+  height: calc(100vh - 45px);
+  background-color: white;
+  border-radius: 20px;
+  width: 96%;
+}
+
+.custom-filters {
+  width: 200px;
+  background-color: white;
+  border: 1px solid #c5c5c5;
+  border-radius: 6px;
+}
+
+.custom-filters:focus {
+  box-shadow: none;
+  outline: none;
+  border-color: #c5c5c5;
+}

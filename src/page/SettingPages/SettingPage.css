@@ -4,7 +4,7 @@
             #ffffff 50%,
             #fff7f9 80%,
             #fff5f3 100%);
-    height: calc(100vh - 60px); 
+    height: calc(100vh - 45px); 
     overflow: hidden;
     padding-bottom: 0; 
     display: flex;

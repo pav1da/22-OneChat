@@ -10,7 +10,7 @@ function Chats() {
     ];
 
     return (
-        <div className="px-3" style={{maxWidth: '700px', margin: '0 auto'}}>
+        <div className="pt-5 px-3" style={{maxWidth: '700px', margin: '0 auto'}}>
 
             <div className="pt-2">
                 {chatSettings.map((item, index) => (
@@ -31,8 +31,8 @@ function Chats() {
                 ))}
             </div>
 
-            {/* เส้นขีดคั่น */}
-            <hr className="my-2" style={{ borderTop: '1px solid #e9ecef' }} />
+           
+           
 
             {/* ส่วนส่งข้อความอัตโนมัติ */}
             <div className="profile-info-item d-flex justify-content-between align-items-start py-4" style={{ borderBottom: 'none' }}>

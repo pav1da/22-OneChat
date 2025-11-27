@@ -3,15 +3,15 @@ import { Stack, Form } from 'react-bootstrap';
 function Notifications() {
     // Style สำหรับหัวข้อตัวหนา
     const titleStyle = {
-        fontSize: '1rem',
-        fontWeight: '600',
+        fontSize: '1.1rem',
+        fontWeight: '500',
         color: '#212529',
         marginBottom: '4px'
     };
 
     // Style สำหรับคำอธิบายตัวเล็กสีเทา
     const descStyle = {
-        fontSize: '0.85rem',
+        fontSize: '0.9rem',
         color: '#adb5bd'
     };
 
@@ -28,7 +28,7 @@ function Notifications() {
 
     return (
         // ลบ style margin เดิมที่ wrapper ออก เพื่อให้ไม่ดันไปทางขวา
-        <div className="p-2 mt-3"> 
+        <div className="p-2 mt-3 pt-5"> 
             
             {/* เพิ่ม margin: '0 auto' ที่นี่ เพื่อจัดกึ่งกลาง Stack ที่มีความกว้าง 750px */}
             <Stack gap={4} style={{ maxWidth: '750px', margin: '0 auto' }}>

@@ -1,315 +1,81 @@
 import "./chatList.css";
 import { Card, Badge } from "react-bootstrap";
 
-const ChatList = () => {
+const STATUS = {
+  NOT_STARTED: "ยังไม่เริ่ม",
+  IN_PROGRESS: "กำลังดำเนินการ",
+  DONE: "เสร็จสิ้น",
+};
+
+const getStatusVariant = (status) => {
+  switch (status) {
+    case STATUS.NOT_STARTED:
+      return "secondary";
+    case STATUS.IN_PROGRESS:
+      return "warning";
+    case STATUS.DONE:
+      return "success";
+    default:
+      return "secondary";
+  }
+};
+
+const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
   return (
     <div className="overflow-y-auto flex-grow-1 pt-3">
       <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
+        {customers.map((cus) => {
+          const isSelected = cus.id === selectedChatId;
 
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
+          return (
+            <Card.Body
+              onClick={() => onChatSelect(cus.id)}
+              className={`d-flex align-items-center ${
+                isSelected ? "selected-chat-item" : ""
+              }`}
+              key={cus.id}
+            >
+              {/* Profile Picture */}
+              <img
+                src={cus.img}
+                className="rounded-circle custom-img me-3"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  flexShrink: 0,
+                }}
+              />
 
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
+              <div
+                className="d-flex flex-column gap-2 flex-grow-1 chat-text-container"
+                style={{ height: "60px" }}
+              >
+                <div 
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto",
+                    alignItems: "baseline",
+                  }}
+                >
+                  <span
+                    className="text-truncate username-text"
+                  >
+                    {cus.name}
+                  </span>
 
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
-      </Card>
-
-      <Card className="custom-card-chat">
-        <Card.Body className="d-flex align-items-center gap-3">
-          {/* Profile Picture */}
-          <img
-            src="./src/assets/Image/Customers/Harumasa.png"
-            className="rounded-circle"
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-          {/* Texts */}
-          <div className="d-flex flex-column gap-1" style={{ height: "50px" }}>
-            <div className="d-flex gap-3">
-              {/* Username */}
-              <span style={{ fontSize: "18px" }}>Harumasa</span>
-              {/* Status */}
-              <Badge className="bg-warning custom-badge">กำลังดำเนินการ</Badge>
-            </div>
-            {/* Massage */}
-            <p className="custom-text">Lorem ipsum dolor sit amet.</p>
-          </div>
-        </Card.Body>
+                  <Badge
+                    bg={getStatusVariant(cus.status)}
+                    className="custom-badge"
+                  >
+                    {cus.status}
+                  </Badge>
+                </div>
+                <p className="custom-text text-truncate mb-0" style={{width:"200px"}}>{cus.last}</p>
+              </div>
+            </Card.Body>
+          );
+        })}
       </Card>
     </div>
   );

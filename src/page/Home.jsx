@@ -2,7 +2,7 @@ import React, { useState } from "react"; // 1. Import useState
 // 2. Import Form (สำหรับปุ่มอัปโหลด)
 import { Container, Row, Col, Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import Dashboard from "./Dashboard";
+import Dashboard from "./dashboard/Dashboard";
 
 // ... (สไตล์ logoStyle, orangeButtonStyle, orangeTextColor เหมือนเดิม) ...
 const logoStyle = {

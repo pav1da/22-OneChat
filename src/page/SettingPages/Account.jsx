@@ -231,9 +231,9 @@ function Account({ currentUserId = 2 }) {
     // RENDER
     // =============================================
     return (
-        <Container fluid className="px-4 py-2" style={{ maxWidth: '1000px' }}>
+        <Container fluid className="px-4 pt-5" style={{ maxWidth: '1000px' }}>
 
-            <h4 className="fw-bold mb-4">แก้ไขโปรไฟล์</h4>
+            <h4 className="fs-3 mb-4">แก้ไขโปรไฟล์</h4>
 
             {/* -----------------------------------------
             SECTION 1: PROFILE IMAGE
@@ -266,7 +266,7 @@ function Account({ currentUserId = 2 }) {
                             )}
                         </div>
 
-                        <span className="fw-bold fs-5">{userData.username}</span>
+                        <span className=" fs-5">{userData.username}</span>
                     </Col>
 
                     <Col xs="auto">
@@ -292,7 +292,7 @@ function Account({ currentUserId = 2 }) {
                 {/* Username */}
                 <Row className="align-items-center justify-content-between mb-4">
                     <Col>
-                        <div className="fw-bold mb-1" style={{ fontSize: '0.95rem' }}>ชื่อผู้ใช้</div>
+                        <div className="fw-bold fs-6 mb-1">ชื่อผู้ใช้</div>
                         <div style={{ fontSize: '1rem' }}>{userData.username}</div>
                     </Col>
                     <Col xs="auto">
@@ -305,7 +305,7 @@ function Account({ currentUserId = 2 }) {
                 {/* Email */}
                 <Row className="align-items-center justify-content-between mb-4">
                     <Col>
-                        <div className="fw-bold mb-1" style={{ fontSize: '0.95rem' }}>อีเมล</div>
+                        <div className="fw-bold fs-6 mb-1">อีเมล</div>
                         <div style={{ fontSize: '1rem' }}>{userData.email}</div>
                     </Col>
                     <Col xs="auto">
@@ -318,7 +318,7 @@ function Account({ currentUserId = 2 }) {
                 {/* Phone */}
                 <Row className="align-items-center justify-content-between">
                     <Col>
-                        <div className="fw-bold mb-1" style={{ fontSize: '0.95rem' }}>เบอร์โทรศัพท์</div>
+                        <div className="fw-bold fs-6 mb-1">เบอร์โทรศัพท์</div>
                         <div style={{ fontSize: '1rem' }}>{userData.phone}</div>
                     </Col>
 
