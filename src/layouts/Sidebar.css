@@ -1,22 +1,17 @@
-/* =========================================
-   Sidebar.css - ฉบับ Clean (Fixed 80px)
-   ========================================= */
-
 /* Container หลักของ Sidebar */
 .sidebar-container {
-    width: 80px;
+    width: 75px;
     /* ลดความสูงลงเพื่อเว้นขอบล่างให้ลอยสวยๆ */
-    height: calc(100vh - 60px); 
+    height: calc(100vh - 45px); 
     background-color: #ffffff;
     
     position: fixed;
-    top: 30px; /* ดันลงมาจากขอบบน 30px ให้ดูสมดุลกับด้านล่าง */
+    top: 20px; /* ดันลงมาจากขอบบน 20px ให้ดูสมดุลกับด้านล่าง */
     left: 20px;
     z-index: 1000;
     
     box-sizing: border-box;
-    border-radius: 24px; 
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-radius: 15px; 
 
     /* ไม่ต้องใส่ padding ตรงนี้ เพราะเราใช้ pt-5/pb-5 ใน Bootstrap class แล้ว */
     display: flex;
@@ -28,30 +23,27 @@
 .brand-logo {
     width: 48px;
     height: 48px;
-    background-color: #F26623;
     border-radius: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
-    /* ไม่ต้องใส่ margin ตรงนี้ เราใช้ class mb-5 แทน */
-    box-shadow: 0 4px 10px rgba(242, 102, 35, 0.3);
 }
 
 .sidebar-item {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #9E9E9E; /* สีเทาอ่อน */
-    border-radius: 12px;
+    color: #777;
+    border-radius: 10px;
     transition: all 0.2s ease;
     margin: 0 !important;
     text-decoration: none;
 }
 
 .sidebar-item i {
-    font-size: 1.5rem; /* ขยายไอคอนให้ใหญ่ขึ้นนิดนึง เพื่อให้เต็มตาสวยงาม */
+    font-size: 1.3rem; /* ขยายไอคอนให้ใหญ่ขึ้นนิดนึง เพื่อให้เต็มตาสวยงาม */
 }
 
 .sidebar-item:hover {
@@ -60,13 +52,9 @@
 }
 
 .sidebar-item.active {
-    color: #000;
+    color: #F26623;
     background-color: transparent;
-}
-
-.sidebar-item.active i {
-    font-weight: bold;
-    -webkit-text-stroke: 0.7px currentColor; /* ทำให้ไอคอนหนาเข้มขึ้น */
+    border: 1px solid #F26623;
 }
 
 .sidebar-profile {
@@ -76,7 +64,6 @@
     overflow: hidden;
     cursor: pointer;
     border: 2px solid #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 .sidebar-profile img {
@@ -86,95 +73,18 @@
 }
 
 
-/* Sidebar.css  */
-
-
-.sidebar-container {
-    width: 80px; 
-    
-    /* ✅ 1. แก้ height ให้เป็น -40px (เพื่อให้เท่ากับ Layout) */
-    /* จากเดิมอาจจะเป็น -60px หรือค่าอื่น */
-    height: calc(100vh - 40px); 
-    
-    background-color: #ffffff;
-    position: fixed;
-    z-index: 1000;
-    
-    /* ✅ 2. แก้ top ให้เป็น 20px (เพื่อให้เริ่มจุดเดียวกับ Layout) */
-    top: 20px; 
-    
-    left: 20px; /* ระยะห่างจากซ้าย */
-
-    box-sizing: border-box;
-    border-radius: 24px; 
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-
-    padding: 20px 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; 
+/* ซ่อนลูกศรสามเหลี่ยมของ Dropdown */
+.sidebar-container .dropdown-toggle::after {
+    display: none !important;
 }
 
-/* --- ส่วนอื่นๆ คงเดิม --- */
-
-.brand-logo {
-    width: 45px;
-    height: 45px;
-    background-color: #F26623;
-    border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(242, 102, 35, 0.2);
+/* (Optional) ปรับแต่งเมนู Dropdown ให้สวยขึ้น */
+.dropdown-menu {
+    min-width: 200px; /* ความกว้างของกล่องเมนู */
+    animation: fadeIn 0.2s ease-in-out;
 }
 
-.sidebar-item {
-    width: 45px;
-    height: 45px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #999;
-    border-radius: 12px;
-    transition: all 0.2s ease;
-    margin-bottom: 8px;
-    position: relative;
-    text-decoration: none;
-}
-
-.sidebar-item i {
-    font-size: 1.4rem;
-}
-
-.sidebar-item:hover {
-    color: #F26623;
-    background-color: #fff5f0;
-}
-
-.sidebar-item.active {
-    color: #000;
-    background-color: transparent;
-}
-
-.sidebar-item.active i {
-    font-weight: bold; 
-    -webkit-text-stroke: 0.5px currentColor;
-}
-
-.sidebar-profile {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    margin-bottom: 10px;
-}
-
-.sidebar-profile img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

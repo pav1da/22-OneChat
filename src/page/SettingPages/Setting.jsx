@@ -59,7 +59,7 @@ function Setting({ user }) {
     };
 
     return (
-        <div className="settings-page-wrapper">
+        <div className="settings-page-wrapper mx-4">
             <Container fluid className="h-100 d-flex flex-column">
 
                 <Row className="flex-grow-1 h-100">

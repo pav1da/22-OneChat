@@ -1,23 +1,47 @@
 .custom-card-chat {
-  border: none;
-  outline: none;
-  background-color: transparent;
+    border: none;
+    outline: none;
+    background-color: transparent;
 }
 
-.custom-card-chat:hover {
-  background-color: #fff2ec;
-  border: 1px solid #f26623;
+.username-text {
+    font-size: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block; 
+    padding-right: 5px; /* ระยะห่างระหว่างชื่อกับสถานะ */
 }
 
 .custom-badge {
-  padding: 5px 15px;
-  align-content: center;
-  font-weight: normal;
+    padding: 6px 15px;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .custom-text {
-  font-size: 14px;
-  color: #777777;
+    font-size: 14px;
+    color: #777777;
 }
 
+.selected-chat-item {
+    background-color: #fff2ec;
+    border: 1px solid #f26623;
+    border-radius: 15px;
+}
+
+.custom-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.username-status-grid {
+    display: grid;
+    grid-template-columns: 1fr auto; 
+    align-items: baseline; 
+}
 

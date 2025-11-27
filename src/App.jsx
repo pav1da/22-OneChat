@@ -7,15 +7,16 @@ import Layouts from "./layouts/Layouts";
 import SignUpPage from "./page/SignUpPage";
 import SignInPage from "./page/SignInPage";
 import Home from "./page/Home";
-import Dashboard from "./page/Dashboard";
+import Dashboard from "./page/dashboard/Dashboard";
 import Inbox from "./page/Inbox/Inbox"; 
 
 // stylesheets
 import "./App.css";
 import Setting from "./page/SettingPages/Setting";
 import ProtectedRoute from "./components/ProtectedRoute";
-import NotifiacationPage from "./page/NotificationPage";
+import Notifiacation from "./page/notification/Notification";
 import Log from "./page/Log";
+import Member from "./page/Member";
 
 function App() {
     // ให้ไปเช็คใน localStorage ก่อนว่ามีของเก่าไหม
@@ -55,15 +56,16 @@ function App() {
                     <Route element={
                         // ส่ง currentUser เข้าไปเช็คสิทธิ์
                         <ProtectedRoute user={currentUser} allowedRoles={['admin', 'it', 'user',]}>
-                            <Layouts onLogout={handleLogout} />
+                            <Layouts onLogout={handleLogout} user={currentUser} />
                         </ProtectedRoute>
                     }>
                         
                         <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
-                        <Route path="/inbox" element={<Inbox />} />
+                        <Route path="/inbox" element={<Inbox currentUser={currentUser} />} />
                         <Route path="/setting" element={<Setting user={currentUser} />} />
                         <Route path="/log" element={<Log/>} />
-                        <Route path="notificationpage" element={<NotifiacationPage/>}/>
+                        <Route path="/notification" element={<Notifiacation/>}/>
+                        <Route path="/member" element={<Member/>}/>
 
                     </Route>
                 </Routes>
