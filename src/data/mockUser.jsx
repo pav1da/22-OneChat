@@ -19,21 +19,21 @@ export const user = [
     },
     {
         id: 3,
-        name: "User A",
+        name: "Pheem",
         role: "user",
         color: "#2196F3",
-        email: "A@gmail.com",
+        email: "pheem.user@onechat.com",
         phone: "082-222-2222",
-        image: "/img/user.jpg"
+        image: "/src/assets/Image/Admins/pheem.png"
     },
     {
         id: 4,
-        name: "User B",
+        name: "Ham",
         role: "user",
         color: "#4CAF50",
-        email: "B@gmail.com",
+        email: "ham.user@onechat.com",
         phone: "083-333-3333",
-        image: "https://i.pravatar.cc/150?img=33"
+        image: "/src/assets/Image/Admins/ham.png"
     },
     {
         id: 5,

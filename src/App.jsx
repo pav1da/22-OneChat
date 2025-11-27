@@ -15,6 +15,7 @@ import Log from "./page/Log";
 import Member from "./page/Member";
 import TokenReport from "./page/TokenReport";
 import AllChat from "./page/allchat/Allchat";
+import CardMessage from "./page/CardmessagePage/Cardmessage";
 
 // stylesheets
 import "./App.css";
@@ -85,12 +86,22 @@ function App() {
               path="/allchat"
               element={<AllChat currentUser={currentUser} />}
             />
-            <Route path="/setting" element={<Setting user={currentUser} />} />
+
+            <Route
+              path="/inbox"
+              element={<Inbox currentUser={currentUser} />}
+            />
+
+            <Route
+              path="/cardmessage"
+              element={<CardMessage currentUser={currentUser} />}
+            />
+
             <Route path="/log" element={<Log />} />
-            <Route path="/notification" element={<Notifiacation />} />{" "}
-            {/* เช็คชื่อตัวแปรดีๆนะครับ */}
+            <Route path="/notification" element={<Notifiacation />} />
             <Route path="/member" element={<Member />} />
             <Route path="/tokenreport" element={<TokenReport />} />
+            <Route path="/setting" element={<Setting user={currentUser} />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -2,15 +2,6 @@ import React, { useState } from "react"; // 1. Import useState
 // 2. Import Form (สำหรับปุ่มอัปโหลด)
 import { Container, Row, Col, Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import Dashboard from "./dashboard/Dashboard";
-
-// ... (สไตล์ logoStyle, orangeButtonStyle, orangeTextColor เหมือนเดิม) ...
-const logoStyle = {
-    width: "40px",
-    height: "40px",
-    backgroundColor: "#F26623",
-    borderRadius: "8px",
-};
 
 const orangeButtonStyle = {
     backgroundColor: "#F26623",
@@ -20,6 +11,16 @@ const orangeButtonStyle = {
 const orangeTextColor = {
     color: "#F26623",
 };
+
+const logoStyle = {
+  position: "absolute",
+  top: "24px",
+  left: "24px",
+  width: "40px",
+  height: "40px",
+  borderRadius: "6px",
+};
+
 
 const Home = () => {
     // 3. สร้าง State เพื่อเก็บ URL ของรูปพื้นหลัง
@@ -87,7 +88,7 @@ const Home = () => {
                 <Container fluid>
                     <Row className="p-3 d-flex justify-content-between align-items-center">
                         <Col xs="auto">
-                            <div style={logoStyle}></div>
+                            <img style={logoStyle} src="./sb-logo.png" alt="App Logo" />
                         </Col> 
                         <Col xs="auto">
                            

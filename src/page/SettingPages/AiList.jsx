@@ -83,7 +83,7 @@ function AiList({ title, onBack }) {
     };
 
     return (
-        <div className="px-3 pt-2 mt-3" style={{ maxWidth: '800px' }}>
+        <div className='pt-5' style={{padding:"150px"}} >
             <div className="mb-3 text-muted" style={{ cursor: 'pointer', fontSize: '0.9rem' }} onClick={onBack}>
                 &lt; ย้อนกลับ
             </div>

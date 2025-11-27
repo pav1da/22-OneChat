@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Container, Form, Button, Card, Row, Col } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 
-import { user as mockUser } from "../data/mockUser"; 
+import { user as mockUser } from "../data/mockUser";
 
 const pageStyle = {
   display: "flex",
@@ -17,9 +17,8 @@ const logoStyle = {
   position: "absolute",
   top: "24px",
   left: "24px",
-  width: "32px",
-  height: "32px",
-  backgroundColor: "#111",
+  width: "40px",
+  height: "40px",
   borderRadius: "6px",
 };
 
@@ -31,8 +30,8 @@ function SignInPage({ onLogin }) {
   const [password, setPassword] = useState("");
 
   // แก้ Validation ไม่ต้องบังคับ @gmail เพราะใช้ @onechat
-  const isEmailValid = email.includes("@") && email.includes("."); 
-  const isPasswordValid = password.length >= 4; 
+  const isEmailValid = email.includes("@") && email.includes(".");
+  const isPasswordValid = password.length >= 4;
   const isFormValid = isEmailValid && isPasswordValid;
 
   // Login ปกติ (พิมพ์เอง แต่มึงอย่าพิมเลย)
@@ -44,7 +43,7 @@ function SignInPage({ onLogin }) {
 
     if (foundUser) {
       // ถ้าเจอ: ส่งข้อมูลกลับไป App และย้ายหน้า
-      if(onLogin) onLogin(foundUser);
+      if (onLogin) onLogin(foundUser);
       navigate("/dashboard");
     } else {
       // ถ้าไม่เจอ
@@ -52,18 +51,18 @@ function SignInPage({ onLogin }) {
     }
   };
 
-  // Login ลัด 
+  // Login ลัด
   const handleQuickLogin = (role) => {
-     const userToLogin = mockUser.find(u => u.role === role);
-     if(userToLogin && onLogin) {
-         onLogin(userToLogin);
-         navigate("/dashboard");
-     }
-  }
+    const userToLogin = mockUser.find((u) => u.role === role);
+    if (userToLogin && onLogin) {
+      onLogin(userToLogin);
+      navigate("/dashboard");
+    }
+  };
 
   return (
     <div style={pageStyle}>
-      <div style={logoStyle}></div>
+      <img style={logoStyle} src="./sb-logo.png" alt="App Logo" />
       <Card.Body>
         <Container className="text-center">
           <h1 className="fw-bold mb-5" style={{ color: "#F26623" }}>
@@ -74,19 +73,45 @@ function SignInPage({ onLogin }) {
             to continue to your One Chat account.
           </p>
 
-            {/* ปุ่มลัด */}
-            <div className="mb-4 p-3 bg-light rounded border mx-auto" style={{maxWidth: '320px'}}>
-                <small className="text-muted d-block mb-2">Developer Mode: Login As...</small>
-                <div className="d-flex justify-content-center gap-2 flex-wrap">
-                    <Button variant="danger" size="sm" onClick={() => handleQuickLogin('admin')}>Admin</Button>
-                    <Button variant="dark" size="sm" onClick={() => handleQuickLogin('it')}>IT Support</Button>
-                    <Button variant="primary" size="sm" onClick={() => handleQuickLogin('user')}>User</Button>
-                </div>
+          {/* ปุ่มลัด */}
+          <div
+            className="mb-4 p-3 bg-light rounded border mx-auto"
+            style={{ maxWidth: "320px" }}
+          >
+            <small className="text-muted d-block mb-2">
+              Developer Mode: Login As...
+            </small>
+            <div className="d-flex justify-content-center gap-2 flex-wrap">
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => handleQuickLogin("admin")}
+              >
+                Admin
+              </Button>
+              <Button
+                variant="dark"
+                size="sm"
+                onClick={() => handleQuickLogin("it")}
+              >
+                IT Support
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleQuickLogin("user")}
+              >
+                User
+              </Button>
             </div>
-            
+          </div>
 
           <div className="d-flex align-content-center justify-content-center mb-5">
-            <Form className="d-grid gap-3" style={{ width: "300px" }} onSubmit={handleSignIn}>
+            <Form
+              className="d-grid gap-3"
+              style={{ width: "300px" }}
+              onSubmit={handleSignIn}
+            >
               <Form.Group>
                 <Form.Control
                   type="email"

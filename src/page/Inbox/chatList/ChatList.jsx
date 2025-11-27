@@ -1,5 +1,6 @@
 import "./chatList.css";
-import { Card, Badge } from "react-bootstrap";
+import { Card, Badge, Dropdown } from "react-bootstrap";
+import React, { useState } from "react";
 
 const STATUS = {
   NOT_STARTED: "ยังไม่เริ่ม",
@@ -24,7 +25,7 @@ const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
   return (
     <div className="overflow-y-auto flex-grow-1 pt-3">
       <Card className="custom-card-chat">
-        {customers.map((cus) => {
+        {customers.map((cus) => { // ใช้ customers ที่ถูกเรียงแล้ว
           const isSelected = cus.id === selectedChatId;
 
           return (
@@ -51,16 +52,14 @@ const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
                 className="d-flex flex-column gap-2 flex-grow-1 chat-text-container"
                 style={{ height: "60px" }}
               >
-                <div 
+                <div
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr auto",
                     alignItems: "baseline",
                   }}
                 >
-                  <span
-                    className="text-truncate username-text"
-                  >
+                  <span className="text-truncate username-text">
                     {cus.name}
                   </span>
 
@@ -71,7 +70,12 @@ const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
                     {cus.status}
                   </Badge>
                 </div>
-                <p className="custom-text text-truncate mb-0" style={{width:"200px"}}>{cus.last}</p>
+                <p
+                  className="custom-text text-truncate mb-0"
+                  style={{ width: "200px" }}
+                >
+                  {cus.last}
+                </p>
               </div>
             </Card.Body>
           );

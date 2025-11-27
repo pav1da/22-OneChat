@@ -198,12 +198,12 @@ function Dashboard() {
 
         <Modal.Body className="pt-2 mx-2">
           <div>
-            {/* ช่องกรอกชื่อผู้เขียน */}
+            {/* ช่องกรอกชื่อผู้ใช้ */}
             <Form.Group className="mb-3">
-              <Form.Label className="text-muted fs-6">ผู้เขียน</Form.Label>
+              <Form.Label className="text-muted fs-6">เขียนถึง</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="ระบุชื่อผู้เขียน"
+                placeholder="ระบุชื่อผู้ใช้"
                 autoFocus
                 className="rounded-3 bg-light border-0 px-3 py-2"
                 value={newNote.user}

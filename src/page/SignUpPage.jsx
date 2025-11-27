@@ -11,6 +11,15 @@ const pageStyle = {
   backgroundColor: "#ffffff",
 };
 
+const logoStyle = {
+  position: "absolute",
+  top: "24px",
+  left: "24px",
+  width: "40px",
+  height: "40px",
+  borderRadius: "6px",
+};
+
 // รับ props onLogin
 function SignUpPage({ onLogin }) {
   const navigate = useNavigate();
@@ -52,12 +61,10 @@ function SignUpPage({ onLogin }) {
 
   return (
     <div style={pageStyle}>
-      
-      {/* ตัดส่วน logoStyle ออกตามที่แจ้ง */}
-
+      <img style={logoStyle} src="./sb-logo.png" alt="App Logo" />
       <Card.Body>
         <Container className="text-center">
-          
+        
           {/* หัวข้อ ONE CHAT */}
           <h1 className="fw-bold mb-4" style={{ color: "#F26623" }}>
             ONE CHAT

@@ -7,7 +7,7 @@ const mockLogs = [
   {
     id: 1,
     user: "Ham",
-    avatar: "https://i.pravatar.cc/150?img=11",
+    avatar: "/src/assets/Image/Admins/ham.png",
     action: "ได้สร้าง โน้ต สำหรับ",
     target: "Jane Doe",
     details: "",
@@ -27,7 +27,7 @@ const mockLogs = [
   {
     id: 3,
     user: "Pheem",
-    avatar: "https://i.pravatar.cc/150?img=8",
+    avatar: "/src/assets/Image/Admins/pheem.png",
     action: "ได้เข้าร่วมทีม",
     target: "Facebook",
     details: "",
@@ -56,27 +56,27 @@ const Log = () => {
     // - px-5 : ซ้ายขวาห่างระดับ 5 (Bootstrap Standard)
     // - style : เพิ่ม padding ซ้ายขวาเป็น 5% (เพื่อให้เว้นเยอะๆ เหมือนในรูป)
     <div 
-      className="kanit-regular h-100 d-flex flex-column bg-white rounded-4 py-4 px-5"
+      className="kanit-regular h-100 d-flex flex-column bg-white rounded-4 py-4 px-5 mx-4"
       style={{ paddingLeft: '20px', paddingRight: '6%' }} 
     >
       
       {/* ================= Header Section ================= */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 pt-2">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-1 gap-3 pt-4">
         {/* Title */}
-        <h2 className="fw-bold mb-0" style={{ color: "#FF7A00" }}>
+        <h2 className="fs-3 mb-0" style={{ color: "#FF7A00" }}>
           ตรวจสอบบันทึก
         </h2>
 
         {/* Filters */}
-        <div className="d-flex flex-column flex-sm-row gap-3">
+        <div className="d-flex flex-column flex-sm-row gap-4">
           {/* Filter by User */}
-          <div className="d-flex align-items-center gap-2">
-            <span className="fw-bold text-nowrap">กรองโดยผู้ใช้ :</span>
+          <div className="d-flex align-items-center gap-3">
+            <span className="fs-6 text-nowrap">กรองโดยผู้ใช้ :</span>
             <Form.Select
               value={filterUser}
               onChange={(e) => setFilterUser(e.target.value)}
               className="bg-light border-0 rounded-3"
-              style={{ minWidth: "150px" }}
+              style={{ minWidth: "250px" }}
             >
               <option value="">ค้นหาสมาชิก</option>
               <option value="pav1da">pav1da</option>
@@ -86,13 +86,13 @@ const Log = () => {
           </div>
 
           {/* Filter by Action */}
-          <div className="d-flex align-items-center gap-2">
-            <span className="fw-bold text-nowrap">กรองโดยการกระทำ :</span>
+          <div className="d-flex align-items-center gap-3">
+            <span className="fs-6 text-nowrap">กรองโดยการกระทำ :</span>
             <Form.Select
               value={filterAction}
               onChange={(e) => setFilterAction(e.target.value)}
               className="bg-light border-0 rounded-3"
-              style={{ minWidth: "150px" }}
+              style={{ minWidth: "250px" }}
             >
               <option value="">ค้นหาการกระทำ</option>
               <option value="create">สร้างโน้ต</option>
@@ -142,9 +142,9 @@ const Log = () => {
             {/* 2. Content Info */}
             <div className="flex-grow-1 ms-3">
               <div className="fs-5 text-dark" style={{fontSize: '1.1rem'}}>
-                <span className="fw-bold">{log.user}</span> 
+                <span className="fs-5">{log.user}</span> 
                 <span className="mx-2">{log.action}</span> 
-                <span className="fw-bold">{log.target}</span>
+                <span className="fs-5">{log.target}</span>
                 {log.details && <span className="ms-2 text-secondary">{log.details}</span>}
               </div>
 

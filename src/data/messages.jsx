@@ -56,6 +56,6 @@ export const initialChatMessages = {
     ],
     // ID 7: Jinx
     '7': [
-
+        { id: 1, sender: 'customer', text: 'สวัสดีค่ะ ต้องการสอบถามค่ะ'}
     ]
 };
