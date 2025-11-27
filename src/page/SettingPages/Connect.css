@@ -2,12 +2,12 @@
 
 /* เปลี่ยนสีพื้นหลังตอนกดเปิด (Checked) */
 .form-check-input:checked {
-    background-color: #1e6d1b !important; 
-    border-color: #1e6d1b !important;
+    background-color: #f89501 !important; 
+    border-color: #f89501 !important;
 }
 
 /* (Optional) เปลี่ยนสีเงาเวลาคลิก (Focus) */
 .form-check-input:focus {
-    border-color: #11af38 !important;
-    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25) !important;
+    border-color: #f89501 !important;
+    box-shadow: 0 0 0 0.25rem (40, 167, 69, 0.25) !important;
 }

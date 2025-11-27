@@ -138,7 +138,7 @@ const Connect = () => {
                     </div>
 
                     <div className="row align-items-center">
-                        <div className="col-auto text-end" style={{ width: '150px' }}>Reset Personal Key</div>
+                        <div className="col-auto text-end" style={{ width: '170px' }}>Reset Personal Key</div>
                         <div className="col">
                             <Button 
                                 style={{ 

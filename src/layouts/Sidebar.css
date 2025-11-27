@@ -71,3 +71,20 @@
     height: 100%;
     object-fit: cover;
 }
+
+
+/* ซ่อนลูกศรสามเหลี่ยมของ Dropdown */
+.sidebar-container .dropdown-toggle::after {
+    display: none !important;
+}
+
+/* (Optional) ปรับแต่งเมนู Dropdown ให้สวยขึ้น */
+.dropdown-menu {
+    min-width: 200px; /* ความกว้างของกล่องเมนู */
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

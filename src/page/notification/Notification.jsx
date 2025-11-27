@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { Container, Form, Row, Col } from 'react-bootstrap';
+import { useState } from 'react';
+import { Container, Form } from 'react-bootstrap';
 import "./notification.css"
 
-// ข้อมูลจำลอง (Mock Data) - แก้ไขรูปภาพและข้อความตรงนี้ได้เลย
+// ข้อมูลจำลอง (Mock Data)
 const mockNotifications = [
     {
         id: 1,
-        // ใช้รูป placeholder หรือเปลี่ยนเป็น path รูปจริงของคุณ เช่น "/images/profile1.jpg"
         avatar: "https://i.pravatar.cc/150?img=5",
         text: "pav1da ได้เข้าถึงข้อความของ Harumasa บน Facebook : Dew Flower Shop",
         date: "25 ธันวาคม 2560 เวลา 14:40"
@@ -81,11 +80,25 @@ function NotificationPage() {
                 {mockNotifications.map((item) => (
                     <div
                         key={item.id}
-                        className="d-flex align-items-center p-3"
+                        className="d-flex align-items-center p-3 notification-card"
                         style={{
-                            backgroundColor: '#F7F8F9', // สีพื้นหลังเทาอ่อนๆ ตามรูป
-                            borderRadius: '16px',       // ขอบมน
-                            border: '1px solid #EAEAEA' // เส้นขอบจางๆ
+                            backgroundColor: '#F7F8F9', // สีพื้นหลังเดิม
+                            borderRadius: '16px',
+                            border: '1px solid #EAEAEA',
+                            cursor: 'pointer',           // เปลี่ยนเมาส์เป็นรูปมือ
+                            transition: 'all 0.2s ease'  // เพิ่ม transition ให้ลื่นไหล
+                        }}
+                        // เพิ่ม Event เมื่อเมาส์ชี้ (Hover)
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#EAEBEF"; // เปลี่ยนสีเข้มขึ้น
+                            e.currentTarget.style.transform = "translateY(-2px)"; // ลอยขึ้นนิดนึง
+                            e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)"; // มีเงา
+                        }}
+                        // เพิ่ม Event เมื่อเมาส์ออก (Reset กลับ)
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "#F7F8F9"; // กลับสีเดิม
+                            e.currentTarget.style.transform = "translateY(0)"; // กลับที่เดิม
+                            e.currentTarget.style.boxShadow = "none"; // เอาเงาออก
                         }}
                     >
                         {/* รูปโปรไฟล์ */}
