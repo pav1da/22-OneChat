@@ -25,19 +25,19 @@ const Inbox = ({ currentUser }) => {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState("");
-  
-const getStatusVariant = (status) => {
-  switch (status) {
-    case STATUS.NOT_STARTED:
-      return "secondary"; // สีเทา
-    case STATUS.IN_PROGRESS:
-      return "warning"; // สีเหลือง
-    case STATUS.DONE:
-      return "success"; // สีเขียว
-    default:
-      return "secondary";
-  }
-};
+
+  const getStatusVariant = (status) => {
+    switch (status) {
+      case STATUS.NOT_STARTED:
+        return "secondary"; // สีเทา
+      case STATUS.IN_PROGRESS:
+        return "warning"; // สีเหลือง
+      case STATUS.DONE:
+        return "success"; // สีเขียว
+      default:
+        return "secondary";
+    }
+  };
 
   const handleAddNote = () => {
     if (newNote.trim()) {
@@ -48,7 +48,7 @@ const getStatusVariant = (status) => {
   };
 
   const handleDeleteNote = (id) => {
-    setNotes(notes.filter(note => note.id !== id));
+    setNotes(notes.filter((note) => note.id !== id));
   };
 
   const handleEditNote = (note) => {
@@ -58,9 +58,11 @@ const getStatusVariant = (status) => {
 
   const handleSaveEdit = (id) => {
     if (editingText.trim()) {
-      setNotes(notes.map(note => 
-        note.id === id ? { ...note, text: editingText } : note
-      ));
+      setNotes(
+        notes.map((note) =>
+          note.id === id ? { ...note, text: editingText } : note
+        )
+      );
       setEditingNoteId(null);
       setEditingText("");
     }
@@ -70,8 +72,6 @@ const getStatusVariant = (status) => {
     setEditingNoteId(null);
     setEditingText("");
   };
-
-
 
   //   เก็บค่า Status ของลูกค้า
   const Status = (id, newStatusValue) => {
@@ -251,6 +251,7 @@ const getStatusVariant = (status) => {
                         key={statusValue}
                         onClick={() => Status(selectedCustomer.id, statusValue)}
                         active={selectedCustomer.status === statusValue}
+                        
                       >
                         {statusValue}
                       </Dropdown.Item>
@@ -360,7 +361,7 @@ const getStatusVariant = (status) => {
           <div
             key={selectedCustomer.id}
             className="bg-white align-items-center rounded-4 pt-3 d-flex flex-column h-100"
-            style={{ minWidth: "300px", maxWidth: "250px" }}
+            style={{ minWidth: "350px", maxWidth: "500px" }}
           >
             {/* Profile */}
             <img
@@ -370,7 +371,7 @@ const getStatusVariant = (status) => {
             />
             {selectedCustomer && (
               <div
-                className="d-flex flex-column align-items-center mt-4"
+                className="d-flex flex-column mt-4"
                 style={{ padding: "0 10px" }}
               >
                 {/* ชื่อปัจจุบัน (แก้ไขได้) */}
@@ -412,150 +413,168 @@ const getStatusVariant = (status) => {
                   )}
               </div>
             )}
-            {/* ผู้รับผิดชอบ */}
+
             {selectedCustomer && (
-              <div className="mt-5">
+              <div className="mt-5 w-100" style={{ paddingLeft: "30px", paddingRight:"30px" }}>
                 <p>
                   ผู้รับผิดชอบ : &nbsp;&nbsp;
                   <img
-                    src={
-                      currentUser?.image || "https://i.pravatar.cc/150?img=12"
-                    }
+                    src={currentUser?.image}
                     alt="Admin Profile"
                     className="rounded-circle"
                     style={{
-                      width: "40px",
-                      height: "40px",
+                      width: "30px",
+                      height: "30px",
                       objectFit: "cover",
                     }}
                   />
-                  &nbsp; {currentUser?.name || "Admin"}
+                  &nbsp; {currentUser?.name}
                 </p>
                 <hr />
-                {/* Note Section */}
-                <div className="flex-grow-1 w-100">
+
+                <div className="w-100 px-2">
                   {/* Title */}
-                  <div className="d-flex justify-content-between">
-                     <div className="w-100">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <p className="mb-0">โน๊ต</p>
-                <Button 
-                  variant="link" 
-                  className="text-black p-0"
-                  onClick={() => setIsAddingNote(!isAddingNote)}
-                >
-                  <i 
-                    className="bi bi-plus fs-4"
-                    style={{ cursor: "pointer" }}
-                  ></i>
-                </Button>
-              </div>
+                  <div className="d-flex flex-column">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <p className="mb-0">โน๊ต</p>
+                      <Button
+                        variant="link"
+                        className="text-black p-0"
+                        onClick={() => setIsAddingNote(!isAddingNote)}
+                      >
+                        <i
+                          className="bi bi-plus fs-4"
+                          style={{ cursor: "pointer" }}
+                        ></i>
+                      </Button>
+                    </div>
 
-              {/* Add Note Form */}
-              {isAddingNote && (
-                <div className="mb-3">
-                  <Form.Control
-                    style={{borderRadius: 20}}
-                    as="textarea"
-                    rows={3}
-                    placeholder="เขียนโน๊ต..."
-                    value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    className="mb-2"
-                  />
-                  <div className="d-flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="primary"
-                      onClick={handleAddNote}
-                    >
-                      บันทึก
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="secondary"
-                      onClick={() => {
-                        setIsAddingNote(false);
-                        setNewNote("");
-                      }}
-                    >
-                      ยกเลิก
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Notes List */}
-              <div className="d-flex flex-column gap-2">
-                {notes.map((note) => (
-                  <div 
-                    key={note.id} 
-                    className="border rounded-3 p-3 bg-white"
-                  >
-                    {editingNoteId === note.id ? (
-                      // Edit Mode
-                      <div>
+                    {/* Add Note Form */}
+                    {isAddingNote && (
+                      <div className="mb-3">
                         <Form.Control
+                          style={{ borderRadius: 10 }}
                           as="textarea"
                           rows={3}
-                          value={editingText}
-                          onChange={(e) => setEditingText(e.target.value)}
+                          placeholder="เขียนโน๊ต..."
+                          value={newNote}
+                          onChange={(e) => setNewNote(e.target.value)}
                           className="mb-2"
                         />
                         <div className="d-flex gap-2">
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="primary"
-                            onClick={() => handleSaveEdit(note.id)}
+                            onClick={handleAddNote}
                           >
                             บันทึก
                           </Button>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="secondary"
-                            onClick={handleCancelEdit}
+                            onClick={() => {
+                              setIsAddingNote(false);
+                              setNewNote("");
+                            }}
                           >
                             ยกเลิก
                           </Button>
                         </div>
                       </div>
-                    ) : (
-                      // View Mode
-                      <div>
-                        <p className="mb-2" style={{ whiteSpace: "pre-wrap" }}>
-                          {note.text}
-                        </p>
-                        <div className="d-flex justify-content-between align-items-center">
-                          <small className="text-muted">
-                            {note.date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })} {note.date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
-                          </small>
-                          <div className="d-flex gap-2">
-                            <Button
-                              variant="link"
-                              size="sm"
-                              className="text-secondary p-0"
-                              onClick={() => handleEditNote(note)}
-                            >
-                              <i className="bi bi-pencil" style={{ fontSize: "16px" }}></i>
-                            </Button>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              className="text-secondary p-0"
-                              onClick={() => handleDeleteNote(note.id)}
-                            >
-                              <i className="bi bi-trash" style={{ fontSize: "16px" }}></i>
-                            </Button>
-                          </div>
-                          </div>
-                      </div>
                     )}
+
+                    {/* Notes List */}
+                    <div className="d-flex flex-column gap-2">
+                      {notes.map((note) => (
+                        <div
+                          key={note.id}
+                          className="border rounded-3 p-3 bg-white"
+                        >
+                          {editingNoteId === note.id ? (
+                            // Edit Mode
+                            <div>
+                              <Form.Control
+                                style={{ borderRadius: 10 }}
+                                as="textarea"
+                                rows={3}
+                                value={editingText}
+                                onChange={(e) => setEditingText(e.target.value)}
+                                className="mb-2"
+                              />
+                              <div className="d-flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="primary"
+                                  onClick={() => handleSaveEdit(note.id)}
+                                >
+                                  บันทึก
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={handleCancelEdit}
+                                >
+                                  ยกเลิก
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            // View Mode
+                            <div>
+                              <p
+                                className="mb-2"
+                                style={{
+                                  whiteSpace: "pre-wrap",
+                                  fontSize: "15px",
+                                }}
+                              >
+                                {note.text}
+                              </p>
+                              <div className="d-flex justify-content-between align-items-center">
+                                <small className="text-muted">
+                                  {note.date.toLocaleDateString("th-TH", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })}{" "}
+                                  {note.date.toLocaleTimeString("th-TH", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </small>
+                                <div className="d-flex gap-2">
+                                  {/* ... (ปุ่ม Edit และ Delete เหมือนเดิม) ... */}
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-secondary p-0"
+                                    onClick={() => handleEditNote(note)}
+                                  >
+                                    <i
+                                      className="bi bi-pencil"
+                                      style={{ fontSize: "16px" }}
+                                    ></i>
+                                  </Button>
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-secondary p-0"
+                                    onClick={() => handleDeleteNote(note.id)}
+                                  >
+                                    <i
+                                      className="bi bi-trash"
+                                      style={{ fontSize: "16px" }}
+                                    ></i>
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                ))}
-              </div>
                   </div>
                 </div>
-              </div>
               </div>
             )}
           </div>

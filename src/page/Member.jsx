@@ -125,8 +125,8 @@ const Member = () => {
             onClick={() => setActivePopupId(null)}
         >
             {/* TEAM HEADER */}
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h4 className="fw-bold mb-0" style={{ color: "#FF7A00" }}>
+            <div className="d-flex justify-content-between align-items-center mb-2">
+                <h4 className="mb-0" style={{ color: "#FF7A00" }}>
                     Team
                 </h4>
 
@@ -147,7 +147,7 @@ const Member = () => {
 
                     <Button
                         variant="warning"
-                        className="text-white fw-bold d-flex align-items-center gap-2 rounded-3 px-3"
+                        className="text-white d-flex align-items-center gap-2 rounded-3 px-4"
                         style={{ backgroundColor: "#FF7A00", border: "none" }}
                         onClick={() => setShowCreateTeamModal(true)}
                     >
@@ -157,7 +157,7 @@ const Member = () => {
             </div>
 
 
-             <hr className="mb-4 mt-2" style={{ borderTop: '1px solid #666666ff' }} />
+             <hr className="mb-4 mt-1" style={{ borderTop: '1px solid #666666ff' }} />
 
 
             {/* TEAM LIST */}
@@ -186,7 +186,7 @@ const Member = () => {
                                 onClick={() => toggleTeam(team.id)}
                             >
                                 <div>
-                                    <div className="fw-bold fs-5">{team.name}</div>
+                                    <div className="fs-5">{team.name}</div>
                                     <div
                                         className="text-muted"
                                         style={{ fontSize: "0.85rem" }}
@@ -226,14 +226,14 @@ const Member = () => {
                                                         }}
                                                     />
                                                     <div>
-                                                        <div className="fw-bold">
+                                                        <div>
                                                             {member.name}
                                                         </div>
                                                         <small
                                                             className={
                                                                 member.role ===
                                                                     "หัวหน้า"
-                                                                    ? "text-primary fw-bold"
+                                                                    ? "text-primary"
                                                                     : "text-muted"
                                                             }
                                                         >
@@ -303,8 +303,8 @@ const Member = () => {
             </div>
 
             {/* ================= SECTION: ALL MEMBERS ================= */}
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h4 className="fw-bold mb-0" style={{ color: "#FF7A00" }}>
+            <div className="d-flex justify-content-between align-items-center mb-2">
+                <h4 className="mb-0" style={{ color: "#FF7A00" }}>
                     Member
                 </h4>
 
@@ -342,12 +342,12 @@ const Member = () => {
                 </div>
             </div>
 
-            <hr className="mb-4 mt-2" style={{ borderTop: '1px solid #666666ff' }} />
+            <hr className="mb-4 mt-1" style={{ borderTop: '1px solid #666666ff' }} />
 
             {/* Header */}
             <div
-                className="d-flex px-3 py-2 fw-bold text-dark"
-                style={{ borderBottom: "1px solid #dee2e6" }}
+                className="d-flex px-3 py-2 text-dark fs-5"
+                // style={{ borderBottom: "1px solid #dee2e6" }}
             >
                 <div style={{ width: "25%" }}>ชื่อ</div>
                 <div style={{ width: "25%" }}>ทีม</div>
@@ -361,7 +361,7 @@ const Member = () => {
                 {displayMembers.map((member) => (
                     <div
                         key={member.id}
-                        className="d-flex align-items-center px-3 py-3 border-bottom"
+                        className="d-flex align-items-center px-3 py-3"
                         style={{ backgroundColor: "white" }}
                     >
                         {/* Name */}
@@ -379,21 +379,21 @@ const Member = () => {
                                     objectFit: "cover",
                                 }}
                             />
-                            <span className="fw-bold">{member.name}</span>
+                            <span>{member.name}</span>
                         </div>
 
-                        <div style={{ width: "25%" }} className="fw-bold">
+                        <div style={{ width: "25%" }}>
                             {member.team}
                         </div>
 
                         <div
                             style={{ width: "25%" }}
-                            className="fw-bold text-uppercase"
+                            className="text-uppercase"
                         >
                             {member.role}
                         </div>
 
-                        <div style={{ width: "25%" }} className="fw-bold">
+                        <div style={{ width: "25%" }}>
                             {member.status}
                         </div>
 
@@ -526,7 +526,7 @@ const Member = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <p>
-                        สมาชิก:{" "}
+                        สมาชิก:
                         <strong>{editingUser?.name}</strong>
                     </p>
                     <Form.Group>

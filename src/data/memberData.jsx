@@ -31,18 +31,18 @@ export const usersData = [
       color: "#2196F3",
       email: "A@gmail.com",
       phone: "082-222-2222",
-      image: "/img/user.jpg"
+      image: "/src/assets/Image/Admins/boss.png"
     },
     {
       id: 4,
-      name: "B",
+      name: "Frieren",
       role: "สมาชิก",
       team: "Facebook",
       status: "ไม่ใช้งาน",
       color: "#4CAF50",
       email: "B@gmail.com",
       phone: "083-333-3333",
-      image: "https://i.pravatar.cc/150?img=33"
+      image: "/src/assets/Image/Admins/Frieren.png"
     },
     {
       id: 5,
@@ -57,36 +57,36 @@ export const usersData = [
     },
     {
       id: 6,
-      name: "Pheem",
+      name: "Soma",
       role: "สมาชิก",
       team: "Facebook",
       status: "กำลังใช้งาน",
       color: "#000000",
       email: "pheem@onechat.com",
       phone: "081-111-2222",
-      image: "https://i.pravatar.cc/150?img=8"
+      image: "/src/assets/Image/Admins/soma.png"
     },
     {
       id: 7,
-      name: "Ham",
+      name: "Hex",
       role: "สมาชิก",
       team: "LINE",
       status: "กำลังใช้งาน",
       color: "#FFC107",
       email: "ham@onechat.com",
       phone: "081-333-4444",
-      image: "https://i.pravatar.cc/150?img=11"
+      image: "/src/assets/Image/Admins/Hex.png"
     },
     {
       id: 8,
-      name: "jeab",
+      name: "Shoto",
       role: "สมาชิก",
       team: "LINE",
       status: "กำลังใช้งาน",
       color: "#607D8B",
       email: "tar@onechat.com",
       phone: "081-555-6666",
-      image: "https://i.pravatar.cc/150?img=33"
+      image: "/src/assets/Image/Admins/shoto.png"
     }
   ];
   
@@ -106,7 +106,7 @@ export const usersData = [
       id: 2,
       name: "LINE",
       memberCount: 2,
-      isOpen: true,
+      isOpen: false,
       members: [
         usersData.find(u => u.name === "Tar"),
         usersData.find(u => u.name === "Ham")
