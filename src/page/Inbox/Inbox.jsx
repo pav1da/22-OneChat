@@ -3,8 +3,57 @@ import { Badge, Button, Form, Dropdown } from "react-bootstrap";
 import "./inbox.css";
 import ChatList from "./chatList/ChatList";
 import { fetchCustomer } from "../../data/customer";
-import { initialChatMessages } from "../../data/messages"; // ข้อความตัวอย่าง
+import { initialChatMessages } from "../../data/messages"; // ข้อความตัวอย่าง\
 
+const STATUS = {
+    NOT_STARTED: "ยังไม่เริ่ม",
+    IN_PROGRESS: "กำลังดำเนินการ",
+    DONE: "เสร็จสิ้น",
+};
+const getStatusVariant = (status) => {
+    switch (status) {
+        case STATUS.NOT_STARTED:
+            return "secondary"; // สีเทา
+        case STATUS.IN_PROGRESS:
+            return "warning"; // สีเหลือง
+        case STATUS.DONE:
+            return "success"; // สีเขียว
+        default:
+            return "secondary";
+    }
+};
+
+ const handleAddNote = () => {
+    if (newNote.trim()) {
+      setNotes([...notes, { id: Date.now(), text: newNote, date: new Date() }]);
+      setNewNote("");
+      setIsAddingNote(false);
+    }
+  };
+
+  const handleDeleteNote = (id) => {
+    setNotes(notes.filter(note => note.id !== id));
+  };
+
+  const handleEditNote = (note) => {
+    setEditingNoteId(note.id);
+    setEditingText(note.text);
+  };
+
+  const handleSaveEdit = (id) => {
+    if (editingText.trim()) {
+      setNotes(notes.map(note => 
+        note.id === id ? { ...note, text: editingText } : note
+      ));
+      setEditingNoteId(null);
+      setEditingText("");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setEditingText("");
+  };
 
 const Inbox = ({ currentUser }) => {
     const msgRef = useRef(null);
@@ -379,6 +428,7 @@ const Inbox = ({ currentUser }) => {
                             <div className="d-flex justify-content-between">
                                 <p>โน๊ต</p>
                                 <i className="bi bi-plus"></i>
+                                
                             </div>
                         </div>
                     </div>
