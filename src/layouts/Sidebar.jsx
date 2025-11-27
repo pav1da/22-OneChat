@@ -39,7 +39,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
         </div>
         <Nav className="flex-column w-100 align-content-center gap-2">
            {/* ... Nav Links ... */}
-           <Nav.Link as={Link} to="/inbox" className={`sidebar-item ${isActive("/inbox") ? "active" : ""}`}><i className="bi bi-chat-square-dots"></i></Nav.Link>
+           <Nav.Link as={Link} to="/allchat" className={`sidebar-item ${isActive("/allchat") ? "active" : ""}`}><i className="bi bi-chat-square-dots"></i></Nav.Link>
            <Nav.Link as={Link} to="/dashboard" className={`sidebar-item ${isActive("/dashboard") ? "active" : ""}`}><i className="bi bi-columns-gap"></i></Nav.Link>
            <Nav.Link as={Link} to="/card-message" className={`sidebar-item ${isActive("/card-message") ? "active" : ""}`}><i className="bi bi-files"></i></Nav.Link>
            <Nav.Link as={Link} to="/notification" className={`sidebar-item ${isActive("/notification") ? "active" : ""}`}><i className="bi bi-bell"></i></Nav.Link>

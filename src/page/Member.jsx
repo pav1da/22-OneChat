@@ -144,7 +144,7 @@ const Member = () => {
     // ================== 5. RENDER UI ==================
     return (
         <div
-            className="kanit-regular h-100 d-flex flex-column bg-white rounded-4 py-4 px-5 mx-2"
+            className="kanit-regular px-5 py-4 mx-4 h-100 d-flex flex-column bg-white rounded-4"
             style={{ paddingLeft: "6%", paddingRight: "6%", overflowY: "auto" }}
             onClick={() => setActivePopupId(null)}
         >

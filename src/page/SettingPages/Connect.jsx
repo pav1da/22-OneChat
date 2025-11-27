@@ -43,14 +43,14 @@ const Connect = () => {
     const blueBtn = '#0099ff'; // สีฟ้าปุ่ม Reset
 
     return (
-        <div className="px-4 pt-4" style={{ maxWidth: '1000px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+        <div className="kanit-regular px-4 pt-5" style={{ maxWidth: '1000px', margin: '0 auto' }}>
             
             {/* --- ส่วนหัว (Header) --- */}
             <div className="mb-4">
-                <h4 className="fw-bold mb-3" style={{ color: '#333' }}>API Key Management</h4>
+                <h4 className="fs-3 mb-3" style={{ color: '#333' }}>API Key Management</h4>
                 
                 <div className="d-flex justify-content-between align-items-start">
-                    <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
+                    <p className="text-muted mb-0 fs-6">
                         Manage the keys that Swrve uses to authenticate your API calls.
                     </p>
                     
@@ -59,7 +59,7 @@ const Connect = () => {
                         style={{ 
                             backgroundColor: greenColor, 
                             border: 'none', 
-                            fontWeight: '500',
+                            fontWeight: '400',
                             padding: '8px 20px'
                         }}
                     >
@@ -71,7 +71,7 @@ const Connect = () => {
             {/* --- ตาราง (Table) --- */}
             <div className="bg-white rounded-3 mb-5">
                 <Table responsive borderless hover style={{ verticalAlign: 'middle' }}>
-                    <thead style={{ borderBottom: '2px solid #eee' }}>
+                    <thead className='fs-6' style={{ borderBottom: '2px solid #eee' }}>
                         <tr>
                             <th className="py-3 ps-3">Status</th>
                             <th className="py-3">Name</th>
@@ -144,7 +144,6 @@ const Connect = () => {
                                 style={{ 
                                     backgroundColor: blueBtn, 
                                     border: 'none', 
-                                    fontWeight: 'bold',
                                     padding: '6px 25px'
                                 }}
                             >

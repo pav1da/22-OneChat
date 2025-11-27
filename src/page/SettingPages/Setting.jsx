@@ -59,14 +59,14 @@ function Setting({ user }) {
     };
 
     return (
-        <div className="settings-page-wrapper mx-4">
+        <div className="kanit-regular settings-page-wrapper mx-4 px-3 py-3">
             <Container fluid className="h-100 d-flex flex-column">
 
                 <Row className="flex-grow-1 h-100">
                     {/* ===== คอลัมน์ซ้าย: เมนู (Left Menu) ===== */}
                     <Col md={3} lg={3} className="custom-vertical-divider pe-0 py-4 scrollable-col settings-sidebar">
 
-                        <h4 className="fw-bold mb-4 px-3" style={{ fontSize: '1.5rem' }}>Setting</h4>
+                        <h4 className="mb-4 px-3 fs-3">Setting</h4>
 
                         <Nav
                             className="flex-column settings-nav px-2"
