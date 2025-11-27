@@ -90,6 +90,19 @@ const Member = () => {
         setShowCreateTeamModal(false);
     };
 
+    // --- 🔴 ฟังก์ชันลบทีม ---
+    const handleDeleteTeam = (teamId, teamName) => {
+        if (window.confirm(`ต้องการลบทีม "${teamName}" ใช่หรือไม่? \n(กูให้คิดอีกที)`)) {
+
+            setTeams((prev) => prev.filter((t) => t.id !== teamId));
+            setAllMembers((prev) => 
+                prev.map((member) => 
+                    member.team === teamName ? { ...member, team: "" } : member
+                )
+            );
+        }
+    };
+
     const openEditModal = (user) => {
         setEditingUser(user);
         setSelectedTeamForEdit(user.team);
@@ -108,8 +121,19 @@ const Member = () => {
         setShowEditModal(false);
     };
 
+    const handleRemoveFromTeam = (userId) => {
+        if (window.confirm("ยืนยันการนำสมาชิกออกจากทีม?")) {
+            setAllMembers((prev) =>
+                prev.map((user) =>
+                    user.id === userId ? { ...user, team: "" } : user
+                )
+            );
+            setActivePopupId(null);
+        }
+    };
+
     const handleDeleteUser = (userId) => {
-        if (window.confirm("ยืนยันการลบสมาชิกนี้?")) {
+        if (window.confirm("ยืนยันการลบสมาชิกนี้ออกจากระบบ?")) {
             setAllMembers((prev) =>
                 prev.filter((user) => user.id !== userId)
             );
@@ -156,9 +180,7 @@ const Member = () => {
                 </div>
             </div>
 
-
-             <hr className="mb-4 mt-1" style={{ borderTop: '1px solid #666666ff' }} />
-
+            <hr className="mb-4 mt-1" style={{ borderTop: '1px solid #666666ff' }} />
 
             {/* TEAM LIST */}
             <div className="d-flex flex-column gap-3 mb-5">
@@ -194,9 +216,27 @@ const Member = () => {
                                         สมาชิก {membersInTeam.length} คน
                                     </div>
                                 </div>
-                                <i
-                                    className={`bi bi-chevron-${team.isOpen ? "down" : "right"} text-muted`}
-                                ></i>
+                                
+                                {/* 🔴 ส่วนขวาของ Header: ปุ่มลบทีม + ลูกศร */}
+                                <div className="d-flex align-items-center gap-3">
+                                    <Button
+                                        variant="light"
+                                        size="sm"
+                                        className="text-danger p-1 rounded-circle border-0 hover-bg-light"
+                                        style={{ width: '30px', height: '30px' }}
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // หยุดไม่ให้ไป trigger การเปิด/ปิด accordion
+                                            handleDeleteTeam(team.id, team.name);
+                                        }}
+                                        title="ลบทีม"
+                                    >
+                                        <i className="bi bi-trash"></i>
+                                    </Button>
+
+                                    <i
+                                        className={`bi bi-chevron-${team.isOpen ? "down" : "right"} text-muted`}
+                                    ></i>
+                                </div>
                             </div>
 
                             {/* Team Members */}
@@ -268,7 +308,7 @@ const Member = () => {
                                                                     right: 0,
                                                                     top: "100%",
                                                                     zIndex: 10,
-                                                                    minWidth: "100px",
+                                                                    minWidth: "120px",
                                                                 }}
                                                             >
                                                                 <div
@@ -277,13 +317,13 @@ const Member = () => {
                                                                         cursor: "pointer",
                                                                     }}
                                                                     onClick={() =>
-                                                                        handleDeleteUser(
+                                                                        handleRemoveFromTeam(
                                                                             member.id
                                                                         )
                                                                     }
                                                                 >
-                                                                    <i className="bi bi-trash me-2"></i>
-                                                                    ลบ
+                                                                    <i className="bi bi-person-dash me-2"></i>
+                                                                    ออกจากทีม
                                                                 </div>
                                                             </div>
                                                         )}
@@ -302,7 +342,7 @@ const Member = () => {
                 })}
             </div>
 
-            {/* ================= SECTION: ALL MEMBERS ================= */}
+            {/* ================= SECTION: ALL MEMBERS (ส่วนนี้เหมือนเดิม) ================= */}
             <div className="d-flex justify-content-between align-items-center mb-2">
                 <h4 className="mb-0" style={{ color: "#FF7A00" }}>
                     Member
@@ -345,10 +385,7 @@ const Member = () => {
             <hr className="mb-4 mt-1" style={{ borderTop: '1px solid #666666ff' }} />
 
             {/* Header */}
-            <div
-                className="d-flex px-3 py-2 text-dark fs-5"
-                // style={{ borderBottom: "1px solid #dee2e6" }}
-            >
+            <div className="d-flex px-3 py-2 text-dark fs-5">
                 <div style={{ width: "25%" }}>ชื่อ</div>
                 <div style={{ width: "25%" }}>ทีม</div>
                 <div style={{ width: "25%" }}>บทบาท</div>
@@ -480,7 +517,7 @@ const Member = () => {
             </div>
 
             {/* ================= MODALS ================= */}
-            {/* Create Team */}
+            {/* Create Team Modal */}
             <Modal
                 show={showCreateTeamModal}
                 onHide={() => setShowCreateTeamModal(false)}
@@ -515,7 +552,7 @@ const Member = () => {
                 </Modal.Footer>
             </Modal>
 
-            {/* Edit Member */}
+            {/* Edit Member Modal */}
             <Modal
                 show={showEditModal}
                 onHide={() => setShowEditModal(false)}

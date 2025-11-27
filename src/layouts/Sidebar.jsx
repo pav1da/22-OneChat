@@ -5,6 +5,7 @@ import "./Sidebar.css";
 import { useState } from "react";
 import AiPanel from "../components/AiPanel";
 
+
 const Sidebar = ({ onLogout, currentUser }) => {
   const location = useLocation();
   const isActive = (path) => location.pathname.startsWith(path);
@@ -67,7 +68,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
             as={Link}
             to="/notification"
             className={`sidebar-item ${
-              isActive("/notificationpage") ? "active" : ""
+              isActive("/notification") ? "active" : ""
             }`}
           >
             <i className="bi bi-bell"></i>
