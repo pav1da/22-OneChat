@@ -25,18 +25,20 @@
   padding: 40px;
 }
 
-.custom-search{
-    background: white;
-    padding-left: 20px;
-    border-color: #c5c5c5;
+.custom-search {
+  background-color: white;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-right: 1rem;
+  padding-left: 0.5rem;
+  border-left: 0;
+  border: 1px solid #c5c5c5;
 }
 
 .custom-search:focus {
-  outline: none;
+  outline: none ;
   box-shadow: none;
-  border-right: 1px solid #c5c5c5;
-  border-bottom: 1px solid #c5c5c5;
-  border-top: 1px solid #c5c5c5;
+  border: 1px solid #c5c5c5;
 }
 
 .user-avatar {

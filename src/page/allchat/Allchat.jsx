@@ -53,24 +53,19 @@ const AllChat = () => {
         <div className="d-flex gap-3 align-items-center">
           {/* Search Input */}
           <InputGroup style={{ width: "250px" }}>
-            <InputGroup.Text
-              className="bg-white border-1 rounded-start-3 py-2 ps-3 pe-2"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderColor: "#c5c5c5"
-              }}
-            >
-              <i className="bi bi-search text-muted"></i>
-            </InputGroup.Text>
-            <Form.Control
-              type="search"
-              placeholder="ค้นหา..."
-              className="rounded-end-3 border-1 custom-search"
-              aria-label="Search"
-            />
-          </InputGroup>
+                <InputGroup.Text
+                  className="bg-white border-1 rounded-start-3 py-2 ps-3 pe-2"
+                  style={{ borderColor: "#c5c5c5" }}
+                >
+                  <i className="bi bi-search text-muted"></i>
+                </InputGroup.Text>
+
+                <Form.Control
+                  type="search"
+                  placeholder="ค้นหา..."
+                  className="rounded-end-3 border-1 border-start-0 custom-search"
+                />
+              </InputGroup>
 
           {/* Sort Button */}
           <Button
