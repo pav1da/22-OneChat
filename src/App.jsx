@@ -16,6 +16,7 @@ import Setting from "./page/SettingPages/Setting";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Notifiacation from "./page/notification/Notification";
 import Log from "./page/Log";
+import Member from "./page/Member";
 
 function App() {
     // ให้ไปเช็คใน localStorage ก่อนว่ามีของเก่าไหม
@@ -63,7 +64,8 @@ function App() {
                         <Route path="/inbox" element={<Inbox currentUser={currentUser} />} />
                         <Route path="/setting" element={<Setting user={currentUser} />} />
                         <Route path="/log" element={<Log/>} />
-                        <Route path="notification" element={<Notifiacation/>}/>
+                        <Route path="/notification" element={<Notifiacation/>}/>
+                        <Route path="/member" element={<Member/>}/>
 
                     </Route>
                 </Routes>

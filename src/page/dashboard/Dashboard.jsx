@@ -225,7 +225,7 @@ function Dashboard() {
                 <InputGroup.Text
                   className="bg-white border-0 rounded-start-3 py-2 ps-3 pe-2"
                   style={{
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                    boxShadow: "1px 1px 0px rgba(0,0,0,0.1)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -236,8 +236,10 @@ function Dashboard() {
                 <Form.Control
                   type="search"
                   placeholder="ค้นหา..."
-                  className="rounded-end-3 bg-white border-0 py-2 pe-3 ps-2"
-                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
+                  className="rounded-end-3 border-0 custom-search"
+                  style={{
+                    boxShadow: "1px 1px 0px rgba(0,0,0,0.1)"
+                  }}
                   aria-label="Search"
                 />
               </InputGroup>

@@ -6,19 +6,19 @@ import "./notification.css"
 const mockNotifications = [
     {
         id: 1,
-        avatar: "https://i.pravatar.cc/150?img=5",
+        avatar: "./src/assets/Image/Admins/pav1da.png",
         text: "pav1da ได้เข้าถึงข้อความของ Harumasa บน Facebook : Dew Flower Shop",
         date: "25 ธันวาคม 2560 เวลา 14:40"
     },
     {
         id: 2,
-        avatar: "https://i.pravatar.cc/150?img=11",
+        avatar: "./src/assets/Image/Customers/Harumasa.png",
         text: "มีข้อความใหม่จาก Harumasa ที่ Facebook: Dew Flower Shop",
         date: "25 ธันวาคม 2560 เวลา 14:30"
     },
     {
         id: 3,
-        avatar: "https://i.pravatar.cc/150?img=9",
+        avatar: "./src/assets/Image/Customers/JaneDoe.png",
         text: "มีข้อความใหม่จาก Jane Dose ที่ Facebook: Dew Flower Shop",
         date: "25 ธันวาคม 2560 เวลา 12:00"
     }
@@ -29,7 +29,7 @@ function NotificationPage() {
     const [filterAction, setFilterAction] = useState("");
 
     return (
-        <Container fluid className="px-4 py-3 mx-4 page-wrap">
+        <Container fluid className="px-5 py-4 mx-4 page-wrap">
 
             {/* --- ส่วนหัว (Header) --- */}
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 mx-3 mt-3" >
@@ -45,8 +45,8 @@ function NotificationPage() {
                     <div className="d-flex align-items-center gap-2">
                         <span style={{ fontSize: '0.9rem', fontWeight: '500', whiteSpace: 'nowrap' }}>กรองโดยผู้ใช้ :</span>
                         <Form.Select
-                            size="sm"
-                            style={{ width: '150px', backgroundColor: '#F0F0F0', border: 'none', borderRadius: '6px' }}
+                            size="m"
+                            className='custom-filters'
                             value={filterUser}
                             onChange={(e) => setFilterUser(e.target.value)}
                         >
@@ -60,20 +60,20 @@ function NotificationPage() {
                     <div className="d-flex align-items-center gap-2">
                         <span style={{ fontSize: '0.9rem', fontWeight: '500', whiteSpace: 'nowrap' }}>กรองโดยการกระทำ :</span>
                         <Form.Select
-                            size="sm"
-                            style={{ width: '150px', backgroundColor: '#F0F0F0', border: 'none', borderRadius: '6px' }}
+                            size="m"
+                            className='custom-filters'
                             value={filterAction}
                             onChange={(e) => setFilterAction(e.target.value)}
                         >
-                            <option value="">ค้นหาการกระทำ</option>
-                            <option value="access">เข้าถึงข้อความ</option>
-                            <option value="new_msg">ข้อความใหม่</option>
+                            <option value="" className='option-filter'>ค้นหาการกระทำ</option>
+                            <option value="access" className='option-filter'>เข้าถึงข้อความ</option>
+                            <option value="new_msg" className='option-filter'>ข้อความใหม่</option>
                         </Form.Select>
                     </div>
                 </div>
             </div>
 
-            <hr style={{ borderTop: '1px solid #b42929ff', marginBottom: '25px' }} />
+            <hr style={{ borderTop: '1px solid #444', marginBottom: '25px' }} />
 
             {/* --- รายการแจ้งเตือน (Notification List) --- */}
             <div className="d-flex flex-column gap-3">
@@ -82,9 +82,9 @@ function NotificationPage() {
                         key={item.id}
                         className="d-flex align-items-center p-3 notification-card"
                         style={{
-                            backgroundColor: '#F7F8F9', // สีพื้นหลังเดิม
+                            backgroundColor: '#fff', // สีพื้นหลังเดิม
                             borderRadius: '16px',
-                            border: '1px solid #EAEAEA',
+                            border: '1px solid #c5c5c5',
                             cursor: 'pointer',           // เปลี่ยนเมาส์เป็นรูปมือ
                             transition: 'all 0.2s ease'  // เพิ่ม transition ให้ลื่นไหล
                         }}

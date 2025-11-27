@@ -145,7 +145,7 @@ const Inbox = ({ currentUser }) => {
                     <i className="bi bi-arrow-left"></i>
                 </button>
                 {/* หัวข้อ อาจจะชื่อร้านที่รับผิดชอบ */}
-                <div className="w-100 rounded-5 ps-4 d-flex align-items-center fs-5 bg-white-translucent">
+                <div className="w-100 rounded-5 ps-4 d-flex align-items-center fs-5 bg-white">
                     All Chats
                 </div>
             </div>
@@ -153,7 +153,7 @@ const Inbox = ({ currentUser }) => {
             <div className="d-flex gap-2 flex-grow-1 height-fix">
                 {/* Start ChatList Section */}
                 <div
-                    className="bg-white-translucent rounded-4 p-3 d-flex flex-column h-100"
+                    className="bg-white rounded-4 p-3 d-flex flex-column h-100"
                     style={{ minWidth: "350px", maxWidth: "300px" }}
                 >
                     {/* Start Search Section */}
@@ -180,7 +180,7 @@ const Inbox = ({ currentUser }) => {
                 {/* End ChatList Section */}
 
                 {/* Start Chat Section */}
-                <div className="flex-grow-1 bg-white-translucent rounded-4 p-3 d-flex flex-column h-100">
+                <div className="flex-grow-1 bg-white rounded-4 p-3 d-flex flex-column h-100">
                     {/* Start Top Section */}
                     <div className="d-flex gap-3 custom-top-chat pb-3 mx-1 border-secondary-subtle border-bottom">
                         <div className="d-flex gap-3">
@@ -332,74 +332,77 @@ const Inbox = ({ currentUser }) => {
                             className="rounded-circle mt-5"
                             style={{ width: "140px", height: "140px", objectFit: "cover" }}
                         />
-                        {/* User Name */}
-                        <div
-                            className="d-flex flex-column align-items-center mt-4"
-                            style={{ padding: "0 10px" }}
-                        >
-                            {/* ชื่อปัจจุบัน (แก้ไขได้) */}
-                            {isEditingName ? (
-                                <Form.Control
-                                    type="text"
-                                    value={selectedCustomer.name}
-                                    onChange={handleNameChange}
-                                    onBlur={handleNameSave}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
-                                            e.preventDefault();
-                                            handleNameSave();
-                                        }
-                                    }}
-                                    style={{ fontSize: "18px", textAlign: "center" }}
-                                    autoFocus
-                                />
-                            ) : (
-                                <p className="mb-0" style={{ fontSize: "18px" }}>
-                                    {selectedCustomer.name}
-                                    <i
-                                        className="bi bi-pencil ms-2"
-                                        onClick={() => setIsEditingName(true)}
-                                        style={{ cursor: "pointer" }}
-                                    ></i>
+                    </div>
+                )
+                }
+                {selectedCustomer && (
+                    <div
+                        className="d-flex flex-column align-items-center mt-4"
+                        style={{ padding: "0 10px" }}
+                    >
+                        {/* ชื่อปัจจุบัน (แก้ไขได้) */}
+                        {isEditingName ? (
+                            <Form.Control
+                                type="text"
+                                value={selectedCustomer.name}
+                                onChange={handleNameChange}
+                                onBlur={handleNameSave}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleNameSave();
+                                    }
+                                }}
+                                className="custom-edit-name"
+                                autoFocus
+                            />
+                        ) : (
+                            <p className="mb-0" style={{ fontSize: "18px" }}>
+                                {selectedCustomer.name}
+                                <i
+                                    className="bi bi-pencil ms-2"
+                                    onClick={() => setIsEditingName(true)}
+                                    style={{ cursor: "pointer" }}
+                                ></i>
+                            </p>
+                        )}
+
+                        {/* *** ชื่อเดิม (ชื่อเก่า) *** */}
+                        {selectedCustomer.originalName &&
+                            selectedCustomer.originalName !== selectedCustomer.name && (
+                                <p
+                                    className="text-muted mt-1 mb-0"
+                                    style={{ fontSize: "16px" }}
+                                >
+                                    {selectedCustomer.originalName}
                                 </p>
                             )}
-
-                            {/* *** ชื่อเดิม (ชื่อเก่า) *** */}
-                            {selectedCustomer.originalName &&
-                                selectedCustomer.originalName !== selectedCustomer.name && (
-                                    <p
-                                        className="text-muted mt-1 mb-0" // mb-0, mt-1 ถูกแล้ว
-                                        style={{ fontSize: "16px" }}
-                                    >
-                                        {selectedCustomer.originalName}
-                                    </p>
-                                )}
-                        </div>
-                        {/* ผู้รับผิดชอบ */}
-                        <div className="mt-5">
-                            <p>
-                                ผู้รับผิดชอบ : &nbsp;&nbsp;
-                                <img
-                                    src={currentUser?.image || "https://i.pravatar.cc/150?img=12"}
-                                    alt="Admin Profile"
-                                    className="rounded-circle"
-                                    style={{ width: "40px", height: "40px", objectFit: "cover" }}
-                                />
-                                &nbsp; {currentUser?.name || "Admin"}
-                            </p>
-                            <hr />
-                            {/* Note Section */}
-                            <div className="flex-grow-1 w-100">
-                                {/* Title */}
-                                <div className="d-flex justify-content-between">
-                                    <p>โน๊ต</p>
-                                    <i className="bi bi-plus"></i>
-                                </div>
+                    </div>
+                )}
+                {/* ผู้รับผิดชอบ */}
+                {selectedCustomer && (
+                    <div className="mt-5">
+                        <p>
+                            ผู้รับผิดชอบ : &nbsp;&nbsp;
+                            <img
+                                src={currentUser?.image || "https://i.pravatar.cc/150?img=12"}
+                                alt="Admin Profile"
+                                className="rounded-circle"
+                                style={{ width: "40px", height: "40px", objectFit: "cover" }}
+                            />
+                            &nbsp; {currentUser?.name || "Admin"}
+                        </p>
+                        <hr />
+                        {/* Note Section */}
+                        <div className="flex-grow-1 w-100">
+                            {/* Title */}
+                            <div className="d-flex justify-content-between">
+                                <p>โน๊ต</p>
+                                <i className="bi bi-plus"></i>
                             </div>
                         </div>
                     </div>
                 )}
-                {/* End Profile Section */}
             </div>
         </div>
     );
