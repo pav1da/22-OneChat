@@ -1,57 +1,82 @@
 import "./chatList.css";
 import { Card, Badge } from "react-bootstrap";
-import { fetchCustomer } from "../../../data/customer";
-import { useEffect, useState } from "react";
 
-const ChatList = () => {
-  const [customer, setCustomer] = useState([]);
+const STATUS = {
+  NOT_STARTED: "ยังไม่เริ่ม",
+  IN_PROGRESS: "กำลังดำเนินการ",
+  DONE: "เสร็จสิ้น",
+};
 
-  const Status = (id) => {
-    setCustomer((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, inprocess: !c.inprocess } : c))
-    );
-  };
+const getStatusVariant = (status) => {
+  switch (status) {
+    case STATUS.NOT_STARTED:
+      return "secondary";
+    case STATUS.IN_PROGRESS:
+      return "warning";
+    case STATUS.DONE:
+      return "success";
+    default:
+      return "secondary";
+  }
+};
 
-  useEffect(() => {
-    setCustomer(fetchCustomer());
-  }, []);
-
+const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
   return (
     <div className="overflow-y-auto flex-grow-1 pt-3">
-      {customer.map((cus) => {
-        return (
-          <Card className="custom-card-chat">
-            <Card.Body className="d-flex align-items-center gap-3" key={cus.id}>
+      <Card className="custom-card-chat">
+        {customers.map((cus) => {
+          const isSelected = cus.id === selectedChatId;
+
+          return (
+            <Card.Body
+              onClick={() => onChatSelect(cus.id)}
+              className={`d-flex align-items-center gap-3 ${
+                isSelected ? "selected-chat-item" : ""
+              }`}
+              key={cus.id}
+            >
               {/* Profile Picture */}
               <img
                 src={cus.img}
-                className="rounded-circle"
-                style={{ width: "60px", height: "60px", objectFit: "cover" }}
+                className="rounded-circle custom-img"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  flexShrink: 0,
+                }}
               />
-              {/* Texts */}
+
               <div
-                className="d-flex flex-column gap-1"
+                className="d-flex flex-column gap-2 flex-grow-1 chat-text-container"
                 style={{ height: "50px" }}
               >
-                <div className="d-flex gap-3">
-                  {/* Username */}
-                  <span style={{ fontSize: "18px" }}>{cus.name}</span>
-                  {/* Status */}
-                  {cus.inprocess ? (
-                    <Badge className="bg-warning custom-badge">
-                      กำลังดำเนินการ
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-success custom-badge">เสร็จสิ้น</Badge>
-                  )}
+                <div 
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto",
+                    alignItems: "baseline",
+                  }}
+                >
+                  <span
+                    className="text-truncate username-text"
+                  >
+                    {cus.name}
+                  </span>
+
+                  <Badge
+                    bg={getStatusVariant(cus.status)}
+                    className="custom-badge"
+                  >
+                    {cus.status}
+                  </Badge>
                 </div>
-                {/* Massage */}
                 <p className="custom-text">{cus.last}</p>
               </div>
             </Card.Body>
-          </Card>
-        );
-      })}
+          );
+        })}
+      </Card>
     </div>
   );
 };

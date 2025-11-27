@@ -23,12 +23,7 @@ const Layouts = ({ onLogout, user }) => {
           // --- จัดขนาด (Size) ---
           width: "calc(100% - 160px)", // เว้นขวาพอประมาณ
           height: "calc(100vh - 40px)", // ความสูงเต็มจอ ลบขอบบนล่าง
-          
-          // --- ตกแต่ง (Decoration) ---
-          
-          borderRadius: "30px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-          
+      
           // --- การจัดการ Scroll ---
           boxSizing: "border-box", 
           overflowY: "hidden", // ซ่อน Scroll แนวตั้ง
