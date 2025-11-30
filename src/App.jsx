@@ -47,7 +47,7 @@ function App() {
 
   return (
     <div>
-      <BrowserRouter>
+      <BrowserRouter basename="/onechat/">
         <Routes>
           {/* --- Public --- */}
           <Route path="/" element={<Home />} />
