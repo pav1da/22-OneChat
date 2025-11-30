@@ -4,12 +4,13 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Sidebar.css";
 import { useState } from "react";
 import AiPanel from "../components/AiPanel";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 const Sidebar = ({ onLogout, currentUser }) => {
   const location = useLocation();
   const isActive = (path) => location.pathname.startsWith(path);
-  
-  const defaultProfile = "/img/default.png"; 
+
+  const defaultProfile = "/img/default.png";
   const userImage = currentUser?.image || defaultProfile;
 
   const [showAiPanel, setShowAiPanel] = useState(false);
@@ -27,7 +28,8 @@ const Sidebar = ({ onLogout, currentUser }) => {
   };
 
   // ✅ เช็คสิทธิ์ตรงนี้ (หรือจะเช็ค Inline ใน JSX เลยก็ได้)
-  const isPrivilegedUser = currentUser?.role === 'it' || currentUser?.role === 'admin';
+  const isPrivilegedUser =
+    currentUser?.role === "it" || currentUser?.role === "admin";
 
   return (
     <div className="kanit-regular sidebar-container d-flex flex-column justify-content-between">
@@ -35,18 +37,94 @@ const Sidebar = ({ onLogout, currentUser }) => {
       <div className="d-flex flex-column align-items-center w-100 pt-4">
         {/* ... Logo & Nav ... */}
         <div className="brand-logo mb-5">
-          <img src="/public/sb-logo.png" alt="Logo" style={{ width: "90%", height: "auto" }} />
+          <img
+            src="/public/sb-logo.png"
+            alt="Logo"
+            style={{ width: "90%", height: "auto" }}
+          />
         </div>
         <Nav className="flex-column w-100 align-content-center gap-2">
-           {/* ... Nav Links ... */}
-           <Nav.Link as={Link} to="/allchat" className={`sidebar-item ${isActive("/allchat") ? "active" : ""}`}><i className="bi bi-chat-square-dots"></i></Nav.Link>
-           <Nav.Link as={Link} to="/dashboard" className={`sidebar-item ${isActive("/dashboard") ? "active" : ""}`}><i className="bi bi-columns-gap"></i></Nav.Link>
-           <Nav.Link as={Link} to="/cardmessage" className={`sidebar-item ${isActive("/cardmessage") ? "active" : ""}`}><i className="bi bi-files"></i></Nav.Link>
-           <Nav.Link as={Link} to="/notification" className={`sidebar-item ${isActive("/notification") ? "active" : ""}`}><i className="bi bi-bell"></i></Nav.Link>
-           <Nav.Link as={Link} to="/member" className={`sidebar-item ${isActive("/member") ? "active" : ""}`}><i className="bi bi-person"></i></Nav.Link>
-           
-           <div className="sidebar-profile mb-2">
-            <img src={userImage} alt="Profile" style={{ width: "50px", height: "50px", borderRadius: "50%", objectFit: "cover" }} />
+          {/* ... Nav Links ... */}
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-allchat">All Chats</Tooltip>}
+          >
+            <Nav.Link
+              as={Link}
+              to="/allchat"
+              className={`sidebar-item ${isActive("/allchat") ? "active" : ""}`}
+            >
+              <i className="bi bi-chat-square-dots"></i>
+            </Nav.Link>
+          </OverlayTrigger>
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-dashboard">Note</Tooltip>}
+          >
+            <Nav.Link
+              as={Link}
+              to="/dashboard"
+              className={`sidebar-item ${
+                isActive("/dashboard") ? "active" : ""
+              }`}
+            >
+              <i className="bi bi-columns-gap"></i>
+            </Nav.Link>
+          </OverlayTrigger>
+          <OverlayTrigger
+            placement="right"
+            overlay={
+              <Tooltip id="tooltip-cardmessage">Card & Messages</Tooltip>
+            }
+          >
+            <Nav.Link
+              as={Link}
+              to="/cardmessage"
+              className={`sidebar-item ${
+                isActive("/cardmessage") ? "active" : ""
+              }`}
+            >
+              <i className="bi bi-files"></i>
+            </Nav.Link>
+          </OverlayTrigger>
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-notification">Notification</Tooltip>}
+          >
+            <Nav.Link
+              as={Link}
+              to="/notification"
+              className={`sidebar-item ${
+                isActive("/notification") ? "active" : ""
+              }`}
+            >
+              <i className="bi bi-bell"></i>
+            </Nav.Link>
+          </OverlayTrigger>
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-member">Member</Tooltip>}
+          >
+            <Nav.Link
+              as={Link}
+              to="/member"
+              className={`sidebar-item ${isActive("/member") ? "active" : ""}`}
+            >
+              <i className="bi bi-person"></i>
+            </Nav.Link>
+          </OverlayTrigger>
+
+          <div className="sidebar-profile mb-2">
+            <img
+              src={userImage}
+              alt="Profile"
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
+            />
           </div>
         </Nav>
       </div>
@@ -54,12 +132,23 @@ const Sidebar = ({ onLogout, currentUser }) => {
       {/* ================= ส่วนล่าง ================= */}
       <div className="d-flex flex-column align-items-center w-100 pb-4 gap-2">
         <Dropdown drop="up" className="w-100 d-flex justify-content-center">
-          <Dropdown.Toggle as="div" className={`sidebar-item ${isActive("/setting") ? "active" : ""}`} style={{ cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <Dropdown.Toggle
+            as="div"
+            className={`sidebar-item ${isActive("/setting") ? "active" : ""}`}
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <i className="bi bi-list" style={{ fontSize: "1.8rem" }}></i>
           </Dropdown.Toggle>
 
-          <Dropdown.Menu className="mb-2 shadow border-0 rounded-4 p-2" style={{ minWidth: "220px" }}>
-            
+          <Dropdown.Menu
+            className="mb-2 shadow border-0 rounded-4 p-2"
+            style={{ minWidth: "220px" }}
+          >
             {/* 1. Setting (ทุกคนเห็น) */}
             <Dropdown.Item as={Link} to="/setting" className="py-3">
               <i className="bi bi-gear me-2"></i> Setting
@@ -73,7 +162,8 @@ const Sidebar = ({ onLogout, currentUser }) => {
                 </Dropdown.Item>
 
                 <Dropdown.Item as={Link} to="/tokenreport" className="py-3">
-                  <i className="bi bi-bar-chart-line me-2"></i> รายงานการใช้ Token
+                  <i className="bi bi-bar-chart-line me-2"></i> รายงานการใช้
+                  Token
                 </Dropdown.Item>
               </>
             )}
@@ -92,9 +182,18 @@ const Sidebar = ({ onLogout, currentUser }) => {
           </Dropdown.Menu>
         </Dropdown>
 
-        <div className={`sidebar-item ${showAiPanel ? "active" : ""}`} onClick={handleAiClick} style={{ cursor: "pointer" }}>
-          <i className={`bi bi-${showAiPanel ? "x-circle" : "circle"}`}></i>
-        </div>
+        <OverlayTrigger
+          placement="right"
+          overlay={<Tooltip id="tooltip-ai">AI</Tooltip>}
+        >
+          <div
+            className={`sidebar-item ${showAiPanel ? "active" : ""}`}
+            onClick={handleAiClick}
+            style={{ cursor: "pointer" }}
+          >
+            <i className={`bi bi-${showAiPanel ? "x-circle" : "circle"}`}></i>
+          </div>
+        </OverlayTrigger>
       </div>
 
       <AiPanel show={showAiPanel} handleClose={handleCloseAiPanel} />

@@ -4,10 +4,10 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 const TokenReport = () => {
   // ข้อมูลจำลอง (Mock Data) สำหรับการแสดงผล
-  const totalToken = "11,646,988";
+  const totalToken = "1,016,131";
 
   const summaryStats = [
-    { label: "เฉลี่ยต่อวัน", value: "30,122" },
+    { label: "เฉลี่ยต่อวัน", value: "33,871" },
     { label: "ค่าใช้จ่ายเดือนนี้", value: "฿ 1,201" },
     { label: "แนวโน้ม", value: "+ 7.5%" },
   ];
@@ -16,19 +16,19 @@ const TokenReport = () => {
     {
       label: "ทั่วไป",
       percent: "48 %",
-      value: "1,183,211",
+      value: "583,211",
       color: "#8FAAFF", // สีฟ้า
     },
     {
       label: "สนับสนุน",
       percent: "37 %",
-      value: "1,183,211",
+      value: "353,200",
       color: "#D6B0F5", // สีม่วง
     },
     {
       label: "คำถามที่พบบ่อย",
       percent: "15 %",
-      value: "479,720", // สมมติค่า
+      value: "79,720", // สมมติค่า
       color: "#90EE90", // สีเขียว
     },
   ];

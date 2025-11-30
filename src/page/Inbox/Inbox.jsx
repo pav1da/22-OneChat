@@ -30,6 +30,7 @@ const Inbox = ({ currentUser }) => {
   // Start Message State Section
   const [messages, setMessages] = useState(initialChatMessages);
   const [newMessage, setNewMessage] = useState("");
+  const fileInputRef = useRef(null);
 
   // Start Note State Section
   const [notes, setNotes] = useState([]);
@@ -41,8 +42,8 @@ const Inbox = ({ currentUser }) => {
   // Start Sort Logic Section
   const sortedCustomers = [...customer].sort((a, b) => {
     if (sortBy === "latest") {
-      // เรียงตาม ID จากมากไปน้อย (ใหม่สุดอยู่บน)
-      return b.id - a.id;
+      // เรียงตาม ID จากน้อยไปมาก 
+      return a.id - b.id;
     }
     if (sortBy === "name_asc") {
       // เรียงตามชื่อ A-Z (ใช้ localeCompare เพื่อรองรับหลายภาษา)
@@ -90,6 +91,26 @@ const Inbox = ({ currentUser }) => {
       if (prevSortBy === "name_asc") return "name_desc";
       return "latest";
     });
+  };
+
+  const handleUploadImage = (e) => {
+    const file = e.target.files[0];
+    if (!file || !selectedCustomer) return;
+
+    const url = URL.createObjectURL(file);
+
+    const newMsg = {
+      id: Date.now(),
+      sender: "own",
+      image: url,
+    };
+
+    setMessages((prev) => ({
+      ...prev,
+      [selectedChatId]: [...(prev[selectedChatId] || []), newMsg],
+    }));
+
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   // ฟังก์ชันสำหรับเพิ่มโน้ตใหม่
@@ -218,8 +239,8 @@ const Inbox = ({ currentUser }) => {
         c.inprocess === true
           ? STATUS.IN_PROGRESS // true = กำลังดำเนินการ
           : c.inprocess === false
-            ? STATUS.DONE // false = เสร็จสิ้น
-            : STATUS.NOT_STARTED, // null/undefined = ยังไม่เริ่ม
+          ? STATUS.DONE // false = เสร็จสิ้น
+          : STATUS.NOT_STARTED, // null/undefined = ยังไม่เริ่ม
     }));
 
     setCustomer(normalizedCustomers);
@@ -314,13 +335,18 @@ const Inbox = ({ currentUser }) => {
               {/* Profile Picture */}
               <img
                 src={selectedCustomer?.img}
-                className="rounded-circle "
+                className="rounded-circle mt-2"
                 style={{ width: "46px", height: "46px", objectFit: "cover" }}
               />
-              {/* Username */}
-              <span style={{ fontSize: "18px" }} className="pt-2">
-                {selectedCustomer?.name}
-              </span>
+              <div className="d-flex flex-column">
+                {/* Username */}
+                <span style={{ fontSize: "18px" }} className="pt-2">
+                  {selectedCustomer?.name}
+                </span>
+                <span style={{ fontSize: "14px" }}>
+                  {selectedCustomer?.app}
+                </span>
+              </div>
             </div>
 
             {/* Status Dropdown และ More Options */}
@@ -362,24 +388,32 @@ const Inbox = ({ currentUser }) => {
             {(messages[selectedChatId] || []).map((msg) => (
               <div
                 key={msg.id}
-                // กำหนด Class 'own' เพื่อจัดตำแหน่งข้อความผู้ดูแลระบบ
                 className={`message ${msg.sender === "own" ? "own" : ""}`}
               >
                 {msg.sender === "customer" && (
                   <img src={selectedCustomer?.img} alt="Customer" />
                 )}
                 <div className="texts">
-                  <p>{msg.text}</p>
+                  {msg.image ? (
+                    <img
+                      src={msg.image}
+                      alt="upload"
+                      style={{
+                        maxWidth: "220px",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  ) : (
+                    <p>{msg.text}</p>
+                  )}
                 </div>
+
                 {msg.sender === "own" && (
-                  <img
-                    src={currentUser?.image || "placeholder_image_path"}
-                    alt="Admin"
-                  />
+                  <img src={currentUser?.image} alt="Admin" />
                 )}
               </div>
             ))}
-            <div ref={endRef}></div> {/* Div ปลายทางสำหรับการ Scroll */}
+            <div ref={endRef}></div> 
           </div>
 
           {/* Text Section */}
@@ -427,12 +461,23 @@ const Inbox = ({ currentUser }) => {
                   <Button variant="link" className="text-black p-1">
                     <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
                   </Button>
-                  <Button variant="link" className="text-black p-1">
+                  <Button
+                    variant="link"
+                    className="text-black p-1"
+                    onClick={() => fileInputRef.current.click()} 
+                  >
                     <i
                       className="bi bi-image fs-4"
                       style={{ lineHeight: 1 }}
                     ></i>
                   </Button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    ref={fileInputRef}
+                    onChange={handleUploadImage} 
+                  />
                   <Button variant="link" className="text-black p-1">
                     <i
                       className="bi bi-sticky fs-4"
@@ -588,12 +633,27 @@ const Inbox = ({ currentUser }) => {
                           {editingNoteId === note.id ? (
                             // Edit Mode: แสดง Textarea สำหรับแก้ไข
                             <div>
-                              <Form.Control style={{ borderRadius: 10 }} as="textarea" rows={3} value={editingText} onChange={(e) => setEditingText(e.target.value)} className="mb-2"/>
+                              <Form.Control
+                                style={{ borderRadius: 10 }}
+                                as="textarea"
+                                rows={3}
+                                value={editingText}
+                                onChange={(e) => setEditingText(e.target.value)}
+                                className="mb-2"
+                              />
                               <div className="d-flex gap-2">
-                                <Button size="sm" variant="primary" onClick={() => handleSaveEdit(note.id)}>
+                                <Button
+                                  size="sm"
+                                  variant="primary"
+                                  onClick={() => handleSaveEdit(note.id)}
+                                >
                                   บันทึก
                                 </Button>
-                                <Button size="sm" variant="secondary" onClick={handleCancelEdit}>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={handleCancelEdit}
+                                >
                                   ยกเลิก
                                 </Button>
                               </div>
@@ -601,7 +661,13 @@ const Inbox = ({ currentUser }) => {
                           ) : (
                             // View Mode: แสดงข้อความโน้ตและเวลา
                             <div>
-                              <p className="mb-2" style={{ whiteSpace: "pre-wrap", fontSize: "15px", }}>
+                              <p
+                                className="mb-2"
+                                style={{
+                                  whiteSpace: "pre-wrap",
+                                  fontSize: "15px",
+                                }}
+                              >
                                 {note.text}
                               </p>
                               <div className="d-flex justify-content-between align-items-center">
@@ -619,12 +685,28 @@ const Inbox = ({ currentUser }) => {
                                 </small>
                                 <div className="d-flex gap-2">
                                   {/* ปุ่ม Edit */}
-                                  <Button variant="link" size="sm" className="text-secondary p-0" onClick={() => handleEditNote(note)}>
-                                    <i className="bi bi-pencil" style={{ fontSize: "16px" }}></i>
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-secondary p-0"
+                                    onClick={() => handleEditNote(note)}
+                                  >
+                                    <i
+                                      className="bi bi-pencil"
+                                      style={{ fontSize: "16px" }}
+                                    ></i>
                                   </Button>
                                   {/* ปุ่ม Delete */}
-                                  <Button variant="link" size="sm" className="text-secondary p-0" onClick={() => handleDeleteNote(note.id)}>
-                                    <i className="bi bi-trash" style={{ fontSize: "16px" }}></i>
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-secondary p-0"
+                                    onClick={() => handleDeleteNote(note.id)}
+                                  >
+                                    <i
+                                      className="bi bi-trash"
+                                      style={{ fontSize: "16px" }}
+                                    ></i>
                                   </Button>
                                 </div>
                               </div>

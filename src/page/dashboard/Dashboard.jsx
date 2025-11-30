@@ -298,7 +298,7 @@ function Dashboard() {
               </Button>
 
               {/* ปุ่มสร้างโน้ต */}
-              <button
+              {/* <button
                 style={{
                   background: "#F26623",
                   borderRadius: "0.375rem",
@@ -310,7 +310,7 @@ function Dashboard() {
                 onClick={handleShow}
               >
                 สร้างโน๊ต <i className="bi bi-plus"></i>
-              </button>
+              </button> */}
             </div>
           </Navbar.Collapse>
         </Container>

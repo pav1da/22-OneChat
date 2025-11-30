@@ -47,19 +47,19 @@ const Home = () => {
 
     // 6. ถ้ามีรูปใน State (backgroundImage ไม่ใช่ null)
     //    ให้เพิ่ม style background เข้าไป
-    if (backgroundImage) {
-        mainContainerStyle.backgroundImage = `
-            linear-gradient(
-                to bottom,
-                rgba(255, 255, 255, 0.9) 0%,
-                rgba(255, 255, 255, 0) 50%
-            ),
-            url(${backgroundImage})
-        `;
+    // if (backgroundImage) {
+    //     mainContainerStyle.backgroundImage = `
+    //         linear-gradient(
+    //             to bottom,
+    //             rgba(255, 255, 255, 0.9) 0%,
+    //             rgba(255, 255, 255, 0) 50%
+    //         ),
+    //         url(${backgroundImage})
+    //     `;
 
-        mainContainerStyle.backgroundSize = "cover";
-        mainContainerStyle.backgroundPosition = "center";
-    }
+    //     mainContainerStyle.backgroundSize = "cover";
+    //     mainContainerStyle.backgroundPosition = "center";
+    // }
 
     return (
         // 7. ใช้ mainContainerStyle
@@ -72,9 +72,9 @@ const Home = () => {
                     zIndex: 100,
                 }}
             >
-                <Form.Label htmlFor="bg-upload" className="btn btn-dark">
+                {/* <Form.Label htmlFor="bg-upload" className="btn btn-dark">
                     Change Background
-                </Form.Label>
+                </Form.Label> */}
                 <Form.Control
                     type="file"
                     id="bg-upload"

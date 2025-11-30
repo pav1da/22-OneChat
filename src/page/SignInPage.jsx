@@ -74,7 +74,7 @@ function SignInPage({ onLogin }) {
           </p>
 
           {/* ปุ่มลัด */}
-          <div
+          {/* <div
             className="mb-4 p-3 bg-light rounded border mx-auto"
             style={{ maxWidth: "320px" }}
           >
@@ -104,12 +104,12 @@ function SignInPage({ onLogin }) {
                 User
               </Button>
             </div>
-          </div>
+          </div> */}
 
           <div className="d-flex align-content-center justify-content-center mb-5">
             <Form
               className="d-grid gap-3"
-              style={{ width: "300px" }}
+              style={{ width: "500px" }}
               onSubmit={handleSignIn}
             >
               <Form.Group>
