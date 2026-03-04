@@ -28,7 +28,7 @@ const Member = () => {
   // ================== 2. INITIALIZATION ==================
   useEffect(() => {
     const validMembers = usersData.filter(
-      (user) => user.role !== "it" && user.role !== "customer"
+      (user) => user.role !== "it" && user.role !== "customer",
     );
     setAllMembers(validMembers);
     setTeams(initialTeams);
@@ -41,7 +41,7 @@ const Member = () => {
     // Search
     if (searchTerm) {
       result = result.filter((member) =>
-        member.name.toLowerCase().includes(searchTerm.toLowerCase())
+        member.name.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -69,7 +69,7 @@ const Member = () => {
   // ================== 4. HELPER FUNCTIONS ==================
   const toggleTeam = (id) => {
     setTeams((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, isOpen: !t.isOpen } : t))
+      prev.map((t) => (t.id === id ? { ...t, isOpen: !t.isOpen } : t)),
     );
   };
 
@@ -91,14 +91,12 @@ const Member = () => {
 
   // --- 🔴 ฟังก์ชันลบทีม ---
   const handleDeleteTeam = (teamId, teamName) => {
-    if (
-      window.confirm(`ต้องการลบทีม "${teamName}" ใช่หรือไม่? \n(กูให้คิดอีกที)`)
-    ) {
+    if (window.confirm(`ต้องการลบทีม "${teamName}" ใช่หรือไม่?`)) {
       setTeams((prev) => prev.filter((t) => t.id !== teamId));
       setAllMembers((prev) =>
         prev.map((member) =>
-          member.team === teamName ? { ...member, team: "" } : member
-        )
+          member.team === teamName ? { ...member, team: "" } : member,
+        ),
       );
     }
   };
@@ -115,7 +113,7 @@ const Member = () => {
     const updatedMembers = allMembers.map((user) =>
       user.id === editingUser.id
         ? { ...user, team: selectedTeamForEdit, role: selectedRoleForEdit }
-        : user
+        : user,
     );
 
     setAllMembers(updatedMembers);
@@ -125,7 +123,7 @@ const Member = () => {
   const handleRemoveFromTeam = (userId) => {
     if (window.confirm("ยืนยันการนำสมาชิกออกจากทีม?")) {
       setAllMembers((prev) =>
-        prev.map((user) => (user.id === userId ? { ...user, team: "" } : user))
+        prev.map((user) => (user.id === userId ? { ...user, team: "" } : user)),
       );
       setActivePopupId(null);
     }
@@ -147,9 +145,7 @@ const Member = () => {
     >
       {/* TEAM HEADER */}
       <div className="d-flex justify-content-between align-items-center mb-2">
-        <p className="mb-0 fs-3" style={{ color: "#FF7A00" }}>
-          Team
-        </p>
+        <p className="mb-0 fs-3 section-title">Team</p>
 
         <div className="d-flex gap-2">
           <div className="position-relative">
@@ -169,7 +165,10 @@ const Member = () => {
           <Button
             variant="warning"
             className="text-white d-flex align-items-center gap-2 rounded-3 px-4"
-            style={{ backgroundColor: "#FF7A00", border: "none" }}
+            style={{
+              backgroundColor: "var(--brand-orange-light)",
+              border: "none",
+            }}
             onClick={() => setShowCreateTeamModal(true)}
           >
             สร้างทีม <i className="bi bi-plus-lg"></i>
@@ -276,7 +275,7 @@ const Member = () => {
                               setActivePopupId(
                                 activePopupId === `team-${member.id}`
                                   ? null
-                                  : `team-${member.id}`
+                                  : `team-${member.id}`,
                               );
                             }}
                           >
@@ -322,9 +321,7 @@ const Member = () => {
 
       {/* ================= SECTION: ALL MEMBERS (ส่วนนี้เหมือนเดิม) ================= */}
       <div className="d-flex justify-content-between align-items-center mb-2">
-        <p className="mb-0 fs-3" style={{ color: "#FF7A00" }}>
-          Member
-        </p>
+        <p className="mb-0 fs-3 section-title">Member</p>
 
         <div className="d-flex gap-2">
           {/* Search */}
@@ -445,7 +442,7 @@ const Member = () => {
                     setActivePopupId(
                       activePopupId === `member-${member.id}`
                         ? null
-                        : `member-${member.id}`
+                        : `member-${member.id}`,
                     );
                   }}
                 >

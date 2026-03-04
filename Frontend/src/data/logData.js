@@ -1,0 +1,43 @@
+// Mock data for activity logs
+export const mockLogs = [
+  {
+    id: 1,
+    user: "Ham",
+    avatar: "/src/assets/Image/Admins/ham.png",
+    action: "ได้สร้าง โน้ต สำหรับ",
+    target: "Jane Doe",
+    details: "",
+    date: "25 ธันวาคม 2560",
+    time: "14:30",
+  },
+  {
+    id: 2,
+    user: "pav1da",
+    avatar: "/src/assets/Image/Admins/pav1da.png",
+    action: "เป็น ผู้รับผิดชอบ สำหรับ",
+    target: "Harumasa",
+    details: "ที่ Facebook : Dew Flower Shop",
+    date: "25 ธันวาคม 2560",
+    time: "12:00",
+  },
+  {
+    id: 3,
+    user: "Pheem",
+    avatar: "/src/assets/Image/Admins/pheem.png",
+    action: "ได้เข้าร่วมทีม",
+    target: "Facebook",
+    details: "",
+    date: "1 ธันวาคม 2560",
+    time: "16:25",
+  },
+  {
+    id: 4,
+    user: "pav1da",
+    avatar: "/src/assets/Image/Admins/pav1da.png",
+    action: "ได้เพิ่ม Pheem ในทีม",
+    target: "Facebook",
+    details: "",
+    date: "1 ธันวาคม 2560",
+    time: "16:25",
+  },
+];

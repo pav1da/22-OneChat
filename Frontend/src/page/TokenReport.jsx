@@ -1,5 +1,4 @@
-import React from "react";
-import { Row, Col, Card } from "react-bootstrap";
+import { Row, Col } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const TokenReport = () => {
@@ -40,9 +39,7 @@ const TokenReport = () => {
     >
       {/* ================= HEADER ================= */}
       <div className="mb-4 pt-3 px-3">
-        <p className="mb-2 fs-3" style={{ color: "#FF7A00" }}>
-          รายงานการใช้ Token
-        </p>
+        <p className="mb-2 fs-3 section-title">รายงานการใช้ Token</p>
         <p className="text-muted mb-3 fs-5">
           ติดตามการใช้งาน Token ของ AI และค่าใช้จ่ายที่เกี่ยวข้อง
         </p>

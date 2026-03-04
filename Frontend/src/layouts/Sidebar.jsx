@@ -15,15 +15,12 @@ const Sidebar = ({ onLogout, currentUser }) => {
 
   const [showAiPanel, setShowAiPanel] = useState(false);
 
-  const handleShowAiPanel = () => setShowAiPanel(true);
-  const handleCloseAiPanel = () => setShowAiPanel(false);
-
   const handleThemeToggle = () => {
     console.log("Toggle Theme Clicked");
     alert("ฟังก์ชันเปลี่ยนธีม (Light/Dark) จะทำงานเมื่อเชื่อมต่อระบบ Theme");
   };
 
-  const handleAiClick = (event) => {
+  const handleAiClick = () => {
     setShowAiPanel((prev) => !prev);
   };
 
@@ -43,76 +40,39 @@ const Sidebar = ({ onLogout, currentUser }) => {
             style={{ width: "90%", height: "auto" }}
           />
         </div>
+        {/* Nav Items */}
         <Nav className="flex-column w-100 align-content-center gap-2">
-          {/* ... Nav Links ... */}
-          <OverlayTrigger
-            placement="right"
-            overlay={<Tooltip id="tooltip-allchat">All Chats</Tooltip>}
-          >
-            <Nav.Link
-              as={Link}
-              to="/allchat"
-              className={`sidebar-item ${isActive("/allchat") ? "active" : ""}`}
+          {[
+            {
+              to: "/allchat",
+              icon: "bi-chat-square-dots",
+              tooltip: "All Chats",
+            },
+            { to: "/dashboard", icon: "bi-columns-gap", tooltip: "Note" },
+            {
+              to: "/cardmessage",
+              icon: "bi-files",
+              tooltip: "Card & Messages",
+            },
+            { to: "/notification", icon: "bi-bell", tooltip: "Notification" },
+            { to: "/member", icon: "bi-person", tooltip: "Member" },
+          ].map((item) => (
+            <OverlayTrigger
+              key={item.to}
+              placement="right"
+              overlay={
+                <Tooltip id={`tooltip-${item.to}`}>{item.tooltip}</Tooltip>
+              }
             >
-              <i className="bi bi-chat-square-dots"></i>
-            </Nav.Link>
-          </OverlayTrigger>
-          <OverlayTrigger
-            placement="right"
-            overlay={<Tooltip id="tooltip-dashboard">Note</Tooltip>}
-          >
-            <Nav.Link
-              as={Link}
-              to="/dashboard"
-              className={`sidebar-item ${
-                isActive("/dashboard") ? "active" : ""
-              }`}
-            >
-              <i className="bi bi-columns-gap"></i>
-            </Nav.Link>
-          </OverlayTrigger>
-          <OverlayTrigger
-            placement="right"
-            overlay={
-              <Tooltip id="tooltip-cardmessage">Card & Messages</Tooltip>
-            }
-          >
-            <Nav.Link
-              as={Link}
-              to="/cardmessage"
-              className={`sidebar-item ${
-                isActive("/cardmessage") ? "active" : ""
-              }`}
-            >
-              <i className="bi bi-files"></i>
-            </Nav.Link>
-          </OverlayTrigger>
-          <OverlayTrigger
-            placement="right"
-            overlay={<Tooltip id="tooltip-notification">Notification</Tooltip>}
-          >
-            <Nav.Link
-              as={Link}
-              to="/notification"
-              className={`sidebar-item ${
-                isActive("/notification") ? "active" : ""
-              }`}
-            >
-              <i className="bi bi-bell"></i>
-            </Nav.Link>
-          </OverlayTrigger>
-          <OverlayTrigger
-            placement="right"
-            overlay={<Tooltip id="tooltip-member">Member</Tooltip>}
-          >
-            <Nav.Link
-              as={Link}
-              to="/member"
-              className={`sidebar-item ${isActive("/member") ? "active" : ""}`}
-            >
-              <i className="bi bi-person"></i>
-            </Nav.Link>
-          </OverlayTrigger>
+              <Nav.Link
+                as={Link}
+                to={item.to}
+                className={`sidebar-item ${isActive(item.to) ? "active" : ""}`}
+              >
+                <i className={`bi ${item.icon}`}></i>
+              </Nav.Link>
+            </OverlayTrigger>
+          ))}
 
           <div className="sidebar-profile mb-2">
             <img
@@ -196,7 +156,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
         </OverlayTrigger>
       </div>
 
-      <AiPanel show={showAiPanel} handleClose={handleCloseAiPanel} />
+      <AiPanel show={showAiPanel} handleClose={() => setShowAiPanel(false)} />
     </div>
   );
 };

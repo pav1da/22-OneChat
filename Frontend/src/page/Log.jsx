@@ -1,50 +1,7 @@
 import { useState } from "react";
 import { Form } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
-
-// ข้อมูลจำลอง (Mock Data)
-const mockLogs = [
-  {
-    id: 1,
-    user: "Ham",
-    avatar: "/src/assets/Image/Admins/ham.png",
-    action: "ได้สร้าง โน้ต สำหรับ",
-    target: "Jane Doe",
-    details: "",
-    date: "25 ธันวาคม 2560",
-    time: "14:30",
-  },
-  {
-    id: 2,
-    user: "pav1da",
-    avatar: "/src/assets/Image/Admins/pav1da.png", 
-    action: "เป็น ผู้รับผิดชอบ สำหรับ",
-    target: "Harumasa",
-    details: "ที่ Facebook : Dew Flower Shop",
-    date: "25 ธันวาคม 2560",
-    time: "12:00",
-  },
-  {
-    id: 3,
-    user: "Pheem",
-    avatar: "/src/assets/Image/Admins/pheem.png",
-    action: "ได้เข้าร่วมทีม",
-    target: "Facebook",
-    details: "",
-    date: "1 ธันวาคม 2560",
-    time: "16:25",
-  },
-  {
-    id: 4,
-    user: "pav1da",
-    avatar: "/src/assets/Image/Admins/pav1da.png",
-    action: "ได้เพิ่ม Pheem ในทีม",
-    target: "Facebook",
-    details: "",
-    date: "1 ธันวาคม 2560",
-    time: "16:25",
-  },
-];
+import { mockLogs } from "../data/logData";
 
 const Log = () => {
   const [filterUser, setFilterUser] = useState("");
@@ -55,17 +12,14 @@ const Log = () => {
     // - py-4 : บนล่างห่างระดับ 4
     // - px-5 : ซ้ายขวาห่างระดับ 5 (Bootstrap Standard)
     // - style : เพิ่ม padding ซ้ายขวาเป็น 5% (เพื่อให้เว้นเยอะๆ เหมือนในรูป)
-    <div 
+    <div
       className="kanit-regular h-100 d-flex flex-column bg-white rounded-4 py-4 px-5 mx-4"
-      style={{ paddingLeft: '20px', paddingRight: '6%' }} 
+      style={{ paddingLeft: "20px", paddingRight: "6%" }}
     >
-      
       {/* ================= Header Section ================= */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-1 gap-3 pt-4">
         {/* Title */}
-        <h2 className="fs-3 mb-0" style={{ color: "#FF7A00" }}>
-          ตรวจสอบบันทึก
-        </h2>
+        <h2 className="fs-3 mb-0 section-title">ตรวจสอบบันทึก</h2>
 
         {/* Filters */}
         <div className="d-flex flex-column flex-sm-row gap-4">
@@ -111,23 +65,7 @@ const Log = () => {
         {mockLogs.map((log) => (
           <div
             key={log.id}
-            className="d-flex align-items-center p-3 rounded-4 w-100"
-            style={{
-              backgroundColor: "#F8F9FA", 
-              border: "1px solid #E9ECEF",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#EAEBEF";
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#F8F9FA";
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-            }}
+            className="d-flex align-items-center p-3 rounded-4 w-100 log-item"
           >
             {/* 1. Avatar */}
             <div className="flex-shrink-0">
@@ -141,14 +79,19 @@ const Log = () => {
 
             {/* 2. Content Info */}
             <div className="flex-grow-1 ms-3">
-              <div className="fs-5 text-dark" style={{fontSize: '1.1rem'}}>
-                <span className="fs-5">{log.user}</span> 
-                <span className="mx-2">{log.action}</span> 
+              <div className="fs-5 text-dark" style={{ fontSize: "1.1rem" }}>
+                <span className="fs-5">{log.user}</span>
+                <span className="mx-2">{log.action}</span>
                 <span className="fs-5">{log.target}</span>
-                {log.details && <span className="ms-2 text-secondary">{log.details}</span>}
+                {log.details && (
+                  <span className="ms-2 text-secondary">{log.details}</span>
+                )}
               </div>
 
-              <div className="text-secondary mt-2 fw-medium" style={{ fontSize: "0.85rem" }}>
+              <div
+                className="text-secondary mt-2 fw-medium"
+                style={{ fontSize: "0.85rem" }}
+              >
                 วันที่ {log.date} เวลา {log.time}
               </div>
             </div>
