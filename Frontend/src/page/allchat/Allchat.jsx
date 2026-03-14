@@ -103,9 +103,22 @@ const MiniChatPanel = ({
 const AllChat = () => {
   const navigate = useNavigate();
   const { messages, customers, sendMessage } = useChat();
-  const totalEmptyCells = 21;
 
   const [expandedChatIds, setExpandedChatIds] = useState([]);
+  const [cols, setCols] = useState(4);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width <= 575) setCols(1);
+      else if (width <= 991) setCols(2);
+      else if (width <= 1200) setCols(3);
+      else setCols(4);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleCardClick = useCallback((customerId) => {
     setExpandedChatIds((prev) => 
@@ -249,39 +262,55 @@ const AllChat = () => {
       {/* Scrollable Area */}
       <div className="flex-grow-1 overflow-auto pe-2">
         <Container fluid className="px-0 pb-4">
-        <div className="wrapping-grid">
-          {customers.map((customer) => {
-            const isExpanded = expandedChatIds.includes(customer.id);
-            return (
-              <div key={customer.id} className="wrapping-item">
-                {renderUserCard(customer, isExpanded)}
-
-                {isExpanded && (
-                  <div className="mt-2" style={{ width: "100%", animation: "slideDown 0.25s ease-out" }}>
-                    <MiniChatPanel
-                      customer={customer}
-                      chatMessages={messages[customer.id] || []}
-                      onOpenFull={handleOpenFullChat}
-                      onClose={() => handleCloseMiniChat(customer.id)}
-                      onSend={handleSendQuickReply}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Render empty dashed cell placeholders */}
-          {Array.from({ length: totalEmptyCells }).map((_, idx) => (
-            <div key={`empty-${idx}`} className="wrapping-item">
-              <div 
-                className="border-dashed-light-gray rounded-4 w-100" 
-                style={{ height: "100px" }}
-              ></div>
-            </div>
-          ))}
-        </div>
-      </Container>
+          <div className="d-flex w-100" style={{ gap: "1.5rem" }}>
+            {Array.from({ length: cols }).map((_, colIndex) => {
+              // จำกัดจำนวนแถวให้คงที่แค่ 4 แถว (เพื่อไม่ให้หน้ายาวเกินจนกว่าจะมีลูกค้าจริงเพิ่ม)
+              const minItems = cols * 4;
+              const totalItems = Math.max(minItems, customers.length);
+              
+              const colItems = [];
+              for (let i = 0; i < totalItems; i++) {
+                if (i % cols === colIndex) {
+                  if (i < customers.length) {
+                    const customer = customers[i];
+                    const isExpanded = expandedChatIds.includes(customer.id);
+                    colItems.push(
+                      <div key={customer.id} className="w-100 mb-4">
+                        {renderUserCard(customer, isExpanded)}
+                        {isExpanded && (
+                          <div className="mt-2" style={{ width: "100%", animation: "slideDown 0.25s ease-out" }}>
+                            <MiniChatPanel
+                              customer={customer}
+                              chatMessages={messages[customer.id] || []}
+                              onOpenFull={handleOpenFullChat}
+                              onClose={() => handleCloseMiniChat(customer.id)}
+                              onSend={handleSendQuickReply}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  } else {
+                    colItems.push(
+                      <div key={`empty-${i}`} className="w-100 mb-4">
+                        <div 
+                          className="border-dashed-light-gray rounded-4 w-100" 
+                          style={{ height: "100px" }}
+                        ></div>
+                      </div>
+                    );
+                  }
+                }
+              }
+              
+              return (
+                <div key={`col-${colIndex}`} className="d-flex flex-column" style={{ flex: 1, minWidth: 0 }}>
+                  {colItems}
+                </div>
+              );
+            })}
+          </div>
+        </Container>
       </div>
     </div>
   );
