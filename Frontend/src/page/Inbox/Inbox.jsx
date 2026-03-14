@@ -2,18 +2,12 @@ import { useRef, useEffect, useState } from "react";
 import { Badge, Button, Form, Dropdown } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { fetchCustomer } from "../../data/customer";
-import { initialChatMessages } from "../../data/messages";
+import { useChat } from "../../context/ChatContext";
 import ChatList from "./chatList/ChatList";
 
 import "./inbox.css";
 
-// สถานะของแชทลูกค้า
-const STATUS = {
-  NOT_STARTED: "ยังไม่เริ่ม",
-  IN_PROGRESS: "กำลังดำเนินการ",
-  DONE: "เสร็จสิ้น",
-};
+// ใช้ STATUS จาก ChatContext
 
 const Inbox = ({ currentUser }) => {
   const location = useLocation();
@@ -21,14 +15,21 @@ const Inbox = ({ currentUser }) => {
   const msgRef = useRef(null);
   const endRef = useRef(null);
 
-  // Start Customer & Selection State Section
-  const [customer, setCustomer] = useState([]);
+  // ใช้ shared context สำหรับ messages และ customers
+  const {
+    messages,
+    customers: customer,
+    sendMessage,
+    sendImageMessage,
+    updateCustomerStatus,
+    updateCustomerName,
+    STATUS,
+  } = useChat();
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [sortBy, setSortBy] = useState("latest");
 
   // Start Message State Section
-  const [messages, setMessages] = useState(initialChatMessages);
   const [newMessage, setNewMessage] = useState("");
   const fileInputRef = useRef(null);
 
@@ -42,7 +43,7 @@ const Inbox = ({ currentUser }) => {
   // Start Sort Logic Section
   const sortedCustomers = [...customer].sort((a, b) => {
     if (sortBy === "latest") {
-      // เรียงตาม ID จากน้อยไปมาก 
+      // เรียงตาม ID จากน้อยไปมาก
       return a.id - b.id;
     }
     if (sortBy === "name_asc") {
@@ -72,9 +73,7 @@ const Inbox = ({ currentUser }) => {
 
   // อัปเดตค่า Status ของลูกค้าที่ถูกเลือก
   const Status = (id, newStatusValue) => {
-    setCustomer((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: newStatusValue } : c))
-    );
+    updateCustomerStatus(id, newStatusValue);
   };
 
   // ปรับขนาด Textarea อัตโนมัติเมื่อพิมพ์
@@ -98,17 +97,7 @@ const Inbox = ({ currentUser }) => {
     if (!file || !selectedCustomer) return;
 
     const url = URL.createObjectURL(file);
-
-    const newMsg = {
-      id: Date.now(),
-      sender: "own",
-      image: url,
-    };
-
-    setMessages((prev) => ({
-      ...prev,
-      [selectedChatId]: [...(prev[selectedChatId] || []), newMsg],
-    }));
+    sendImageMessage(selectedChatId, url);
 
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -129,7 +118,7 @@ const Inbox = ({ currentUser }) => {
 
       // บันทึกโน้ตลงใน sessionStorage (ใช้สำหรับจำลองการเก็บข้อมูลข้ามหน้า)
       const existingNotes = JSON.parse(
-        sessionStorage.getItem("dashboardNotes") || "[]"
+        sessionStorage.getItem("dashboardNotes") || "[]",
       );
       const updatedNotes = [noteObj, ...existingNotes];
       sessionStorage.setItem("dashboardNotes", JSON.stringify(updatedNotes));
@@ -156,8 +145,8 @@ const Inbox = ({ currentUser }) => {
     if (editingText.trim()) {
       setNotes(
         notes.map((note) =>
-          note.id === id ? { ...note, text: editingText } : note
-        )
+          note.id === id ? { ...note, text: editingText } : note,
+        ),
       );
       setEditingNoteId(null);
       setEditingText("");
@@ -173,13 +162,7 @@ const Inbox = ({ currentUser }) => {
   // อัปเดต State ชื่อลูกค้าชั่วคราวขณะแก้ไข
   const handleNameChange = (e) => {
     if (!selectedCustomer) return;
-
-    setCustomer((prev) =>
-      prev.map((c) =>
-        // ชื่อเดิม
-        c.id === selectedCustomer.id ? { ...c, name: e.target.value } : c
-      )
-    );
+    updateCustomerName(selectedCustomer.id, e.target.value);
   };
 
   // บันทึกการแก้ไขชื่อลูกค้า (ออกจากโหมดแก้ไข)
@@ -200,55 +183,23 @@ const Inbox = ({ currentUser }) => {
 
     if (!trimmedMessage || !selectedCustomer) return;
 
-    const newMsg = {
-      id: Date.now(),
-      sender: "own",
-      text: trimmedMessage,
-    };
-
-    // อัปเดต State messages โดยเพิ่มข้อความใหม่เข้าไปในแชทที่ถูกเลือก
-    setMessages((prevMessages) => ({
-      ...prevMessages,
-      [selectedChatId]: [...(prevMessages[selectedChatId] || []), newMsg],
-    }));
-
-    // อัปเดตข้อความล่าสุด (last) ในรายการลูกค้า
-    setCustomer((prevCustomers) =>
-      prevCustomers.map((c) =>
-        c.id === selectedCustomer.id ? { ...c, last: trimmedMessage } : c
-      )
-    );
+    // ส่งข้อความผ่าน shared context
+    sendMessage(selectedChatId, trimmedMessage);
 
     // รีเซ็ตฟอร์มและเลื่อนหน้าจอ
     setNewMessage("");
     if (msgRef.current) {
-      msgRef.current.style.height = "40px"; // รีเซ็ตความสูง Textarea
+      msgRef.current.style.height = "40px";
     }
-    endRef.current?.scrollIntoView({ behavior: "smooth" }); // เลื่อนลงล่าง
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // ดึงข้อมูลลูกค้าเริ่มต้นและกำหนดสถานะเริ่มต้น
+  // กำหนดแชทแรกเป็นแชทที่ถูกเลือกเริ่มต้น (ใช้ customers จาก context)
   useEffect(() => {
-    const allCustomers = fetchCustomer();
-
-    // แปลงข้อมูลลูกค้าจาก inprocess (boolean/null) เป็น Status (string)
-    const normalizedCustomers = allCustomers.map((c) => ({
-      ...c,
-      originalName: c.name, // เก็บชื่อเดิมไว้สำหรับการเปรียบเทียบ
-      status:
-        c.inprocess === true
-          ? STATUS.IN_PROGRESS // true = กำลังดำเนินการ
-          : c.inprocess === false
-          ? STATUS.DONE // false = เสร็จสิ้น
-          : STATUS.NOT_STARTED, // null/undefined = ยังไม่เริ่ม
-    }));
-
-    setCustomer(normalizedCustomers);
-    // กำหนดแชทแรกเป็นแชทที่ถูกเลือกเริ่มต้น
-    if (normalizedCustomers.length > 0) {
-      setSelectedChatId(normalizedCustomers[0].id);
+    if (customer.length > 0 && selectedChatId === null) {
+      setSelectedChatId(customer[0].id);
     }
-  }, []);
+  }, [customer, selectedChatId]);
 
   // ปรับความสูง Textarea เริ่มต้นครั้งเดียว
   useEffect(() => {
@@ -413,7 +364,7 @@ const Inbox = ({ currentUser }) => {
                 )}
               </div>
             ))}
-            <div ref={endRef}></div> 
+            <div ref={endRef}></div>
           </div>
 
           {/* Text Section */}
@@ -464,7 +415,7 @@ const Inbox = ({ currentUser }) => {
                   <Button
                     variant="link"
                     className="text-black p-1"
-                    onClick={() => fileInputRef.current.click()} 
+                    onClick={() => fileInputRef.current.click()}
                   >
                     <i
                       className="bi bi-image fs-4"
@@ -476,7 +427,7 @@ const Inbox = ({ currentUser }) => {
                     accept="image/*"
                     hidden
                     ref={fileInputRef}
-                    onChange={handleUploadImage} 
+                    onChange={handleUploadImage}
                   />
                   <Button variant="link" className="text-black p-1">
                     <i

@@ -16,6 +16,7 @@ import Member from "./page/Member";
 import TokenReport from "./page/TokenReport";
 import AllChat from "./page/allchat/Allchat";
 import CardMessage from "./page/CardmessagePage/Cardmessage";
+import { ChatProvider } from "./context/ChatContext";
 
 // stylesheets
 import "./App.css";
@@ -74,7 +75,9 @@ function App() {
                 user={currentUser}
                 allowedRoles={["admin", "it", "user"]}
               >
-                <Layouts onLogout={handleLogout} user={currentUser} />
+                <ChatProvider>
+                  <Layouts onLogout={handleLogout} user={currentUser} />
+                </ChatProvider>
               </ProtectedRoute>
             }
           >
