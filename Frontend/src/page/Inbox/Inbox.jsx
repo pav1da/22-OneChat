@@ -306,15 +306,15 @@ const Inbox = ({ currentUser }) => {
                 <Dropdown>
                   <Dropdown.Toggle
                     as={Badge}
-                    variant={getStatusVariant(selectedCustomer.status)}
+                    bg={getStatusVariant(selectedCustomer.status)}
                     id="dropdown-custom-status"
                     className="custom-badge-top"
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
                   >
                     {selectedCustomer.status}
                   </Dropdown.Toggle>
 
-                  <Dropdown.Menu>
+                  <Dropdown.Menu renderOnMount>
                     {/* Map ค่า STATUS เพื่อให้ผู้ใช้เลือกอัปเดตสถานะ */}
                     {Object.values(STATUS).map((statusValue) => (
                       <Dropdown.Item
