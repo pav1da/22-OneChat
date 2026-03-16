@@ -100,17 +100,6 @@
   padding: 10px 15px;
   align-content: center;
   font-weight: normal;
-  border: 1px solid transparent;
-  transition: none;
-}
-
-.custom-badge-top:focus,
-.custom-badge-top:active,
-.dropdown-toggle.show.custom-badge-top {
-  box-shadow: none !important;
-  outline: none !important;
-  border-color: transparent !important;
-  transform: none !important;
 }
 
 .custom-bottom-chat {
