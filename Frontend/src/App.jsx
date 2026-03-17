@@ -39,11 +39,13 @@ function App() {
   const handleLogin = (userFromForm) => {
     setCurrentUser(userFromForm);
     localStorage.setItem("myAppUser", JSON.stringify(userFromForm));
+    // token จะถูกเก็บจาก SignInPage/SignUpPage โดยตรง
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem("myAppUser");
+    localStorage.removeItem("token");
   };
 
   return (
@@ -73,7 +75,7 @@ function App() {
             element={
               <ProtectedRoute
                 user={currentUser}
-                allowedRoles={["admin", "it", "user"]}
+                allowedRoles={["admin", "manager", "staff"]}
               >
                 <ChatProvider>
                   <Layouts onLogout={handleLogout} user={currentUser} />

@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const line = require("@line/bot-sdk");
 const path = require("path");
 const fs = require("fs");
@@ -6,15 +7,18 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-// นำเข้า Controller ที่เราเพิ่งแยกไฟล์ไว้
+// นำเข้า Controller
 const lineController = require("./controllers/lineController");
+
+// นำเข้า Routers
+const usersRouter = require("./routers/usersRouter");
 
 const app = express();
 
-const config = {
-  channelAccessToken: process.env.Channel_ID,
-  channelSecret: process.env.channelSecret,
-};
+// ===== Middleware =====
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // อนุญาตให้ดึงรูปจากโฟลเดอร์ uploads ไปแสดงผล
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -30,8 +34,17 @@ if (!fs.existsSync(chatImagesDir)) {
   fs.mkdirSync(chatImagesDir);
 }
 
+// ===== LINE Config =====
+const config = {
+  channelAccessToken: process.env.Channel_ID,
+  channelSecret: process.env.channelSecret,
+};
+
+// ===== Routes =====
+// API Routes
+app.use("/api/users", usersRouter);
+
 // Route สำหรับรับ Webhook จาก LINE
-// พอรับข้อมูลมาเสร็จ จะโยนไปให้ฟังก์ชัน handleWebhook ใน lineController จัดการต่อ
 app.post("/webhook", line.middleware(config), lineController.handleWebhook);
 
 // เปิดเซิร์ฟเวอร์

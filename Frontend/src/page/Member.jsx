@@ -2,9 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, Modal } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-// Import ข้อมูลตั้งต้น
-import { usersData, initialTeams } from "../data/memberData";
-
 const Member = () => {
   // ================== 1. STATE MANAGEMENT ==================
   const [allMembers, setAllMembers] = useState([]);
@@ -25,13 +22,35 @@ const Member = () => {
 
   const [activePopupId, setActivePopupId] = useState(null);
 
-  // ================== 2. INITIALIZATION ==================
+  // ================== 2. INITIALIZATION (FROM API) ==================
   useEffect(() => {
-    const validMembers = usersData.filter(
-      (user) => user.role !== "it" && user.role !== "customer",
-    );
-    setAllMembers(validMembers);
-    setTeams(initialTeams);
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/users', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const users = await res.json();
+          // map API fields to component fields
+          const mapped = users.map(u => ({
+            id: u.emp_id,
+            name: u.username || u.name,
+            role: u.role || 'staff',
+            team: u.team || '',
+            status: 'กำลังใช้งาน',
+            color: '#607D8B',
+            email: u.email,
+            phone: u.phone,
+            image: u.image || ''
+          }));
+          setAllMembers(mapped);
+        }
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      }
+    };
+    fetchUsers();
   }, []);
 
   // ================== 3. LOGIC (SORT & SEARCH) ==================
@@ -129,9 +148,24 @@ const Member = () => {
     }
   };
 
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = async (userId) => {
     if (window.confirm("ยืนยันการลบสมาชิกนี้ออกจากระบบ?")) {
-      setAllMembers((prev) => prev.filter((user) => user.id !== userId));
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/users/${userId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          setAllMembers((prev) => prev.filter((user) => user.id !== userId));
+        } else {
+          const data = await res.json();
+          alert(data.message || 'ลบไม่สำเร็จ');
+        }
+      } catch (err) {
+        console.error('Delete error:', err);
+        alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+      }
       setActivePopupId(null);
     }
   };
