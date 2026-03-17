@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Container, Row, Col, Button, Modal, Form } from 'react-bootstrap';
-import { user } from "../../data/mockUser";
 
 // =============================================
 // ACCOUNT COMPONENT
 // =============================================
-function Account({ currentUserId = 2 }) {
+function Account({ user }) {
 
     // =============================================
     // 1. STATE MANAGEMENT
@@ -33,24 +32,35 @@ function Account({ currentUserId = 2 }) {
     const [pwdConfirm, setPwdConfirm] = useState('');
 
     // =============================================
-    // 2. USE EFFECT — LOAD USER DATA
+    // 2. USE EFFECT — LOAD USER DATA FROM API
     // =============================================
     useEffect(() => {
-        const foundUser = user.find(u => u.id === currentUserId);
+        const fetchUser = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
 
-        if (foundUser) {
-            setUserData({
-                username: foundUser.name,
-                email: foundUser.email,
-                phone: foundUser.phone,
-                password: '',
-            });
+                const res = await fetch('/api/users/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-            setImagePreview(
-                foundUser.image || "https://via.placeholder.com/150"
-            );
-        }
-    }, [currentUserId]);
+                if (res.ok) {
+                    const data = await res.json();
+                    setUserData({
+                        username: data.username || data.name || '',
+                        email: data.email || '',
+                        phone: data.phone || '',
+                        password: '',
+                    });
+                    setImagePreview(data.image || "https://via.placeholder.com/150");
+                }
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+            }
+        };
+
+        fetchUser();
+    }, []);
 
     // Cleanup preview URL
     useEffect(() => {
@@ -97,18 +107,82 @@ function Account({ currentUserId = 2 }) {
         setTimeout(() => setShowModal(true), 200);
     };
 
-    const handleNextStep = () => {
-        saveDataAndClose();
+    const handleNextStep = async () => {
+        await saveDataAndClose();
     };
 
-    const saveDataAndClose = () => {
-        if (modalType !== 'password') {
-            setUserData(prev => ({
-                ...prev,
-                [modalType]: editValue || prev[modalType],
-            }));
-        } else {
-            console.log("Password Changed:", pwdNew);
+    const saveDataAndClose = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+
+        try {
+            if (modalType === 'username') {
+                const res = await fetch('/api/users/me/username', {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ username: editValue, currentPassword: confirmPassword }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    setUserData(prev => ({ ...prev, username: editValue }));
+                    // อัพเดท user ใน localStorage ด้วย
+                    const savedUser = JSON.parse(localStorage.getItem('myAppUser') || '{}');
+                    savedUser.username = editValue;
+                    savedUser.name = editValue;
+                    localStorage.setItem('myAppUser', JSON.stringify(savedUser));
+                } else {
+                    alert(data.message || 'เกิดข้อผิดพลาด');
+                    return;
+                }
+            } else if (modalType === 'email') {
+                const res = await fetch('/api/users/me/email', {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ newEmail: editValue, currentPassword: confirmPassword }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    setUserData(prev => ({ ...prev, email: editValue }));
+                } else {
+                    alert(data.message || 'เกิดข้อผิดพลาด');
+                    return;
+                }
+            } else if (modalType === 'phone') {
+                const res = await fetch('/api/users/me/phone', {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ phone: editValue }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    setUserData(prev => ({ ...prev, phone: editValue }));
+                } else {
+                    alert(data.message || 'เกิดข้อผิดพลาด');
+                    return;
+                }
+            } else if (modalType === 'password') {
+                const res = await fetch('/api/users/me/password', {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ currentPassword: pwdCurrent, newPassword: pwdNew }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('เปลี่ยนรหัสผ่านสำเร็จ');
+                } else {
+                    alert(data.message || 'เกิดข้อผิดพลาด');
+                    return;
+                }
+            }
+        } catch (err) {
+            console.error('Save error:', err);
+            alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+            return;
         }
 
         setShowModal(false);
@@ -122,10 +196,31 @@ function Account({ currentUserId = 2 }) {
         fileInputRef.current.click();
     };
 
-    const handleFileChange = (event) => {
+    const handleFileChange = async (event) => {
         const file = event.target.files[0];
         if (file) {
             setImagePreview(URL.createObjectURL(file));
+
+            // อัปโหลดรูปไปที่ API
+            try {
+                const token = localStorage.getItem('token');
+                const formData = new FormData();
+                formData.append('image', file);
+
+                const res = await fetch('/api/users/me/avatar', {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData,
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    console.log('Avatar uploaded:', data.imageUrl);
+                } else {
+                    alert(data.message || 'อัปโหลดรูปไม่สำเร็จ');
+                }
+            } catch (err) {
+                console.error('Upload error:', err);
+            }
         }
     };
 

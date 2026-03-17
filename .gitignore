@@ -1,0 +1,18 @@
+# Node
+node_modules/
+
+# Env
+.env
+
+# Logs
+*.log
+
+# MySQL Docker data
+Backend/config/databases/mysql-data/
+
+# Upload files (ถ้าไม่อยาก push รูป)
+Backend/uploads/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -2,36 +2,46 @@ import { useState } from "react";
 import { Container, Form, Button, Card } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 
-import { user as mockUser } from "../data/mockUser";
-
 function SignInPage({ onLogin }) {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const isEmailValid = email.includes("@") && email.includes(".");
   const isPasswordValid = password.length >= 4;
   const isFormValid = isEmailValid && isPasswordValid;
 
-  const handleSignIn = (event) => {
+  const handleSignIn = async (event) => {
     event.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const foundUser = mockUser.find((u) => u.email === email);
+    try {
+      const res = await fetch("/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (foundUser) {
-      if (onLogin) onLogin(foundUser);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "เข้าสู่ระบบไม่สำเร็จ");
+        setLoading(false);
+        return;
+      }
+
+      // เก็บ token ไว้ใน localStorage
+      localStorage.setItem("token", data.token);
+
+      if (onLogin) onLogin(data.user);
       navigate("/dashboard");
-    } else {
-      alert("ไม่พบอีเมลนี้ในระบบ กรุณาตรวจสอบอีกครั้ง");
-    }
-  };
-
-  const handleQuickLogin = (role) => {
-    const userToLogin = mockUser.find((u) => u.role === role);
-    if (userToLogin && onLogin) {
-      onLogin(userToLogin);
-      navigate("/dashboard");
+    } catch (err) {
+      setError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+      setLoading(false);
     }
   };
 
@@ -45,6 +55,12 @@ function SignInPage({ onLogin }) {
           <p className="text-muted mb-4">
             to continue to your One Chat account.
           </p>
+
+          {error && (
+            <div className="alert alert-danger mx-auto" style={{ maxWidth: "500px" }}>
+              {error}
+            </div>
+          )}
 
           <div className="d-flex align-content-center justify-content-center mb-5">
             <Form
@@ -77,9 +93,9 @@ function SignInPage({ onLogin }) {
                 variant="dark"
                 type="submit"
                 size="lg"
-                disabled={!isFormValid}
+                disabled={!isFormValid || loading}
               >
-                Continue
+                {loading ? "กำลังเข้าสู่ระบบ..." : "Continue"}
               </Button>
             </Form>
           </div>
