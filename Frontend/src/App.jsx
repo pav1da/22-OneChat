@@ -26,8 +26,17 @@ function App() {
   // ให้ไปเช็คใน localStorage ก่อนว่ามีของเก่าไหม
   const [currentUser, setCurrentUser] = useState(() => {
     const savedUser = localStorage.getItem("myAppUser");
-    if (savedUser) {
-      return JSON.parse(savedUser);
+    const token = localStorage.getItem("token");
+    if (savedUser && token) {
+      const parsed = JSON.parse(savedUser);
+      // ตรวจสอบว่า role ตรงกับ DB roles หรือไม่
+      const validRoles = ["admin", "manager", "staff"];
+      if (parsed.role && validRoles.includes(parsed.role)) {
+        return parsed;
+      }
+      // ถ้า role ไม่ valid (จาก mock data เก่า) ให้ล้างออก
+      localStorage.removeItem("myAppUser");
+      localStorage.removeItem("token");
     }
     return null;
   });

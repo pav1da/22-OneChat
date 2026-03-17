@@ -48,24 +48,38 @@ exports.register = async (req, res) => {
 };
 
 // =============================================
-// 2. POST /api/users/login — เข้าสู่ระบบ
+// 2. POST /api/users/login — เข้าสู่ระบบ (รองรับ username หรือ email)
 // =============================================
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'กรุณากรอกอีเมลและรหัสผ่าน' });
+    // รองรับทั้ง identifier (ใหม่) และ email (เก่า)
+    const loginId = identifier || email;
+
+    if (!loginId || !password) {
+      return res.status(400).json({ message: 'กรุณากรอกชื่อผู้ใช้/อีเมล และรหัสผ่าน' });
     }
 
-    const user = await User.findByEmail(email);
+    // ค้นหา user — ถ้ามี @ ให้หาจาก email ก่อน ถ้าไม่เจอก็หาจาก username
+    let user = null;
+    if (loginId.includes('@')) {
+      user = await User.findByEmail(loginId);
+    }
     if (!user) {
-      return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+      user = await User.findByUsername(loginId);
+    }
+    if (!user) {
+      user = await User.findByEmail(loginId);
+    }
+
+    if (!user) {
+      return res.status(401).json({ message: 'ชื่อผู้ใช้/อีเมล หรือรหัสผ่านไม่ถูกต้อง' });
     }
 
     // เทียบ password (plain text ตาม DB schema ปัจจุบัน)
     if (user.password !== password) {
-      return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+      return res.status(401).json({ message: 'ชื่อผู้ใช้/อีเมล หรือรหัสผ่านไม่ถูกต้อง' });
     }
 
     // สร้าง token

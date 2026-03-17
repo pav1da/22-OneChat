@@ -5,14 +5,12 @@ import { Link, useNavigate } from "react-router-dom";
 function SignInPage({ onLogin }) {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const isEmailValid = email.includes("@") && email.includes(".");
-  const isPasswordValid = password.length >= 4;
-  const isFormValid = isEmailValid && isPasswordValid;
+  const isFormValid = identifier.trim().length >= 1 && password.length >= 1;
 
   const handleSignIn = async (event) => {
     event.preventDefault();
@@ -23,7 +21,7 @@ function SignInPage({ onLogin }) {
       const res = await fetch("/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       const data = await res.json();
@@ -70,12 +68,12 @@ function SignInPage({ onLogin }) {
             >
               <Form.Group>
                 <Form.Control
-                  type="email"
+                  type="text"
                   placeholder="Username or Email"
                   required
                   size="lg"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                 />
               </Form.Group>
               <Form.Group>
