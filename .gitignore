@@ -10,7 +10,7 @@ node_modules/
 # MySQL Docker data
 Backend/config/databases/mysql-data/
 
-# Upload files (ถ้าไม่อยาก push รูป)
+# Upload files 
 Backend/uploads/
 
 # OS

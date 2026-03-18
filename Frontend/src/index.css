@@ -1,0 +1,25 @@
+:root {
+  /* Brand Colors */
+  --primary-color: #f4a460;
+  --primary-light: #fff1e6;
+
+  /* Background Colors */
+  --bg-main: #FFFFFF;
+  --bg-surface: #E3E5E8;
+  --bg-bubble-user: #353342;
+  --bg-bubble-admin: #f4a460;
+
+  /* Text Colors */
+  --text-main: #1a1a1a;
+  --text-secondary: #666;
+  --text-muted: #999;
+  --text-inverse: #FFFFFF;
+
+  /* Border & Dividers */
+  --border-light: #E4E6EB;
+
+  /* Status Colors */
+  --status-success: #28A745;     
+  --status-error: #DC3545;       
+  --status-warning: #FFC107;     
+}

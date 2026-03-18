@@ -3,7 +3,7 @@ export const mockLogs = [
   {
     id: 1,
     user: "Ham",
-    avatar: "/src/assets/Image/Admins/ham.png",
+    avatar: new URL('../assets/Image/Admins/ham.png', import.meta.url).href,
     action: "ได้สร้าง โน้ต สำหรับ",
     target: "Jane Doe",
     details: "",
@@ -13,7 +13,7 @@ export const mockLogs = [
   {
     id: 2,
     user: "pav1da",
-    avatar: "/src/assets/Image/Admins/pav1da.png",
+    avatar: new URL('../assets/Image/Admins/pav1da.png', import.meta.url).href,
     action: "เป็น ผู้รับผิดชอบ สำหรับ",
     target: "Harumasa",
     details: "ที่ Facebook : Dew Flower Shop",
@@ -23,7 +23,7 @@ export const mockLogs = [
   {
     id: 3,
     user: "Pheem",
-    avatar: "/src/assets/Image/Admins/pheem.png",
+    avatar: new URL('../assets/Image/Admins/pheem.png', import.meta.url).href,
     action: "ได้เข้าร่วมทีม",
     target: "Facebook",
     details: "",
@@ -33,7 +33,7 @@ export const mockLogs = [
   {
     id: 4,
     user: "pav1da",
-    avatar: "/src/assets/Image/Admins/pav1da.png",
+    avatar: new URL('../assets/Image/Admins/pav1da.png', import.meta.url).href,
     action: "ได้เพิ่ม Pheem ในทีม",
     target: "Facebook",
     details: "",

@@ -12,11 +12,12 @@ import Inbox from "./page/Inbox/Inbox";
 import Setting from "./page/SettingPages/Setting";
 import Notifiacation from "./page/notification/Notification";
 import Log from "./page/Log";
-import Member from "./page/Member";
+import Member from "./page/member/Member";
 import TokenReport from "./page/TokenReport";
 import AllChat from "./page/allchat/Allchat";
 import CardMessage from "./page/CardmessagePage/Cardmessage";
 import { ChatProvider } from "./context/ChatContext";
+import { TeamProvider } from "./context/TeamContext";
 
 // stylesheets
 import "./App.css";
@@ -86,9 +87,11 @@ function App() {
                 user={currentUser}
                 allowedRoles={["admin", "manager", "staff"]}
               >
-                <ChatProvider>
-                  <Layouts onLogout={handleLogout} user={currentUser} />
-                </ChatProvider>
+                <TeamProvider currentUser={currentUser}>
+                  <ChatProvider>
+                    <Layouts onLogout={handleLogout} user={currentUser} />
+                  </ChatProvider>
+                </TeamProvider>
               </ProtectedRoute>
             }
           >

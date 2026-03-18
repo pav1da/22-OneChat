@@ -1,13 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  Badge,
-  Button,
-  Form,
-  InputGroup,
-  Container,
-  Row,
-  Col,
-} from "react-bootstrap";
+import { Badge, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../../context/ChatContext";
 import "./allChat.css";
@@ -121,10 +113,10 @@ const AllChat = () => {
   }, []);
 
   const handleCardClick = useCallback((customerId) => {
-    setExpandedChatIds((prev) => 
-      prev.includes(customerId) 
-        ? prev.filter((id) => id !== customerId) 
-        : [...prev, customerId]
+    setExpandedChatIds((prev) =>
+      prev.includes(customerId)
+        ? prev.filter((id) => id !== customerId)
+        : [...prev, customerId],
     );
   }, []);
 
@@ -225,86 +217,64 @@ const AllChat = () => {
   };
 
   return (
-    <div className="kanit-regular d-flex flex-column mx-4 allChat">
+    <div className="kanit-regular d-flex flex-column allChat ">
       {/* Header Section */}
-      <div className="d-flex justify-content-between flex-shrink-0">
-        <div className="fs-3" style={{ color: "#f26623" }}>
-          All
+      <div className="d-flex justify-content-between align-items-center mb-3" style={{ padding: "0 12px" }}>
+        <div className="d-flex gap-2">
+          <button className="nav-search">ทั้งหมด</button>
+          <button className="nav-search">ยังไม่ได้อ่าน</button>
+          <button className="nav-search">กำลังดำเนินการ</button>
+          <button className="nav-search">เสร็จสิ้น</button>
         </div>
-        <div className="d-flex gap-3 align-items-center">
-          <InputGroup style={{ width: "250px" }}>
-            <InputGroup.Text
-              className="bg-white border-1 rounded-start-3 py-2 ps-3 pe-2"
-              style={{ borderColor: "#c5c5c5" }}
-            >
-              <i className="bi bi-search text-muted"></i>
-            </InputGroup.Text>
-            <Form.Control
-              type="search"
-              placeholder="ค้นหา..."
-              className="rounded-end-3 border-1 border-start-0 custom-search"
-            />
-          </InputGroup>
-          <Button
-            className="d-flex align-items-center gap-1 rounded-3 border-1 px-4 py-2"
-            style={{
-              background: "#ffffff",
-              color: "#707070",
-              borderColor: "#c5c5c5",
-            }}
-          >
-            <i className="bi bi-arrow-down-up"></i>เรียงลำดับ
-          </Button>
+        <div>
+          <div className="sidebar-search">
+            <i className="bi bi-search"></i>
+            <input type="text" placeholder="ค้นหา" />
+          </div>
         </div>
       </div>
-      <hr className="flex-shrink-0" />
 
       {/* Scrollable Area */}
-      <div className="flex-grow-1 overflow-auto pe-2">
-        <Container fluid className="px-0 pb-4">
+      <div className="flex-grow-1 overflow-auto">
+        <Container fluid>
           <div className="d-flex w-100" style={{ gap: "1.5rem" }}>
             {Array.from({ length: cols }).map((_, colIndex) => {
-              // จำกัดจำนวนแถวให้คงที่แค่ 4 แถว (เพื่อไม่ให้หน้ายาวเกินจนกว่าจะมีลูกค้าจริงเพิ่ม)
-              const minItems = cols * 4;
-              const totalItems = Math.max(minItems, customers.length);
-              
               const colItems = [];
-              for (let i = 0; i < totalItems; i++) {
+              for (let i = 0; i < customers.length; i++) {
                 if (i % cols === colIndex) {
-                  if (i < customers.length) {
-                    const customer = customers[i];
-                    const isExpanded = expandedChatIds.includes(customer.id);
-                    colItems.push(
-                      <div key={customer.id} className="w-100 mb-4">
-                        {renderUserCard(customer, isExpanded)}
-                        {isExpanded && (
-                          <div className="mt-2" style={{ width: "100%", animation: "slideDown 0.25s ease-out" }}>
-                            <MiniChatPanel
-                              customer={customer}
-                              chatMessages={messages[customer.id] || []}
-                              onOpenFull={handleOpenFullChat}
-                              onClose={() => handleCloseMiniChat(customer.id)}
-                              onSend={handleSendQuickReply}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  } else {
-                    colItems.push(
-                      <div key={`empty-${i}`} className="w-100 mb-4">
-                        <div 
-                          className="border-dashed-light-gray rounded-4 w-100" 
-                          style={{ height: "100px" }}
-                        ></div>
-                      </div>
-                    );
-                  }
+                  const customer = customers[i];
+                  const isExpanded = expandedChatIds.includes(customer.id);
+                  colItems.push(
+                    <div key={customer.id} className="w-100 mb-4">
+                      {renderUserCard(customer, isExpanded)}
+                      {isExpanded && (
+                        <div
+                          className="mt-2"
+                          style={{
+                            width: "100%",
+                            animation: "slideDown 0.25s ease-out",
+                          }}
+                        >
+                          <MiniChatPanel
+                            customer={customer}
+                            chatMessages={messages[customer.id] || []}
+                            onOpenFull={handleOpenFullChat}
+                            onClose={() => handleCloseMiniChat(customer.id)}
+                            onSend={handleSendQuickReply}
+                          />
+                        </div>
+                      )}
+                    </div>,
+                  );
                 }
               }
-              
+
               return (
-                <div key={`col-${colIndex}`} className="d-flex flex-column" style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  key={`col-${colIndex}`}
+                  className="d-flex flex-column"
+                  style={{ flex: 1, minWidth: 0 }}
+                >
                   {colItems}
                 </div>
               );

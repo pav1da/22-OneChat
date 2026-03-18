@@ -7,7 +7,7 @@ import "./notification.css";
 const mockNotifications = [
   {
     id: 1,
-    avatar: "./src/assets/Image/Admins/pav1da.png",
+    avatar: new URL('../../assets/Image/Admins/pav1da.png', import.meta.url).href,
     text: "pav1da ได้เข้าถึงข้อความของ Harumasa บน Facebook : Dew Flower Shop",
     date: "25 ธันวาคม 2560 เวลา 14:40",
     sender: "pav1da", // ใช้สำหรับกรองผู้ใช้
@@ -15,7 +15,7 @@ const mockNotifications = [
   },
   {
     id: 2,
-    avatar: "./src/assets/Image/Customers/Harumasa.png",
+    avatar: new URL('../../assets/Image/Customers/Harumasa.png', import.meta.url).href,
     text: "มีข้อความใหม่จาก Harumasa ที่ Facebook: Dew Flower Shop",
     date: "25 ธันวาคม 2560 เวลา 14:30",
     sender: "Harumasa", // ใช้สำหรับกรองผู้ใช้
@@ -23,7 +23,7 @@ const mockNotifications = [
   },
   {
     id: 3,
-    avatar: "./src/assets/Image/Customers/JaneDoe.png",
+    avatar: new URL('../../assets/Image/Customers/JaneDoe.png', import.meta.url).href,
     text: "มีข้อความใหม่จาก Jane Dose ที่ Facebook: Dew Flower Shop",
     date: "25 ธันวาคม 2560 เวลา 12:00",
     sender: "Jane Dose", // ใช้สำหรับกรองผู้ใช้
@@ -143,7 +143,10 @@ function NotificationPage() {
               }}
             >
               {/* รูปโปรไฟล์ */}
-              <div className="px-2" style={{ flexShrink: 0, marginRight: "15px" }}>
+              <div
+                className="px-2"
+                style={{ flexShrink: 0, marginRight: "15px" }}
+              >
                 <img
                   src={item.avatar}
                   alt="avatar"
@@ -159,7 +162,7 @@ function NotificationPage() {
               {/* ข้อความ */}
               <div className="py-3 ">
                 <div
-                className="fs-5"
+                  className="fs-5"
                   style={{
                     color: "#000",
                     marginBottom: "4px",

@@ -228,451 +228,425 @@ const Inbox = ({ currentUser }) => {
   }, [location]);
 
   return (
-    <div className="kanit-regular mx-4 d-flex flex-column">
-      {/* Start Header Section */}
-      <div className="d-flex gap-2 mb-3">
-        {/* ปุ่มย้อนกลับ */}
-        <button className="btn-sm-circle" onClick={() => navigate(-1)}>
-          <i className="bi bi-arrow-left"></i>
-        </button>
-        {/* หัวข้อ */}
-        <div className="w-100 rounded-5 ps-4 d-flex align-items-center fs-5 bg-white">
-          All Chats
+    <div className="kanit-regular inbox-container p-4">
+      {/* Start ChatList Section */}
+      <div className="customer-list">
+        {/* Start Search & Sort Section */}
+        <div className="d-flex gap-2 flex-shrink-0 align-items-center border-bottom border-secondary-subtle pb-3">
+          {/* Search bar */}
+          <Form.Control placeholder="Search" className="custom-search-input" />
+          {/* Sort Button */}
+          <div
+            className="custom-icon-sort"
+            onClick={handleSortToggle}
+            style={{ cursor: "pointer" }}
+          >
+            <i className="bi bi-arrow-down-up"></i>
+          </div>
+        </div>
+        {/* End Search & Sort Section */}
+
+        {/* Start Chat List Component */}
+        <div className="list">
+          <ChatList
+            // ข้อมูลที่ถูกเรียงลำดับแล้ว
+            customers={sortedCustomers}
+            selectedChatId={selectedChatId}
+            onChatSelect={handleChatSelect}
+          />
         </div>
       </div>
-      {/* End Header Section */}
+      {/* End ChatList Section */}
 
-      <div className="d-flex gap-2 flex-grow-1 height-fix">
-        {/* Start ChatList Section */}
-        <div
-          className="bg-white rounded-4 p-3 d-flex flex-column h-100"
-          style={{ minWidth: "350px", maxWidth: "300px" }}
-        >
-          {/* Start Search & Sort Section */}
-          <div className="d-flex gap-2 flex-shrink-0 align-items-center border-bottom border-secondary-subtle pb-3">
-            {/* Search bar */}
-            <Form.Control
-              placeholder="Search"
-              className="custom-search-input"
-            />
-            {/* Sort Button */}
-            <div
-              className="custom-icon-sort"
-              onClick={handleSortToggle}
-              style={{ cursor: "pointer" }}
-            >
-              <i className="bi bi-arrow-down-up"></i>
-            </div>
-          </div>
-          {/* End Search & Sort Section */}
-
-          {/* Start Chat List Component */}
-          <div className="list">
-            <ChatList
-              // ข้อมูลที่ถูกเรียงลำดับแล้ว
-              customers={sortedCustomers}
-              selectedChatId={selectedChatId}
-              onChatSelect={handleChatSelect}
-            />
-          </div>
-        </div>
-        {/* End ChatList Section */}
-
-        {/* Start Chat Section */}
-        <div className="flex-grow-1 bg-white rounded-4 p-3 d-flex flex-column h-100">
-          {/* Start Top Section: Profile และ Status Dropdown */}
-          <div className="d-flex gap-3 custom-top-chat pb-3 mx-1 border-secondary-subtle border-bottom">
-            <div className="d-flex gap-3">
-              {/* Profile Picture */}
-              <img
-                src={selectedCustomer?.img}
-                className="rounded-circle mt-2"
-                style={{ width: "46px", height: "46px", objectFit: "cover" }}
-              />
-              <div className="d-flex flex-column">
-                {/* Username */}
-                <span style={{ fontSize: "18px" }} className="pt-2">
-                  {selectedCustomer?.name}
-                </span>
-                <span style={{ fontSize: "14px" }}>
-                  {selectedCustomer?.app}
-                </span>
-              </div>
-            </div>
-
-            {/* Status Dropdown และ More Options */}
-            {selectedCustomer && (
-              <div className="d-flex gap-3 align-items-center">
-                <Dropdown>
-                  <Dropdown.Toggle
-                    as={Badge}
-                    variant={getStatusVariant(selectedCustomer.status)}
-                    id="dropdown-custom-status"
-                    className="custom-badge-top"
-                    style={{ cursor: "pointer" }}
-                  >
-                    {selectedCustomer.status}
-                  </Dropdown.Toggle>
-
-                  <Dropdown.Menu>
-                    {/* Map ค่า STATUS เพื่อให้ผู้ใช้เลือกอัปเดตสถานะ */}
-                    {Object.values(STATUS).map((statusValue) => (
-                      <Dropdown.Item
-                        key={statusValue}
-                        onClick={() => Status(selectedCustomer.id, statusValue)}
-                        active={selectedCustomer.status === statusValue}
-                      >
-                        {statusValue}
-                      </Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
-                <i className="bi bi-three-dots-vertical fs-5"></i>
-              </div>
-            )}
-          </div>
-          {/* End Top Section */}
-
-          {/* Chat container */}
-          <div className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2">
-            {/* Map ข้อความในแชทที่ถูกเลือก */}
-            {(messages[selectedChatId] || []).map((msg) => (
-              <div
-                key={msg.id}
-                className={`message ${msg.sender === "own" ? "own" : ""}`}
-              >
-                {msg.sender === "customer" && (
-                  <img src={selectedCustomer?.img} alt="Customer" />
-                )}
-                <div className="texts">
-                  {msg.image ? (
-                    <img
-                      src={msg.image}
-                      alt="upload"
-                      style={{
-                        maxWidth: "220px",
-                        borderRadius: "8px",
-                      }}
-                    />
-                  ) : (
-                    <p>{msg.text}</p>
-                  )}
-                </div>
-
-                {msg.sender === "own" && (
-                  <img src={currentUser?.image} alt="Admin" />
-                )}
-              </div>
-            ))}
-            <div ref={endRef}></div>
-          </div>
-
-          {/* Text Section */}
-          <div className="flex-shrink-0 pt-3">
-            <Form onSubmit={handleSendMessage}>
-              <div className="d-flex flex-row p-1 pe-3 gap-1 align-items-center custom-bottom-chat">
-                {/* Icons Button */}
-                <div className="d-flex ps-2">
-                  <Button variant="link" className="text-black p-1">
-                    <i
-                      className="bi bi-emoji-smile fs-4"
-                      style={{ lineHeight: 1 }}
-                    />
-                  </Button>
-                </div>
-
-                {/* Text Area: ช่องพิมพ์ข้อความ */}
-                <Form.Control
-                  as="textarea"
-                  rows={1}
-                  placeholder="พิมพ์ข้อความ"
-                  ref={msgRef} // ผูกกับ msgRef เพื่อใช้ Auto-Resize
-                  value={newMessage}
-                  onChange={(e) => {
-                    setNewMessage(e.target.value);
-                    autoResize(e); // ปรับขนาด Textarea
-                  }}
-                  onKeyDown={(e) => {
-                    // ดักจับ Enter (ยกเว้น Shift+Enter) เพื่อส่งข้อความ
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      handleSendMessage(e);
-                    }
-                  }}
-                  className="w-100 pt-2 custom-text-input"
-                  style={{
-                    overflow: "hidden",
-                    resize: "none",
-                    minHeight: "40px",
-                    maxHeight: "120px",
-                  }}
-                />
-
-                {/* Icons Button */}
-                <div className="d-flex ps-2">
-                  <Button variant="link" className="text-black p-1">
-                    <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
-                  </Button>
-                  <Button
-                    variant="link"
-                    className="text-black p-1"
-                    onClick={() => fileInputRef.current.click()}
-                  >
-                    <i
-                      className="bi bi-image fs-4"
-                      style={{ lineHeight: 1 }}
-                    ></i>
-                  </Button>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    ref={fileInputRef}
-                    onChange={handleUploadImage}
-                  />
-                  <Button variant="link" className="text-black p-1">
-                    <i
-                      className="bi bi-sticky fs-4"
-                      style={{ lineHeight: 1 }}
-                    ></i>
-                  </Button>
-                </div>
-              </div>
-            </Form>
-          </div>
-        </div>
-        {/* End Chat Section */}
-
-        {/* Start Profile Section */}
-        {selectedCustomer && (
-          <div
-            key={selectedCustomer.id}
-            className="bg-white align-items-center rounded-4 pt-3 d-flex flex-column h-100"
-            style={{ minWidth: "350px", maxWidth: "500px" }}
-          >
-            {/* Profile */}
+      {/* Start Chat Section */}
+      <div className="chat-section">
+        {/* Start Top Section: Profile และ Status Dropdown */}
+        <div className="d-flex gap-3 custom-top-chat pb-3 mx-1 border-secondary-subtle border-bottom">
+          <div className="d-flex gap-3">
+            {/* Profile Picture */}
             <img
-              src={selectedCustomer.img}
-              className="rounded-circle mt-5"
-              style={{ width: "140px", height: "140px", objectFit: "cover" }}
+              src={selectedCustomer?.img}
+              className="rounded-circle mt-2"
+              style={{ width: "46px", height: "46px", objectFit: "cover" }}
             />
-            {selectedCustomer && (
-              <div
-                className="d-flex flex-column mt-4"
-                style={{ padding: "0 10px" }}
-              >
-                {/* ชื่อปัจจุบัน (แก้ไขได้) */}
-                {isEditingName ? (
-                  <Form.Control /* Textbox สำหรับแก้ไข */
-                    type="text"
-                    value={selectedCustomer.name}
-                    onChange={handleNameChange}
-                    onBlur={handleNameSave} // บันทึกเมื่อออกจากช่อง
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleNameSave();
-                      } // บันทึกเมื่อกด Enter
+            <div className="d-flex flex-column">
+              {/* Username */}
+              <span style={{ fontSize: "18px" }} className="pt-2">
+                {selectedCustomer?.name}
+              </span>
+              <span style={{ fontSize: "14px" }}>{selectedCustomer?.app}</span>
+            </div>
+          </div>
+
+          {/* Status Dropdown และ More Options */}
+          {selectedCustomer && (
+            <div className="d-flex gap-3 align-items-center">
+              <Dropdown>
+                <Dropdown.Toggle
+                  as={Badge}
+                  variant={getStatusVariant(selectedCustomer.status)}
+                  id="dropdown-custom-status"
+                  className="custom-badge-top"
+                  style={{ cursor: "pointer" }}
+                >
+                  {selectedCustomer.status}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                  {/* Map ค่า STATUS เพื่อให้ผู้ใช้เลือกอัปเดตสถานะ */}
+                  {Object.values(STATUS).map((statusValue) => (
+                    <Dropdown.Item
+                      key={statusValue}
+                      onClick={() => Status(selectedCustomer.id, statusValue)}
+                      active={selectedCustomer.status === statusValue}
+                    >
+                      {statusValue}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+              <i className="bi bi-three-dots-vertical fs-5"></i>
+            </div>
+          )}
+        </div>
+        {/* End Top Section */}
+
+        {/* Chat container */}
+        <div className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2">
+          {/* Map ข้อความในแชทที่ถูกเลือก */}
+          {(messages[selectedChatId] || []).map((msg) => (
+            <div
+              key={msg.id}
+              className={`message ${msg.sender === "own" ? "own" : ""}`}
+            >
+              {msg.sender === "customer" && (
+                <img src={selectedCustomer?.img} alt="Customer" />
+              )}
+              <div className="texts">
+                {msg.image ? (
+                  <img
+                    src={msg.image}
+                    alt="upload"
+                    style={{
+                      maxWidth: "220px",
+                      borderRadius: "8px",
                     }}
-                    className="custom-edit-name"
-                    autoFocus
                   />
                 ) : (
-                  <p className="mb-0" style={{ fontSize: "18px" }}>
-                    {selectedCustomer.name}
-                    <i
-                      className="bi bi-pencil ms-2"
-                      onClick={() => setIsEditingName(true)}
-                      style={{ cursor: "pointer" }}
-                    ></i>
+                  <p>{msg.text}</p>
+                )}
+              </div>
+
+              {msg.sender === "own" && (
+                <img src={currentUser?.image} alt="Admin" />
+              )}
+            </div>
+          ))}
+          <div ref={endRef}></div>
+        </div>
+
+        {/* Text Section */}
+        <div className="flex-shrink-0 pt-3">
+          <Form onSubmit={handleSendMessage}>
+            <div className="d-flex flex-row p-1 pe-3 gap-1 align-items-center custom-bottom-chat">
+              {/* Icons Button */}
+              <div className="d-flex ps-2">
+                <Button variant="link" className="text-black p-1">
+                  <i
+                    className="bi bi-emoji-smile fs-4"
+                    style={{ lineHeight: 1 }}
+                  />
+                </Button>
+              </div>
+
+              {/* Text Area: ช่องพิมพ์ข้อความ */}
+              <Form.Control
+                as="textarea"
+                rows={1}
+                placeholder="พิมพ์ข้อความ"
+                ref={msgRef} // ผูกกับ msgRef เพื่อใช้ Auto-Resize
+                value={newMessage}
+                onChange={(e) => {
+                  setNewMessage(e.target.value);
+                  autoResize(e); // ปรับขนาด Textarea
+                }}
+                onKeyDown={(e) => {
+                  // ดักจับ Enter (ยกเว้น Shift+Enter) เพื่อส่งข้อความ
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    handleSendMessage(e);
+                  }
+                }}
+                className="w-100 pt-2 custom-text-input"
+                style={{
+                  overflow: "hidden",
+                  resize: "none",
+                  minHeight: "40px",
+                  maxHeight: "120px",
+                }}
+              />
+
+              {/* Icons Button */}
+              <div className="d-flex ps-2">
+                <Button variant="link" className="text-black p-1">
+                  <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
+                </Button>
+                <Button
+                  variant="link"
+                  className="text-black p-1"
+                  onClick={() => fileInputRef.current.click()}
+                >
+                  <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
+                </Button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  ref={fileInputRef}
+                  onChange={handleUploadImage}
+                />
+                <Button variant="link" className="text-black p-1">
+                  <i
+                    className="bi bi-sticky fs-4"
+                    style={{ lineHeight: 1 }}
+                  ></i>
+                </Button>
+              </div>
+            </div>
+          </Form>
+        </div>
+      </div>
+      {/* End Chat Section */}
+
+      {/* Start Profile Section */}
+      {selectedCustomer && (
+        <div
+          key={selectedCustomer.id}
+          className="bg-white align-items-center rounded-4 pt-3 d-flex flex-column h-100"
+          style={{ minWidth: "350px", maxWidth: "500px" }}
+        >
+          {/* Profile */}
+          <img
+            src={selectedCustomer.img}
+            className="rounded-circle mt-5"
+            style={{ width: "140px", height: "140px", objectFit: "cover" }}
+          />
+          {selectedCustomer && (
+            <div
+              className="d-flex flex-column mt-4"
+              style={{ padding: "0 10px" }}
+            >
+              {/* ชื่อปัจจุบัน (แก้ไขได้) */}
+              {isEditingName ? (
+                <Form.Control /* Textbox สำหรับแก้ไข */
+                  type="text"
+                  value={selectedCustomer.name}
+                  onChange={handleNameChange}
+                  onBlur={handleNameSave} // บันทึกเมื่อออกจากช่อง
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleNameSave();
+                    } // บันทึกเมื่อกด Enter
+                  }}
+                  className="custom-edit-name"
+                  autoFocus
+                />
+              ) : (
+                <p className="mb-0" style={{ fontSize: "18px" }}>
+                  {selectedCustomer.name}
+                  <i
+                    className="bi bi-pencil ms-2"
+                    onClick={() => setIsEditingName(true)}
+                    style={{ cursor: "pointer" }}
+                  ></i>
+                </p>
+              )}
+
+              {/* *** ชื่อเดิม (แสดงเมื่อมีการแก้ไขชื่อแล้ว) *** */}
+              {selectedCustomer.originalName &&
+                selectedCustomer.originalName !== selectedCustomer.name && (
+                  <p
+                    className="text-muted mt-1 mb-0"
+                    style={{ fontSize: "16px" }}
+                  >
+                    {selectedCustomer.originalName}
                   </p>
                 )}
+            </div>
+          )}
 
-                {/* *** ชื่อเดิม (แสดงเมื่อมีการแก้ไขชื่อแล้ว) *** */}
-                {selectedCustomer.originalName &&
-                  selectedCustomer.originalName !== selectedCustomer.name && (
-                    <p
-                      className="text-muted mt-1 mb-0"
-                      style={{ fontSize: "16px" }}
+          {selectedCustomer && (
+            <div
+              className="mt-5 w-100"
+              style={{ paddingLeft: "30px", paddingRight: "30px" }}
+            >
+              <p>
+                ผู้รับผิดชอบ : &nbsp;&nbsp;
+                {/* รูปภาพผู้ดูแลระบบ */}
+                <img
+                  src={currentUser?.image}
+                  alt="Admin Profile"
+                  className="rounded-circle"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    objectFit: "cover",
+                  }}
+                />
+                &nbsp; {currentUser?.name}
+              </p>
+              <hr />
+
+              <div className="w-100 px-2">
+                {/* Title: ส่วนโน้ต */}
+                <div className="d-flex flex-column">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <p className="mb-0">โน๊ต</p>
+                    {/* ปุ่มสลับการแสดง/ซ่อนฟอร์มเพิ่มโน้ต */}
+                    <Button
+                      variant="link"
+                      className="text-black p-0"
+                      onClick={() => setIsAddingNote(!isAddingNote)}
                     >
-                      {selectedCustomer.originalName}
-                    </p>
-                  )}
-              </div>
-            )}
+                      <i
+                        className="bi bi-plus fs-4"
+                        style={{ cursor: "pointer" }}
+                      ></i>
+                    </Button>
+                  </div>
 
-            {selectedCustomer && (
-              <div
-                className="mt-5 w-100"
-                style={{ paddingLeft: "30px", paddingRight: "30px" }}
-              >
-                <p>
-                  ผู้รับผิดชอบ : &nbsp;&nbsp;
-                  {/* รูปภาพผู้ดูแลระบบ */}
-                  <img
-                    src={currentUser?.image}
-                    alt="Admin Profile"
-                    className="rounded-circle"
-                    style={{
-                      width: "30px",
-                      height: "30px",
-                      objectFit: "cover",
-                    }}
-                  />
-                  &nbsp; {currentUser?.name}
-                </p>
-                <hr />
-
-                <div className="w-100 px-2">
-                  {/* Title: ส่วนโน้ต */}
-                  <div className="d-flex flex-column">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <p className="mb-0">โน๊ต</p>
-                      {/* ปุ่มสลับการแสดง/ซ่อนฟอร์มเพิ่มโน้ต */}
-                      <Button
-                        variant="link"
-                        className="text-black p-0"
-                        onClick={() => setIsAddingNote(!isAddingNote)}
-                      >
-                        <i
-                          className="bi bi-plus fs-4"
-                          style={{ cursor: "pointer" }}
-                        ></i>
-                      </Button>
-                    </div>
-
-                    {/* Add Note Form: แสดงเมื่อ isAddingNote เป็น true */}
-                    {isAddingNote && (
-                      <div className="mb-3">
-                        <Form.Control /* ช่องพิมพ์โน้ตใหม่ */
-                          style={{ borderRadius: 10 }}
-                          as="textarea"
-                          rows={3}
-                          placeholder="เขียนโน๊ต..."
-                          value={newNote}
-                          onChange={(e) => setNewNote(e.target.value)}
-                          className="mb-2"
-                        />
-                        <div className="d-flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="primary"
-                            onClick={handleAddNote}
-                          >
-                            บันทึก
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => {
-                              setIsAddingNote(false);
-                              setNewNote("");
-                            }}
-                          >
-                            ยกเลิก
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Notes List: แสดงโน้ตทั้งหมด */}
-                    <div className="d-flex flex-column gap-2">
-                      {notes.map((note) => (
-                        <div
-                          key={note.id}
-                          className="border rounded-3 p-3 bg-white"
+                  {/* Add Note Form: แสดงเมื่อ isAddingNote เป็น true */}
+                  {isAddingNote && (
+                    <div className="mb-3">
+                      <Form.Control /* ช่องพิมพ์โน้ตใหม่ */
+                        style={{ borderRadius: 10 }}
+                        as="textarea"
+                        rows={3}
+                        placeholder="เขียนโน๊ต..."
+                        value={newNote}
+                        onChange={(e) => setNewNote(e.target.value)}
+                        className="mb-2"
+                      />
+                      <div className="d-flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={handleAddNote}
                         >
-                          {editingNoteId === note.id ? (
-                            // Edit Mode: แสดง Textarea สำหรับแก้ไข
-                            <div>
-                              <Form.Control
-                                style={{ borderRadius: 10 }}
-                                as="textarea"
-                                rows={3}
-                                value={editingText}
-                                onChange={(e) => setEditingText(e.target.value)}
-                                className="mb-2"
-                              />
-                              <div className="d-flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="primary"
-                                  onClick={() => handleSaveEdit(note.id)}
-                                >
-                                  บันทึก
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="secondary"
-                                  onClick={handleCancelEdit}
-                                >
-                                  ยกเลิก
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            // View Mode: แสดงข้อความโน้ตและเวลา
-                            <div>
-                              <p
-                                className="mb-2"
-                                style={{
-                                  whiteSpace: "pre-wrap",
-                                  fontSize: "15px",
-                                }}
-                              >
-                                {note.text}
-                              </p>
-                              <div className="d-flex justify-content-between align-items-center">
-                                <small className="text-muted">
-                                  {/* แสดงวันที่และเวลา */}
-                                  {note.date.toLocaleDateString("th-TH", {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric",
-                                  })}{" "}
-                                  {note.date.toLocaleTimeString("th-TH", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </small>
-                                <div className="d-flex gap-2">
-                                  {/* ปุ่ม Edit */}
-                                  <Button
-                                    variant="link"
-                                    size="sm"
-                                    className="text-secondary p-0"
-                                    onClick={() => handleEditNote(note)}
-                                  >
-                                    <i
-                                      className="bi bi-pencil"
-                                      style={{ fontSize: "16px" }}
-                                    ></i>
-                                  </Button>
-                                  {/* ปุ่ม Delete */}
-                                  <Button
-                                    variant="link"
-                                    size="sm"
-                                    className="text-secondary p-0"
-                                    onClick={() => handleDeleteNote(note.id)}
-                                  >
-                                    <i
-                                      className="bi bi-trash"
-                                      style={{ fontSize: "16px" }}
-                                    ></i>
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                          บันทึก
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setIsAddingNote(false);
+                            setNewNote("");
+                          }}
+                        >
+                          ยกเลิก
+                        </Button>
+                      </div>
                     </div>
+                  )}
+
+                  {/* Notes List: แสดงโน้ตทั้งหมด */}
+                  <div className="d-flex flex-column gap-2">
+                    {notes.map((note) => (
+                      <div
+                        key={note.id}
+                        className="border rounded-3 p-3 bg-white"
+                      >
+                        {editingNoteId === note.id ? (
+                          // Edit Mode: แสดง Textarea สำหรับแก้ไข
+                          <div>
+                            <Form.Control
+                              style={{ borderRadius: 10 }}
+                              as="textarea"
+                              rows={3}
+                              value={editingText}
+                              onChange={(e) => setEditingText(e.target.value)}
+                              className="mb-2"
+                            />
+                            <div className="d-flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="primary"
+                                onClick={() => handleSaveEdit(note.id)}
+                              >
+                                บันทึก
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={handleCancelEdit}
+                              >
+                                ยกเลิก
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          // View Mode: แสดงข้อความโน้ตและเวลา
+                          <div>
+                            <p
+                              className="mb-2"
+                              style={{
+                                whiteSpace: "pre-wrap",
+                                fontSize: "15px",
+                              }}
+                            >
+                              {note.text}
+                            </p>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <small className="text-muted">
+                                {/* แสดงวันที่และเวลา */}
+                                {note.date.toLocaleDateString("th-TH", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}{" "}
+                                {note.date.toLocaleTimeString("th-TH", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </small>
+                              <div className="d-flex gap-2">
+                                {/* ปุ่ม Edit */}
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="text-secondary p-0"
+                                  onClick={() => handleEditNote(note)}
+                                >
+                                  <i
+                                    className="bi bi-pencil"
+                                    style={{ fontSize: "16px" }}
+                                  ></i>
+                                </Button>
+                                {/* ปุ่ม Delete */}
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="text-secondary p-0"
+                                  onClick={() => handleDeleteNote(note.id)}
+                                >
+                                  <i
+                                    className="bi bi-trash"
+                                    style={{ fontSize: "16px" }}
+                                  ></i>
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

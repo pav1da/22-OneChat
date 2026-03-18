@@ -2,7 +2,7 @@ const customers = [
   {
     id: 1,
     name: "Asaba Harumasa",
-    img: "./src/assets/Image/Customers/Harumasa.png",
+    img: new URL('../assets/Image/Customers/Harumasa.png', import.meta.url).href,
     inprocess: false,
     last: "ยืนยันยอดชำระ ขอบคุณมากนะคะ 😊",
     app: "Facebook : Dew Flower Shop"
@@ -10,7 +10,7 @@ const customers = [
   {
     id: 2,
     name: "Nelliel",
-    img: "./src/assets/Image/Customers/Nelliel.png",
+    img: new URL('../assets/Image/Customers/Nelliel.png', import.meta.url).href,
     inprocess: false,
     last: "ได้รับยอดเรียบร้อยค่ะ ขอบพระคุณมากนะคะ 🙏",
     app: "Line : Mod Dang Flower"
@@ -18,7 +18,7 @@ const customers = [
   {
     id: 3,
     name: "Jane Doe",
-    img: "./src/assets/Image/Customers/JaneDoe.png",
+    img: new URL('../assets/Image/Customers/JaneDoe.png', import.meta.url).href,
     inprocess: false,
     last: "ได้ค่ะ ขอบคุณมากๆค่า",
     app: "Facebook : Dew Flower Shop"
@@ -26,7 +26,7 @@ const customers = [
   {
     id: 4,
     name: "Rin",
-    img: "./src/assets/Image/Customers/Rin.png",
+    img: new URL('../assets/Image/Customers/Rin.png', import.meta.url).href,
     inprocess: true, 
     last: "รับทราบค่ะ 😊 เราจะจัดเตรียมช่อ + การ์ดไว้ให้เรียบร้อย ชื่อคุณแป้งรับสินค้าเวลา 17.30 น. นะคะ",
     app: "Facebook : Dew Flower Shop"
@@ -34,7 +34,7 @@ const customers = [
   {
     id: 5,
     name: "Kuchiki Rukia",
-    img: "./src/assets/Image/Customers/KuchikiRukia.png",
+    img: new URL('../assets/Image/Customers/KuchikiRukia.png', import.meta.url).href,
     inprocess: false, 
     last: "ระเบิดลงแล้ว!",
     app: "Line : Seretei Flower"
@@ -42,7 +42,7 @@ const customers = [
   {
     id: 6,
     name: "Ichigo",
-    img: "./src/assets/Image/Customers/Ichigo.png",
+    img: new URL('../assets/Image/Customers/Ichigo.png', import.meta.url).href,
     inprocess: true,
     last: "ได้ครับ ขอบคุณครับ",
     app: "Line : Seretei Flower"
@@ -50,7 +50,7 @@ const customers = [
   {
     id: 7,
     name: "Jinx",
-    img: "./src/assets/Image/Customers/Jinx.png",
+    img: new URL('../assets/Image/Customers/Jinx.png', import.meta.url).href,
     inprocess: null, 
     last: "สวัสดีค่ะ ต้องการสอบถามค่ะ",
     app: "Line : lala florist"
@@ -58,7 +58,7 @@ const customers = [
   {
     id: 8,
     name: "Bell",
-    img: "./src/assets/Image/Customers/bell.png",
+    img: new URL('../assets/Image/Customers/bell.png', import.meta.url).href,
     inprocess: false,
     last: "อร่อยมากค่าาา <3",
     app: "Line : Papaya Sap mak"
@@ -66,7 +66,7 @@ const customers = [
   {
     id: 9,
     name: "Sen",
-    img: "./src/assets/Image/Customers/sen.png",
+    img: new URL('../assets/Image/Customers/sen.png', import.meta.url).href,
     inprocess: true,
     last: "จัดส่งแล้วนะคะได้รับแล้วแจ้งแอดมินได้เลยค่ะ",
     app: "Facebook : Dew Flower Shop"
@@ -74,7 +74,7 @@ const customers = [
   {
     id: 10,
     name: "Bank",
-    img: "./src/assets/Image/Customers/bank.png",
+    img: new URL('../assets/Image/Customers/bank.png', import.meta.url).href,
     inprocess: null,
     last: "ที่ร้านมีดอกฮิกันบานะไหมคับ",
     app: "Facebook : Dew Flower Shop"

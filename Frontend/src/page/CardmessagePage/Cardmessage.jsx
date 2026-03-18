@@ -24,7 +24,7 @@ const Cardmessage = () => {
       type: "รูปภาพ",
       title: "ช่อวัน Congrats",
       created: "25/7/2025, 17:32:05 AM",
-      image: "src/assets/Image/Product/image.png",
+      image: new URL('../../assets/Image/Product/image.png', import.meta.url).href,
       message: "",
     },
     {
@@ -203,7 +203,7 @@ const Cardmessage = () => {
                   className="p-0 m-0 item-options"
                 >
                   <img
-                    src="src/assets/Icon/icon-dot-h.png"
+                    src="/src/assets/Icon/icon-dot-h.png"
                     alt="options"
                     style={{ width: "20px", height: "20px", cursor: "pointer" }}
                   />
