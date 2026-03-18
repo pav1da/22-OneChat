@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./UserProfileDropdown.css";
 
 const UserProfileDropdown = ({
@@ -7,8 +8,11 @@ const UserProfileDropdown = ({
   userEmail,
   onLogout,
   onClose,
+  onSetting,
 }) => {
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -44,7 +48,17 @@ const UserProfileDropdown = ({
         <span className="upd-menu-text">Theme</span>
         <i className="bi bi-chevron-right upd-arrow"></i>
       </div>
-      <div className="upd-menu-item">
+      <div
+        className="upd-menu-item"
+        onClick={() => {
+          if (onSetting) {
+            onSetting();
+          } else {
+            navigate("/setting", { state: { background: location } });
+          }
+          if (onClose) onClose();
+        }}
+      >
         <i className="bi bi-sliders2 upd-icon"></i>
         <span className="upd-menu-text">Settings</span>
       </div>

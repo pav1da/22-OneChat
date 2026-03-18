@@ -1,6 +1,6 @@
 // react dependencies
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 // user components
 import Layouts from "./layouts/Layouts";
@@ -61,68 +61,69 @@ function App() {
   return (
     <div>
       <BrowserRouter basename="/onechat/">
-        <Routes>
-          {/* --- Public --- */}
-          <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Home />} />
-          <Route
-            path="/signup"
-            element={<SignUpPage onLogin={handleLogin} />}
-          />
-          <Route
-            path="/signin"
-            element={
-              currentUser ? (
-                <Navigate to="/dashboard" />
-              ) : (
-                <SignInPage onLogin={handleLogin} />
-              )
-            }
-          />
-
-          {/* --- Protected Routes --- */}
-          <Route
-            element={
-              <ProtectedRoute
-                user={currentUser}
-                allowedRoles={["admin", "manager", "staff"]}
-              >
-                <TeamProvider currentUser={currentUser}>
-                  <ChatProvider>
-                    <Layouts onLogout={handleLogout} user={currentUser} />
-                  </ChatProvider>
-                </TeamProvider>
-              </ProtectedRoute>
-            }
-          >
-            <Route
-              path="/dashboard"
-              element={<Dashboard user={currentUser} />}
-            />
-            <Route
-              path="/allchat"
-              element={<AllChat currentUser={currentUser} />}
-            />
-
-            <Route
-              path="/inbox"
-              element={<Inbox currentUser={currentUser} />}
-            />
-
-            <Route
-              path="/cardmessage"
-              element={<CardMessage currentUser={currentUser} />}
-            />
-
-            <Route path="/log" element={<Log />} />
-            <Route path="/notification" element={<Notifiacation />} />
-            <Route path="/member" element={<Member />} />
-            <Route path="/tokenreport" element={<TokenReport />} />
-            <Route path="/setting" element={<Setting user={currentUser} />} />
-          </Route>
-        </Routes>
+        {/* Use a nested component so we can call useLocation (must be inside Router) */}
+        <AppRoutes currentUser={currentUser} handleLogin={handleLogin} handleLogout={handleLogout} />
       </BrowserRouter>
     </div>
+  );
+}
+
+function AppRoutes({ currentUser, handleLogin, handleLogout }) {
+  const location = useLocation();
+  const background = location.state && location.state.background;
+
+  return (
+    <>
+      <Routes location={background || location}>
+        {/* --- Public --- */}
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/signup" element={<SignUpPage onLogin={handleLogin} />} />
+        <Route
+          path="/signin"
+          element={
+            currentUser ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <SignInPage onLogin={handleLogin} />
+            )
+          }
+        />
+
+        {/* --- Protected Routes --- */}
+        <Route
+          element={
+            <ProtectedRoute
+              user={currentUser}
+              allowedRoles={["admin", "manager", "staff"]}
+            >
+              <TeamProvider currentUser={currentUser}>
+                <ChatProvider>
+                  <Layouts onLogout={handleLogout} user={currentUser} />
+                </ChatProvider>
+              </TeamProvider>
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
+          <Route path="/allchat" element={<AllChat currentUser={currentUser} />} />
+          <Route path="/inbox" element={<Inbox currentUser={currentUser} />} />
+          <Route path="/cardmessage" element={<CardMessage currentUser={currentUser} />} />
+          <Route path="/log" element={<Log />} />
+          <Route path="/notification" element={<Notifiacation />} />
+          <Route path="/member" element={<Member />} />
+          <Route path="/tokenreport" element={<TokenReport />} />
+          <Route path="/setting" element={<Setting user={currentUser} />} />
+        </Route>
+      </Routes>
+
+      {/* When navigated with a background, render the setting route as a modal on top */}
+      {background && (
+        <Routes>
+          <Route path="/setting" element={<Setting user={currentUser} />} />
+        </Routes>
+      )}
+    </>
   );
 }
 

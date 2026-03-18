@@ -387,3 +387,113 @@
 .text-muted {
     color: #a0a0a0 !important;
 }
+
+/* Floating card (centered panel like modal) */
+.floating-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(20,20,30,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    width: min(920px, 88%);
+    padding: 28px 32px;
+    margin: 26px 0;
+}
+
+/* When content inside is long, keep internal scrolling but card stays centered */
+.scrollable-col .floating-card {
+    max-height: calc(100vh - 140px);
+    overflow: auto;
+}
+
+/* Slight backdrop dim effect for the rest of the page (subtle) */
+.settings-page-wrapper.dim-backdrop::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.03);
+    pointer-events: none;
+    border-radius: 24px;
+}
+
+/* Hide background (page) sidebar when modal is open */
+.settings-page-wrapper.modal-open .settings-sidebar {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Modal internal left nav tweaks */
+.floating-modal .modal-left-nav {
+    border-right: 1px solid #f1f1f1;
+    padding-right: 18px;
+}
+
+.floating-modal .modal-left-nav .settings-nav .nav-link {
+    padding: 8px 10px;
+}
+
+.floating-modal .modal-left-nav h5 {
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.floating-modal .modal-content-col {
+    padding-left: 20px;
+}
+
+/* Modal overlay that dims background and centers the panel */
+.settings-modal-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.04);
+    z-index: 2000;
+    padding: 40px; /* keep space on small screens */
+}
+
+.floating-modal {
+    background: #fff;
+    height: clamp(920px, 92vh, 2000px);
+    width: clamp(920px, 92vw, 2000px);
+    border-radius: 12px;
+    box-shadow: 0 30px 60px rgba(20,20,30,0.12), 0 6px 12px rgba(0,0,0,0.06);
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+    padding: 28px 32px;
+}
+
+
+/* make floating-modal a positioned container for absolute children */
+.floating-modal {
+    position: relative;
+}
+
+/* Close button in the top-right of the modal */
+.settings-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+.settings-close-btn:hover {
+    background: rgba(0,0,0,0.04);
+    color: #212529;
+}
+
+/* On small screens reduce padding */
+@media (max-width: 768px) {
+    .floating-modal {
+        padding: 18px 20px;
+        max-height: calc(100vh - 60px);
+    }
+}

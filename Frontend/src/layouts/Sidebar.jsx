@@ -2,7 +2,6 @@ import { Nav } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { useTeam } from "../context/TeamContext";
-import AiPanel from "../components/AiPanel";
 import UserProfileDropdown from "../components/UserProfileDropdown";
 import defaultProfile from "../assets/Image/Admins/pav1da.png";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -15,7 +14,6 @@ const Sidebar = ({ onLogout, currentUser }) => {
   const userImage = currentUser?.image?.startsWith("/") || currentUser?.image?.startsWith("http") ? currentUser.image : defaultProfile;
   const userName = currentUser?.name || "User";
 
-  const [showAiPanel, setShowAiPanel] = useState(false);
   const [starredOpen, setStarredOpen] = useState(true);
   const [teamDropdownOpen, setTeamDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
