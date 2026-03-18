@@ -7,7 +7,7 @@ import Layouts from "./layouts/Layouts";
 import SignUpPage from "./page/SignUpPage";
 import SignInPage from "./page/SignInPage";
 import Home from "./page/Home";
-import Dashboard from "./page/dashboard/Dashboard";
+import Dashboard from "./page/dashboard/notes";
 import Inbox from "./page/Inbox/Inbox";
 import Setting from "./page/SettingPages/Setting";
 import Notifiacation from "./page/notification/Notification";

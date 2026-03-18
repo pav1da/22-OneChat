@@ -27,28 +27,28 @@ const Member = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('/api/users', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const token = localStorage.getItem("token");
+        const res = await fetch("/api/users", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           const users = await res.json();
           // map API fields to component fields
-          const mapped = users.map(u => ({
+          const mapped = users.map((u) => ({
             id: u.emp_id,
             name: u.username || u.name,
-            role: u.role || 'staff',
-            team: u.team || '',
-            status: 'กำลังใช้งาน',
-            color: '#607D8B',
+            role: u.role || "staff",
+            team: u.team || "",
+            status: "กำลังใช้งาน",
+            color: "#607D8B",
             email: u.email,
             phone: u.phone,
-            image: u.image || ''
+            image: u.image || "",
           }));
           setAllMembers(mapped);
         }
       } catch (err) {
-        console.error('Error fetching users:', err);
+        console.error("Error fetching users:", err);
       }
     };
     fetchUsers();
@@ -152,20 +152,20 @@ const Member = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm("ยืนยันการลบสมาชิกนี้ออกจากระบบ?")) {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const res = await fetch(`/api/users/${userId}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           setAllMembers((prev) => prev.filter((user) => user.id !== userId));
         } else {
           const data = await res.json();
-          alert(data.message || 'ลบไม่สำเร็จ');
+          alert(data.message || "ลบไม่สำเร็จ");
         }
       } catch (err) {
-        console.error('Delete error:', err);
-        alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+        console.error("Delete error:", err);
+        alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
       }
       setActivePopupId(null);
     }
@@ -173,14 +173,7 @@ const Member = () => {
 
   // ================== 5. RENDER UI ==================
   return (
-    <div className="member-container" onClick={() => setActivePopupId(null)}>
-      {/* <div className="d-flex justify-content-between">
-        <p style={{fontSize: "20px"}}>header</p>
-      </div>
-
-      <hr className="divider" /> */}
-
-      {/* Header */}
+    <div className="member-container px-4" onClick={() => setActivePopupId(null)}>
       <div className="member-table-header">
         <div className="col-name">ชื่อ</div>
         <div className="col-team">ทีม</div>
