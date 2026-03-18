@@ -12,6 +12,7 @@ const lineController = require("./controllers/lineController");
 
 // นำเข้า Routers
 const usersRouter = require("./routers/usersRouter");
+const logsRouter = require('./routers/logsRouter');
 
 const app = express();
 
@@ -28,21 +29,23 @@ const uploadDir = path.join(__dirname, "uploads");
 const chatImagesDir = path.join(__dirname, "uploads", "chat-images");
 
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+    fs.mkdirSync(uploadDir);
 }
 if (!fs.existsSync(chatImagesDir)) {
-  fs.mkdirSync(chatImagesDir);
+    fs.mkdirSync(chatImagesDir);
 }
 
 // ===== LINE Config =====
 const config = {
-  channelAccessToken: process.env.Channel_ID,
-  channelSecret: process.env.channelSecret,
+    channelAccessToken: process.env.Channel_ID,
+    channelSecret: process.env.channelSecret,
 };
 
 // ===== Routes =====
 // API Routes
 app.use("/api/users", usersRouter);
+
+app.use('/api/logs', logsRouter);
 
 // Route สำหรับรับ Webhook จาก LINE
 app.post("/webhook", line.middleware(config), lineController.handleWebhook);
