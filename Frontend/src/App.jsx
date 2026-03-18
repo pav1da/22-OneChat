@@ -12,7 +12,7 @@ import Inbox from "./page/Inbox/Inbox";
 import Setting from "./page/SettingPages/Setting";
 import Notifiacation from "./page/notification/Notification";
 import Log from "./page/Log";
-import Member from "./page/Member";
+import Member from "./page/member/Member";
 import TokenReport from "./page/TokenReport";
 import AllChat from "./page/allchat/Allchat";
 import CardMessage from "./page/CardmessagePage/Cardmessage";
@@ -24,10 +24,10 @@ import "./App.css";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-    // ให้ไปเช็คใน localStorage ก่อนว่ามีของเก่าไหม
+    // ให้ไปเช็คใน sessionStorage ก่อนว่ามีของเก่าไหม
     const [currentUser, setCurrentUser] = useState(() => {
-        const savedUser = localStorage.getItem("myAppUser");
-        const token = localStorage.getItem("token");
+        const savedUser = sessionStorage.getItem("myAppUser");
+        const token = sessionStorage.getItem("token");
         if (savedUser && token) {
             const parsed = JSON.parse(savedUser);
             // ตรวจสอบว่า role ตรงกับ DB roles หรือไม่
@@ -36,8 +36,8 @@ function App() {
                 return parsed;
             }
             // ถ้า role ไม่ valid (จาก mock data เก่า) ให้ล้างออก
-            localStorage.removeItem("myAppUser");
-            localStorage.removeItem("token");
+            sessionStorage.removeItem("myAppUser");
+            sessionStorage.removeItem("token");
         }
         return null;
     });
@@ -48,14 +48,35 @@ function App() {
 
     const handleLogin = (userFromForm) => {
         setCurrentUser(userFromForm);
-        localStorage.setItem("myAppUser", JSON.stringify(userFromForm));
+        sessionStorage.setItem("myAppUser", JSON.stringify(userFromForm));
         // token จะถูกเก็บจาก SignInPage/SignUpPage โดยตรง
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        // บันทึก log ก่อน logout (fire-and-forget)
+        try {
+            const token = sessionStorage.getItem("token");
+            const user = JSON.parse(sessionStorage.getItem("myAppUser") || "{}");
+            if (token && user.username) {
+                fetch("/api/logs", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        user: user.username,
+                        avatar: null,
+                        action: "ออกจากระบบ",
+                        target: "",
+                        details: "",
+                    }),
+                }).catch(() => {});
+            }
+        } catch {}
         setCurrentUser(null);
-        localStorage.removeItem("myAppUser");
-        localStorage.removeItem("token");
+        sessionStorage.removeItem("myAppUser");
+        sessionStorage.removeItem("token");
     };
 
     return (

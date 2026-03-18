@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
 const line = require("@line/bot-sdk");
 const path = require("path");
 const fs = require("fs");
@@ -15,6 +17,25 @@ const usersRouter = require("./routers/usersRouter");
 const logsRouter = require('./routers/logsRouter');
 
 const app = express();
+const server = http.createServer(app);
+
+// ===== Socket.IO =====
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+// แชร์ io instance ให้ routers ใช้ได้
+app.set("io", io);
+
+io.on("connection", (socket) => {
+  console.log(`🔌 Client connected: ${socket.id}`);
+  socket.on("disconnect", () => {
+    console.log(`❌ Client disconnected: ${socket.id}`);
+  });
+});
 
 // ===== Middleware =====
 app.use(cors());
@@ -50,5 +71,6 @@ app.use('/api/logs', logsRouter);
 // Route สำหรับรับ Webhook จาก LINE
 app.post("/webhook", line.middleware(config), lineController.handleWebhook);
 
-// เปิดเซิร์ฟเวอร์
-app.listen(3000, () => console.log("Server is running on port 3000"));
+// เปิดเซิร์ฟเวอร์ (ใช้ server.listen แทน app.listen เพื่อให้ Socket.IO ทำงาน)
+server.listen(3000, () => console.log("Server is running on port 3000 (with Socket.IO)"));
+

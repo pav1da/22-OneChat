@@ -37,7 +37,7 @@ function Account({ user }) {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const token = localStorage.getItem('token');
+                const token = sessionStorage.getItem('token');
                 if (!token) return;
 
                 const res = await fetch('/api/users/me', {
@@ -112,7 +112,7 @@ function Account({ user }) {
     };
 
     const saveDataAndClose = async () => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (!token) return;
 
         const headers = {
@@ -130,11 +130,11 @@ function Account({ user }) {
                 const data = await res.json();
                 if (res.ok) {
                     setUserData(prev => ({ ...prev, username: editValue }));
-                    // อัพเดท user ใน localStorage ด้วย
-                    const savedUser = JSON.parse(localStorage.getItem('myAppUser') || '{}');
+                    // อัพเดท user ใน sessionStorage ด้วย
+                    const savedUser = JSON.parse(sessionStorage.getItem('myAppUser') || '{}');
                     savedUser.username = editValue;
                     savedUser.name = editValue;
-                    localStorage.setItem('myAppUser', JSON.stringify(savedUser));
+                    sessionStorage.setItem('myAppUser', JSON.stringify(savedUser));
                 } else {
                     alert(data.message || 'เกิดข้อผิดพลาด');
                     return;
@@ -203,7 +203,7 @@ function Account({ user }) {
 
             // อัปโหลดรูปไปที่ API
             try {
-                const token = localStorage.getItem('token');
+                const token = sessionStorage.getItem('token');
                 const formData = new FormData();
                 formData.append('image', file);
 

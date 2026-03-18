@@ -27,7 +27,7 @@ const Member = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const res = await fetch("/api/users", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -152,7 +152,7 @@ const Member = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm("ยืนยันการลบสมาชิกนี้ออกจากระบบ?")) {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const res = await fetch(`/api/users/${userId}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

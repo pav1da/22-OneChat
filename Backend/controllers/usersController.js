@@ -1,6 +1,27 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const Log = require('../models/log');
 require('dotenv').config();
+
+// Helper: สร้างวันที่เวลาท้องถิ่นแบบ MySQL format (YYYY-MM-DD HH:mm:ss)
+const getLocalDatetime = () => {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
+
+// Helper: บันทึก log + ส่ง real-time event
+const createLogAndEmit = async (req, logData) => {
+  try {
+    const result = await Log.create(logData);
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('new-log', { ...logData, log_id: result.insertId, created_at: getLocalDatetime() });
+    }
+  } catch (logErr) {
+    console.error('Log error:', logErr.message);
+  }
+};
 
 // =============================================
 // 1. POST /api/users/register — ลงทะเบียนผู้ใช้งานใหม่
@@ -35,6 +56,9 @@ exports.register = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
+
+    // บันทึก log + ส่ง real-time event
+    await createLogAndEmit(req, { user: newUser.username, avatar: null, action: 'สมัครสมาชิก', target: '', details: '' });
 
     res.status(201).json({
       message: 'ลงทะเบียนสำเร็จ',
@@ -92,6 +116,9 @@ exports.login = async (req, res) => {
     // ส่ง user กลับโดยไม่มี password
     const { password: _, ...userWithoutPassword } = user;
 
+    // บันทึก log + ส่ง real-time event
+    await createLogAndEmit(req, { user: userWithoutPassword.username, avatar: null, action: 'เข้าสู่ระบบ', target: '', details: '' });
+
     res.json({
       message: 'เข้าสู่ระบบสำเร็จ',
       token,
@@ -145,6 +172,9 @@ exports.updateUsername = async (req, res) => {
     await User.updateUsername(req.user.emp_id, username);
     const updatedUser = await User.findById(req.user.emp_id);
 
+    // บันทึก log + ส่ง real-time event
+    await createLogAndEmit(req, { user: updatedUser.username, avatar: null, action: 'เปลี่ยนชื่อผู้ใช้', target: username, details: '' });
+
     res.json({ message: 'เปลี่ยนชื่อผู้ใช้สำเร็จ', user: updatedUser });
   } catch (err) {
     console.error('UpdateUsername error:', err);
@@ -176,6 +206,9 @@ exports.updateEmail = async (req, res) => {
     }
 
     await User.updateEmail(req.user.emp_id, newEmail);
+    // บันทึก log + ส่ง real-time event
+    await createLogAndEmit(req, { user: req.user.username, avatar: null, action: 'เปลี่ยนอีเมล', target: newEmail, details: '' });
+
     res.json({ message: 'เปลี่ยนอีเมลสำเร็จ' });
   } catch (err) {
     console.error('UpdateEmail error:', err);
@@ -195,6 +228,9 @@ exports.updatePhone = async (req, res) => {
     }
 
     await User.updatePhone(req.user.emp_id, phone);
+    // บันทึก log + ส่ง real-time event
+    await createLogAndEmit(req, { user: req.user.username, avatar: null, action: 'เปลี่ยนเบอร์โทรศัพท์', target: phone, details: '' });
+
     res.json({ message: 'เปลี่ยนเบอร์โทรศัพท์สำเร็จ' });
   } catch (err) {
     console.error('UpdatePhone error:', err);
@@ -220,6 +256,9 @@ exports.updatePassword = async (req, res) => {
     }
 
     await User.updatePassword(req.user.emp_id, newPassword);
+    // บันทึก log + ส่ง real-time event
+    await createLogAndEmit(req, { user: req.user.username, avatar: null, action: 'เปลี่ยนรหัสผ่าน', target: '', details: '' });
+
     res.json({ message: 'เปลี่ยนรหัสผ่านสำเร็จ' });
   } catch (err) {
     console.error('UpdatePassword error:', err);
@@ -237,6 +276,9 @@ exports.updateAvatar = async (req, res) => {
     }
 
     const imageUrl = `/uploads/avatars/${req.file.filename}`;
+    // บันทึก log + ส่ง real-time event
+    await createLogAndEmit(req, { user: req.user.username, avatar: null, action: 'เปลี่ยนรูปโปรไฟล์', target: '', details: '' });
+
     res.json({ message: 'อัปโหลดรูปโปรไฟล์สำเร็จ', imageUrl });
   } catch (err) {
     console.error('UpdateAvatar error:', err);
@@ -257,6 +299,10 @@ exports.deleteUser = async (req, res) => {
     }
 
     await User.deleteById(id);
+
+    // บันทึก log + ส่ง real-time event
+    await createLogAndEmit(req, { user: req.user.username, avatar: null, action: 'ลบผู้ใช้', target: user.username, details: '' });
+
     res.json({ message: 'ลบผู้ใช้สำเร็จ' });
   } catch (err) {
     console.error('DeleteUser error:', err);

@@ -8,8 +8,8 @@ const ProtectedRoute = ({ children, allowedRoles, user }) => {
 
   // ถ้า Login แล้วแต่ Role ไม่ตรงกับที่อนุญาต -> ล้าง session แล้วไป SignIn
   if (!allowedRoles.includes(user.role)) {
-    localStorage.removeItem("myAppUser");
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("myAppUser");
+    sessionStorage.removeItem("token");
     return <Navigate to="/signin" replace />;
   }
 

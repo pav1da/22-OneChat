@@ -37,8 +37,8 @@ function SignUpPage({ onLogin }) {
         return;
       }
 
-      // เก็บ token ไว้ใน localStorage
-      localStorage.setItem("token", data.token);
+      // เก็บ token ไว้ใน sessionStorage
+      sessionStorage.setItem("token", data.token);
 
       if (onLogin) onLogin(data.user);
       navigate("/dashboard");

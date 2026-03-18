@@ -19,6 +19,8 @@ services:
 #      MYSQL_USER: user
 #      MYSQL_PASSWORD: user
 #      MYSQL_DATABASE: data
+      TZ: Asia/Bangkok
+    command: --default-time-zone='+07:00'
     networks:
       - mysql-network
       

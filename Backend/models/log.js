@@ -3,6 +3,7 @@ const db = require('../config/db');
 const Log = {
     findAll: async (filters) => {
         let sql = 'SELECT * FROM LOGS WHERE 1=1';
+        let orderBy = ' ORDER BY created_at DESC';
         let params = [];
 
         if (filters.user) {
@@ -15,7 +16,7 @@ const Log = {
             params.push(filters.action);
         }
 
-        const [rows] = await db.query(sql, params);
+        const [rows] = await db.query(sql + orderBy, params);
         return rows;
     },
 
