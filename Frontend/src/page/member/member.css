@@ -1,0 +1,224 @@
+/* =========================================================================
+   Member Page Stylesheet (member.css)
+   ========================================================================= */
+
+/* คอนเทนเนอร์หลักของหน้า Member */
+.member-container {
+  font-family: 'Kanit', sans-serif; /* kanit-regular */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main, #ffffff);
+  overflow-y: auto;
+}
+
+/* หัวข้อ (Section Title) */
+.section-title {
+  font-size: 1.25rem; 
+  margin-bottom: 0;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+/* ช่องค้นหา (Search Input) */
+.search-input {
+  min-width: 200px;
+  height: 38px;
+  background-color: var(--bg-surface, #f8f9fa) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding-left: 2.5rem !important; /* ps-5 */
+}
+
+/* ไอคอนแว่นขยายในช่องค้นหา */
+.search-icon {
+  position: absolute;
+  top: 8px;
+  left: 15px;
+  color: var(--text-muted, #6c757d);
+}
+
+/* เส้นแบ่ง (Divider) */
+.divider {
+  border-top: 1px solid var(--border-light, #e9ecef) !important;
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* =========================================================================
+   Team Section Styles
+   ========================================================================= */
+
+/* กล่องแต่ละทีม */
+.team-card {
+  border: 1px solid var(--border-light, #e9ecef);
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+/* ส่วนหัวของทีม (Team Header) */
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--bg-main, #ffffff);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.team-header:hover {
+  background-color: var(--bg-surface, #f8f9fa);
+}
+
+/* ปุ่มลบทีม */
+.btn-delete-team {
+  width: 30px;
+  height: 30px;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background-color: transparent !important;
+  color: var(--text-danger, #dc3545) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.btn-delete-team:hover {
+  background-color: var(--border-light, #e9ecef) !important;
+}
+
+/* พื้นที่แสดงสมาชิกในทีม */
+.team-members-area {
+  background-color: var(--bg-surface, #f8f9fa);
+  border-top: 1px solid var(--border-light, #e9ecef);
+  padding: 0.5rem 0;
+}
+
+/* แถวข้อมูลสมาชิกในทีมแต่ละคน */
+.team-member-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid  var(--border-light, #e9ecef);
+  padding-left: 3rem !important; 
+}
+
+/* รูปโปรไฟล์สมาชิกในทีม */
+.member-avatar {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* =========================================================================
+   Member Section Styles (ตารางสมาชิกทั้งหมด)
+   ========================================================================= */
+
+/* ส่วนหัวคอลัมน์ของตารางสมาชิก */
+.member-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+  gap: 12px;
+  padding: 0.5rem 1rem;
+  color: var(--text-main, #1a1a1a);
+  font-size: 1.1rem;
+  font-weight: 600;
+  align-items: center;
+}
+
+/* แถวข้อมูลสมาชิกแต่ละคน */
+.member-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+  gap: 12px;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  background-color: var(--bg-main, #ffffff);
+  font-size: 0.98rem;
+  border-bottom: 1px solid var(--border-light, #e9ecef);
+  transition: background-color 0.15s ease, transform 0.12s ease;
+}
+
+.member-row:hover {
+  background-color: var(--bg-surface, #f8f9fa);
+  transform: translateY(-1px);
+}
+
+/* กำหนดความกว้างของแต่ละคอลัมน์ (เหมือนใน inline styles) */
+.col-name { display: flex; align-items: center; gap: 1rem; }
+/* .col-team { } */
+.col-role { text-transform: uppercase; }
+/* .col-status { } */
+.col-actions { width: 80px; display: flex; gap: 0.5rem; justify-content: flex-end; position: relative; }
+
+/* ปุ่ม Action ต่างๆ (รูปดินสอแก้ไข, รูป 3 จุด) */
+.btn-action {
+  width: 30px;
+  height: 30px;
+  background-color: var(--primary-color) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding: 0 !important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  color: white !important;
+  transition: opacity 0.2s ease;
+}
+
+.btn-action:hover {
+  opacity: 0.85;
+}
+
+/* กล่อง Popup เมนู Action (ลบ, นำออกจากทีม ฯลฯ) */
+.action-popup {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 50;
+  min-width: 120px;
+  background-color: var(--bg-main, #ffffff);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+  border-radius: 0.5rem;
+  padding: 0.4rem;
+  border: 1px solid var(--border-light, #e9ecef);
+}
+
+/* ไอเทมคลิกได้ในกล่อง Popup (ลบผู้ใช้, ลบออกจากทีม ฯลฯ) */
+.action-item {
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  color: var(--text-danger, #dc3545);
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.action-item:hover {
+  background-color: var(--bg-surface, #f8f9fa); /* hover-bg-light */
+}
+
+/* Responsive: stack columns on small screens */
+@media (max-width: 768px) {
+  .member-table-header { display: none; }
+
+  .member-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .col-name { display: flex; align-items: center; gap: 12px; }
+  .col-team, .col-role, .col-status { color: var(--text-muted); font-size: 0.95rem; }
+
+  .col-actions { display: flex; justify-content: flex-end; margin-top: 6px; }
+
+  .member-avatar { width: 48px; height: 48px; }
+}
