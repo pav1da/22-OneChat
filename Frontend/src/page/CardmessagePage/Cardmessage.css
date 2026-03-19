@@ -1,9 +1,6 @@
 .main-content {
-    height: calc(100vh - 45px);
+    height: 100vh;
     background-color: #ffffff;
-    /* ขยับออกจาก sidebar ซ้าย-ขวา */
-    margin-left: 20px;
-    margin-right: 25px;
     display: flex;
     flex-direction: column;
 }

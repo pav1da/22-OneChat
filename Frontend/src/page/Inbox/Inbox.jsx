@@ -1,13 +1,10 @@
 import { useRef, useEffect, useState } from "react";
-import { Badge, Button, Form, Dropdown } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { useChat } from "../../context/ChatContext";
 import ChatList from "./chatList/ChatList";
 
 import "./inbox.css";
-
-// ใช้ STATUS จาก ChatContext
 
 const Inbox = ({ currentUser }) => {
   const location = useLocation();
@@ -232,15 +229,11 @@ const Inbox = ({ currentUser }) => {
       {/* Start ChatList Section */}
       <div className="customer-list">
         {/* Start Search & Sort Section */}
-        <div className="d-flex gap-2 flex-shrink-0 align-items-center border-bottom border-secondary-subtle pb-3">
+        <div className="search-sort-row">
           {/* Search bar */}
-          <Form.Control placeholder="Search" className="custom-search-input" />
+          <input placeholder="Search" className="custom-search-input" />
           {/* Sort Button */}
-          <div
-            className="custom-icon-sort"
-            onClick={handleSortToggle}
-            style={{ cursor: "pointer" }}
-          >
+          <div className="custom-icon-sort" onClick={handleSortToggle} style={{ cursor: "pointer" }}>
             <i className="bi bi-arrow-down-up"></i>
           </div>
         </div>
@@ -261,7 +254,7 @@ const Inbox = ({ currentUser }) => {
       {/* Start Chat Section */}
       <div className="chat-section">
         {/* Start Top Section: Profile และ Status Dropdown */}
-        <div className="d-flex gap-3 custom-top-chat pb-3 mx-1 border-secondary-subtle border-bottom">
+        <div className="d-flex gap-3 custom-top-chat mx-1 border-secondary-subtle border-bottom">
           <div className="d-flex gap-3">
             {/* Profile Picture */}
             <img
@@ -281,38 +274,28 @@ const Inbox = ({ currentUser }) => {
           {/* Status Dropdown และ More Options */}
           {selectedCustomer && (
             <div className="d-flex gap-3 align-items-center">
-              <Dropdown>
-                <Dropdown.Toggle
-                  as={Badge}
-                  variant={getStatusVariant(selectedCustomer.status)}
-                  id="dropdown-custom-status"
-                  className="custom-badge-top"
-                  style={{ cursor: "pointer" }}
-                >
-                  {selectedCustomer.status}
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu>
-                  {/* Map ค่า STATUS เพื่อให้ผู้ใช้เลือกอัปเดตสถานะ */}
-                  {Object.values(STATUS).map((statusValue) => (
-                    <Dropdown.Item
-                      key={statusValue}
-                      onClick={() => Status(selectedCustomer.id, statusValue)}
-                      active={selectedCustomer.status === statusValue}
-                    >
-                      {statusValue}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown>
-              <i className="bi bi-three-dots-vertical fs-5"></i>
+              <select
+                className={`status-select status-${getStatusVariant(selectedCustomer.status)}`}
+                value={selectedCustomer.status}
+                onChange={(e) => Status(selectedCustomer.id, e.target.value)}
+                aria-label="Customer status"
+              >
+                {Object.values(STATUS).map((statusValue) => (
+                  <option key={statusValue} value={statusValue}>
+                    {statusValue}
+                  </option>
+                ))}
+              </select>
+              <button className="icon-btn" aria-label="more-options">
+                <i className="bi bi-three-dots-vertical fs-5"></i>
+              </button>
             </div>
           )}
         </div>
         {/* End Top Section */}
 
         {/* Chat container */}
-        <div className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2">
+          <div className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2">
           {/* Map ข้อความในแชทที่ถูกเลือก */}
           {(messages[selectedChatId] || []).map((msg) => (
             <div
@@ -352,78 +335,55 @@ const Inbox = ({ currentUser }) => {
               {/* Icons Button */}
               <div className="d-flex ps-2">
                 <Button variant="link" className="text-black p-1">
-                  <i
-                    className="bi bi-emoji-smile fs-4"
-                    style={{ lineHeight: 1 }}
-                  />
-                </Button>
-              </div>
+                    <div className="flex-shrink-0 pt-3">
+                      <form onSubmit={handleSendMessage}>
+                        <div className="d-flex flex-row p-1 pe-3 gap-1 align-items-center custom-bottom-chat">
+                          {/* Icons Button */}
+                          <div className="d-flex ps-2">
+                            <button type="button" className="icon-btn" aria-label="emoji">
+                              <i className="bi bi-emoji-smile fs-4" style={{ lineHeight: 1 }} />
+                            </button>
+                          </div>
 
-              {/* Text Area: ช่องพิมพ์ข้อความ */}
-              <Form.Control
-                as="textarea"
-                rows={1}
-                placeholder="พิมพ์ข้อความ"
-                ref={msgRef} // ผูกกับ msgRef เพื่อใช้ Auto-Resize
-                value={newMessage}
-                onChange={(e) => {
-                  setNewMessage(e.target.value);
-                  autoResize(e); // ปรับขนาด Textarea
-                }}
-                onKeyDown={(e) => {
-                  // ดักจับ Enter (ยกเว้น Shift+Enter) เพื่อส่งข้อความ
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    handleSendMessage(e);
-                  }
-                }}
-                className="w-100 pt-2 custom-text-input"
-                style={{
-                  overflow: "hidden",
-                  resize: "none",
-                  minHeight: "40px",
-                  maxHeight: "120px",
-                }}
-              />
+                          {/* Text Area: ช่องพิมพ์ข้อความ */}
+                          <textarea
+                            rows={1}
+                            placeholder="พิมพ์ข้อความ"
+                            ref={msgRef}
+                            value={newMessage}
+                            onChange={(e) => {
+                              setNewMessage(e.target.value);
+                              autoResize(e);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                handleSendMessage(e);
+                              }
+                            }}
+                            className="w-100 pt-2 custom-text-input message-input"
+                            style={{ overflow: "hidden", resize: "none", minHeight: "40px", maxHeight: "120px" }}
+                          />
 
-              {/* Icons Button */}
-              <div className="d-flex ps-2">
-                <Button variant="link" className="text-black p-1">
-                  <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
-                </Button>
-                <Button
-                  variant="link"
-                  className="text-black p-1"
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
-                </Button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  ref={fileInputRef}
-                  onChange={handleUploadImage}
-                />
-                <Button variant="link" className="text-black p-1">
-                  <i
-                    className="bi bi-sticky fs-4"
-                    style={{ lineHeight: 1 }}
-                  ></i>
+                          {/* Icons Button */}
+                          <div className="d-flex ps-2">
+                            <button type="button" className="icon-btn" aria-label="mic">
+                              <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
+                            </button>
+                            <button type="button" className="icon-btn" aria-label="image" onClick={() => fileInputRef.current.click()}>
+                              <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
+                            </button>
+                            <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleUploadImage} />
+                            <button type="button" className="icon-btn" aria-label="pin">
+                              <i className="bi bi-sticky fs-4" style={{ lineHeight: 1 }}></i>
+                            </button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
                 </Button>
               </div>
             </div>
-          </Form>
-        </div>
-      </div>
-      {/* End Chat Section */}
-
-      {/* Start Profile Section */}
-      {selectedCustomer && (
-        <div
-          key={selectedCustomer.id}
-          className="bg-white align-items-center rounded-4 pt-3 d-flex flex-column h-100"
-          style={{ minWidth: "350px", maxWidth: "500px" }}
-        >
+          </Form>        
           {/* Profile */}
           <img
             src={selectedCustomer.img}
@@ -645,8 +605,8 @@ const Inbox = ({ currentUser }) => {
               </div>
             </div>
           )}
-        </div>
-      )}
+          </div>
+      </div>
     </div>
   );
 };

@@ -199,8 +199,8 @@ const Sidebar = ({ onLogout, currentUser }) => {
       <Nav className="flex-column sidebar-nav">
         <Nav.Link
           as={Link}
-          to="/dashboard"
-          className={`sidebar-nav-item ${isActive("/dashboard") ? "active" : ""}`}
+          to="/notes"
+          className={`sidebar-nav-item ${isActive("/notes") ? "active" : ""}`}
         >
           <i className="bi bi-file-earmark"></i>
           <span>Notes</span>

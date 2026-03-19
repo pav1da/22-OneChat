@@ -24,7 +24,8 @@ const Cardmessage = () => {
       type: "รูปภาพ",
       title: "ช่อวัน Congrats",
       created: "25/7/2025, 17:32:05 AM",
-      image: new URL('../../assets/Image/Product/image.png', import.meta.url).href,
+      image: new URL("../../assets/Image/Product/image.png", import.meta.url)
+        .href,
       message: "",
     },
     {
@@ -46,13 +47,13 @@ const Cardmessage = () => {
 
   const handleShow = () => setShow(true);
   const handleClose = () => {
-    setShow(false), setEditingItem(null);
+    (setShow(false), setEditingItem(null));
   };
 
   const filteredItems = items.filter(
     (item) =>
       item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.type.toLowerCase().includes(search.toLowerCase())
+      item.type.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleCreateItem = () => {
@@ -63,7 +64,7 @@ const Cardmessage = () => {
 
     if (editingItem) {
       const updated = items.map((i) =>
-        i.id === editingItem.id ? { ...editingItem, ...newItem } : i
+        i.id === editingItem.id ? { ...editingItem, ...newItem } : i,
       );
       setItems(updated);
       setEditingItem(null);
@@ -90,36 +91,10 @@ const Cardmessage = () => {
   };
 
   return (
-    <div className="main-content flex-grow-1 p-3 kanit-regular bg-white rounded-4">
-      {/* หัวข้อ */}
-
-      <p style={{ color: "#F26623" }} className="fs-3 px-3 pt-3" href="#">
-        Card & Messages
-      </p>
-
-      <p
-        style={{ color: "#919191", marginTop: "10px", marginLeft: "15px" }}
-        className="fs-6"
-        href="#"
-      >
-        ข้อความ และข้อความในรูปแบบการ์ดที่รวมเนื้อหาต่างๆ เอาไว้ในที่เดียว{" "}
-        <br />
-        โดยจะเเสดงเนื้อหาผ่านข้อความหรือภาพสไลด์ ตามที่ผู้ใช้กดเลือกใช้ได้ทันที
-      </p>
-
-      {/* “ขยาย/ย่อเมนูเป็นเบอเก้ออ” */}
-      <Navbar.Toggle aria-controls="navbarScroll" />
-      <Navbar.Collapse id="navbarScroll">
-        <Nav
-          className="me-auto my-2 my-lg-0"
-          style={{ maxHeight: "100px" }}
-          navbarScroll
-        ></Nav>
-      </Navbar.Collapse>
-
+    <div className="main-content flex-grow-1 kanit-regular px-4">
       {/* หัวข้อเทมเพลต */}
-      <div className="d-flex justify-content-between align-items-center mt-3 ">
-        <div className="fs-6 fw-regular ms-3 mt-3">เทมเพลตทั้งหมด</div>
+      <div className="d-flex justify-content-between align-items-center">
+        <div className="fs-6 fw-regular">เทมเพลตทั้งหมด</div>
 
         {/* กล่อง Search*/}
         <div className="d-flex gap-2 w-50">
@@ -140,7 +115,7 @@ const Cardmessage = () => {
           </Button>
 
           <button
-          className="w-25"
+            className="w-25"
             style={{
               background: "#F26623",
               borderRadius: "7px",
@@ -158,8 +133,7 @@ const Cardmessage = () => {
         </div>
       </div>
 
-      <hr />
-      <Container fluid className=" p-0 card-table-container">
+      <Container fluid className="mt-3 card-table-container">
         {/* หัวข้อ */}
         <Row className="card-table-header">
           <Col className="col-id">ID</Col>

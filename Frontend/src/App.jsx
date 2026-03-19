@@ -7,7 +7,7 @@ import Layouts from "./layouts/Layouts";
 import SignUpPage from "./page/SignUpPage";
 import SignInPage from "./page/SignInPage";
 import Home from "./page/Home";
-import Dashboard from "./page/dashboard/notes";
+import Notes from "./page/notes/notes";
 import Inbox from "./page/Inbox/Inbox";
 import Setting from "./page/SettingPages/Setting";
 import Notifiacation from "./page/notification/Notification";
@@ -104,7 +104,7 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                     path="/signin"
                     element={
                         currentUser ? (
-                            <Navigate to="/dashboard" />
+                            <Navigate to="/notes" />
                         ) : (
                             <SignInPage onLogin={handleLogin} />
                         )
@@ -126,7 +126,7 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                         </ProtectedRoute>
                     }
                 >
-                    <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
+                    <Route path="/notes" element={<Notes user={currentUser} />} />
                     <Route path="/allchat" element={<AllChat currentUser={currentUser} />} />
                     <Route path="/inbox" element={<Inbox currentUser={currentUser} />} />
                     <Route path="/cardmessage" element={<CardMessage currentUser={currentUser} />} />

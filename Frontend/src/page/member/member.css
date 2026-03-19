@@ -4,7 +4,7 @@
 
 /* คอนเทนเนอร์หลักของหน้า Member */
 .member-container {
-  font-family: 'Kanit', sans-serif; /* kanit-regular */
+  font-family: "Kanit", sans-serif; /* kanit-regular */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -14,7 +14,7 @@
 
 /* หัวข้อ (Section Title) */
 .section-title {
-  font-size: 1.25rem; 
+  font-size: 1.25rem;
   margin-bottom: 0;
   font-weight: 500;
   color: var(--text-main);
@@ -104,8 +104,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid  var(--border-light, #e9ecef);
-  padding-left: 3rem !important; 
+  border-bottom: 1px solid var(--border-light, #e9ecef);
+  padding-left: 3rem !important;
 }
 
 /* รูปโปรไฟล์สมาชิกในทีม */
@@ -126,10 +126,11 @@
   grid-template-columns: 2fr 1fr 1fr 1fr 80px;
   gap: 12px;
   padding: 0.5rem 1rem;
-  color: var(--text-main, #1a1a1a);
-  font-size: 1.1rem;
-  font-weight: 600;
+  color: var(--text-main);
+  font-size: 1rem;
+  font-weight: 400;
   align-items: center;
+  border-bottom: 1px solid var(--border-light);
 }
 
 /* แถวข้อมูลสมาชิกแต่ละคน */
@@ -142,7 +143,9 @@
   background-color: var(--bg-main, #ffffff);
   font-size: 0.98rem;
   border-bottom: 1px solid var(--border-light, #e9ecef);
-  transition: background-color 0.15s ease, transform 0.12s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.12s ease;
 }
 
 .member-row:hover {
@@ -151,11 +154,23 @@
 }
 
 /* กำหนดความกว้างของแต่ละคอลัมน์ (เหมือนใน inline styles) */
-.col-name { display: flex; align-items: center; gap: 1rem; }
+.col-name {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 /* .col-team { } */
-.col-role { text-transform: uppercase; }
+.col-role {
+  text-transform: uppercase;
+}
 /* .col-status { } */
-.col-actions { width: 80px; display: flex; gap: 0.5rem; justify-content: flex-end; position: relative; }
+.col-actions {
+  width: 80px;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  position: relative;
+}
 
 /* ปุ่ม Action ต่างๆ (รูปดินสอแก้ไข, รูป 3 จุด) */
 .btn-action {
@@ -205,7 +220,9 @@
 
 /* Responsive: stack columns on small screens */
 @media (max-width: 768px) {
-  .member-table-header { display: none; }
+  .member-table-header {
+    display: none;
+  }
 
   .member-row {
     display: flex;
@@ -215,10 +232,26 @@
     padding: 12px;
   }
 
-  .col-name { display: flex; align-items: center; gap: 12px; }
-  .col-team, .col-role, .col-status { color: var(--text-muted); font-size: 0.95rem; }
+  .col-name {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .col-team,
+  .col-role,
+  .col-status {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
 
-  .col-actions { display: flex; justify-content: flex-end; margin-top: 6px; }
+  .col-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+  }
 
-  .member-avatar { width: 48px; height: 48px; }
+  .member-avatar {
+    width: 48px;
+    height: 48px;
+  }
 }
