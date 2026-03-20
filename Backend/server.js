@@ -15,6 +15,7 @@ const lineController = require("./controllers/lineController");
 // นำเข้า Routers
 const usersRouter = require("./routers/usersRouter");
 const logsRouter = require('./routers/logsRouter');
+const notificationRouter = require('./routers/notificationRouter');
 
 const app = express();
 const server = http.createServer(app);
@@ -67,6 +68,8 @@ const config = {
 app.use("/api/users", usersRouter);
 
 app.use('/api/logs', logsRouter);
+
+app.use('/api/notifications', notificationRouter);
 
 // Route สำหรับรับ Webhook จาก LINE
 app.post("/webhook", line.middleware(config), lineController.handleWebhook);

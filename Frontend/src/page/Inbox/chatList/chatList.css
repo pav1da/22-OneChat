@@ -23,12 +23,12 @@
 
 .custom-text {
     font-size: 14px;
-    color: #777777;
+    color: var(--text-secondary);
 }
 
 .selected-chat-item {
-    background-color: #fff2ec;
-    border: 1px solid #f26623;
+    background-color: var(--primary-light);
+    border: 1px solid var(--primary-color);
     border-radius: 15px;
 }
 

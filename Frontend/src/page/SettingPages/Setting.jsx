@@ -8,7 +8,8 @@ import {
     ChatDots,
     FileText,
     InfoCircle,
-    Send
+    Send,
+    PaintBucket
 } from "react-bootstrap-icons";
 
 import "./SettingPage.css";
@@ -21,10 +22,13 @@ import Connect from './Connect';
 import Policy from './Policy';
 import Contact from './Contact';
 import About from './About';
+import { useTheme } from '../../context/ThemeContext';
+
 
 function Setting({ user }) {
     const [activeKey, setActiveKey] = useState('account');
     const navigate = useNavigate();
+    const { theme, toggleTheme } = useTheme();
 
     // ฟังก์ชันตรวจสอบสิทธิ์
     const allow = (roles) => {
@@ -50,6 +54,7 @@ function Setting({ user }) {
             case 'notifications': return <Notifications />;
             case 'chat': return <Chats />;
             case 'ai': return <Ai />;
+            case 'appearance': return <Appearance theme={theme} toggleTheme={toggleTheme} />;
             case 'policy': return <Policy />;
             case 'contact': return <Contact />;
             case 'about': return <About />;
@@ -105,6 +110,10 @@ function Setting({ user }) {
 
                             <Nav.Link eventKey="ai">
                                 <span style={{ fontWeight: 'bold', fontSize: '0.9rem', marginRight: '4px' }}>AI</span> เอไอ เมต้าแชท
+                            </Nav.Link>
+
+                            <Nav.Link eventKey="appearance">
+                                <PaintBucket size={18} /> ธีม
                             </Nav.Link>
 
 
@@ -172,6 +181,9 @@ function Setting({ user }) {
                                     <Nav.Link eventKey="ai">
                                         <span style={{ fontWeight: 'bold', fontSize: '0.9rem', marginRight: '4px' }}>AI</span> เอไอ เมต้าแชท
                                     </Nav.Link>
+                                    <Nav.Link eventKey="appearance">
+                                        <PaintBucket size={16} /> ธีม
+                                    </Nav.Link>
 
                                     <div className="nav-heading mt-4">ข้อมูลเกี่ยวกับแอป</div>
                                     <Nav.Link eventKey="policy">
@@ -199,3 +211,109 @@ function Setting({ user }) {
 }
 
 export default Setting;
+
+/* ==================== Appearance Sub-page ==================== */
+function Appearance({ theme, toggleTheme }) {
+    return (
+        <div style={{ padding: '1rem 0' }}>
+            <h5 style={{ marginBottom: '1.5rem', color: 'var(--text-main)' }}>ธีม</h5>
+
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '1.2rem 1.5rem',
+                background: 'var(--bg-hover)',
+                borderRadius: '12px',
+                marginBottom: '1rem',
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <i className={`bi ${theme === 'light' ? 'bi-sun' : 'bi-moon-stars-fill'}`}
+                       style={{ fontSize: '1.4rem', color: 'var(--primary-color)' }}></i>
+                    <div>
+                        <div style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-main)' }}>
+                            {theme === 'light' ? 'โหมดสว่าง' : 'โหมดมืด'}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            {theme === 'light'
+                                ? 'ใช้พื้นหลังสีขาวสำหรับแอป'
+                                : 'ใช้พื้นหลังสีเข้มเพื่อลดแสงจ้า'}
+                        </div>
+                    </div>
+                </div>
+                <div className="form-check form-switch" style={{ marginBottom: 0 }}>
+                    <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="themeToggleSwitch"
+                        checked={theme === 'dark'}
+                        onChange={toggleTheme}
+                        style={{ width: '3rem', height: '1.5rem', cursor: 'pointer' }}
+                    />
+                </div>
+            </div>
+
+            {/* Theme Preview Cards */}
+            <div style={{ display: 'flex', gap: '16px', marginTop: '1.5rem' }}>
+                {/* Light Preview */}
+                <div
+                    onClick={() => theme === 'dark' && toggleTheme()}
+                    style={{
+                        flex: 1,
+                        cursor: 'pointer',
+                        borderRadius: '12px',
+                        border: theme === 'light' ? '2px solid var(--primary-color)' : '2px solid var(--border-light)',
+                        overflow: 'hidden',
+                        transition: 'border-color 0.3s ease',
+                    }}
+                >
+                    <div style={{ background: '#ffffff', padding: '16px', minHeight: '80px' }}>
+                        <div style={{ height: '10px', width: '60%', background: '#e5e5e5', borderRadius: '4px', marginBottom: '8px' }}></div>
+                        <div style={{ height: '10px', width: '80%', background: '#f0f0f0', borderRadius: '4px', marginBottom: '8px' }}></div>
+                        <div style={{ height: '10px', width: '40%', background: '#e5e5e5', borderRadius: '4px' }}></div>
+                    </div>
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '8px',
+                        fontWeight: theme === 'light' ? 600 : 400,
+                        fontSize: '0.85rem',
+                        color: theme === 'light' ? 'var(--primary-color)' : 'var(--text-muted)',
+                        background: theme === 'light' ? 'var(--primary-light)' : 'var(--bg-hover)',
+                    }}>
+                        สว่าง
+                    </div>
+                </div>
+
+                {/* Dark Preview */}
+                <div
+                    onClick={() => theme === 'light' && toggleTheme()}
+                    style={{
+                        flex: 1,
+                        cursor: 'pointer',
+                        borderRadius: '12px',
+                        border: theme === 'dark' ? '2px solid var(--primary-color)' : '2px solid var(--border-light)',
+                        overflow: 'hidden',
+                        transition: 'border-color 0.3s ease',
+                    }}
+                >
+                    <div style={{ background: '#1a1a2e', padding: '16px', minHeight: '80px' }}>
+                        <div style={{ height: '10px', width: '60%', background: '#2a2a4a', borderRadius: '4px', marginBottom: '8px' }}></div>
+                        <div style={{ height: '10px', width: '80%', background: '#33335a', borderRadius: '4px', marginBottom: '8px' }}></div>
+                        <div style={{ height: '10px', width: '40%', background: '#2a2a4a', borderRadius: '4px' }}></div>
+                    </div>
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '8px',
+                        fontWeight: theme === 'dark' ? 600 : 400,
+                        fontSize: '0.85rem',
+                        color: theme === 'dark' ? 'var(--primary-color)' : 'var(--text-muted)',
+                        background: theme === 'dark' ? 'var(--primary-light)' : 'var(--bg-hover)',
+                    }}>
+                        มืด
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

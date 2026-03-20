@@ -1,9 +1,6 @@
 
 .settings-page-wrapper {
-    background: linear-gradient(135deg,
-            #ffffff 50%,
-            #fff7f9 80%,
-            #fff5f3 100%);
+    background: var(--bg-main);
     height: calc(100vh - 45px); 
     overflow: hidden;
     padding-bottom: 0; 
@@ -21,14 +18,14 @@
 
 @media (min-width: 768px) {
     .custom-vertical-divider {
-        border-right: 1px solid #e9ecef;
+        border-right: 1px solid var(--border-medium);
     }
 }
 
 .settings-nav .nav-heading {
     font-size: 0.8rem;
     font-weight: 500;
-    color: #6c757d;
+    color: var(--text-muted);
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
     padding-left: 0.5rem;
@@ -36,7 +33,7 @@
 }
 
 .settings-nav .nav-link {
-    color: #343a40;
+    color: var(--text-main);
     padding: 0.7rem 1rem;
     border-radius: 0.5rem;
     margin-bottom: 0.25rem;
@@ -48,14 +45,14 @@
 
 .settings-nav .nav-link svg {
     font-size: 1.2rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     transition: color 0.2s ease;
 }
 
 /* สไตล์ตอน Hover */
 .settings-nav .nav-link:hover {
-    background-color: #f8f9fa;
-    color: #212529;
+    background-color: var(--bg-hover);
+    color: var(--text-main);
 }
 
 /* 4. สไตล์ตอน Active */
@@ -83,7 +80,7 @@
 /* แก้ไขหัวข้อหมวดหมู่ (เช่น "ทั่วไป", "ตั้งค่าผู้ใช้") */
 .settings-nav .nav-heading {
     font-size: 0.85rem;
-    color: #999; /* สีเทาอ่อนลง */
+    color: var(--text-muted);
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
     padding-left: 1rem;
@@ -93,23 +90,23 @@
 
 /* สไตล์ลิงก์ปกติ (ตอนยังไม่กด) */
 .settings-nav .nav-link {
-    color: #333; /* สีตัวอักษรเข้มขึ้น */
+    color: var(--text-main);
     font-weight: 500;
     padding: 10px 1rem;
-    border-radius: 12px; /* มุมมนกว่าเดิม */
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 12px; /* ระยะห่างไอคอนกับตัวหนังสือ */
+    gap: 12px;
     transition: all 0.2s ease;
     margin-bottom: 4px;
-    border: 1px solid transparent; /* เตรียมเส้นขอบไว้ */
+    border: 1px solid transparent;
     background-color: transparent;
 }
 
 /* Hover (ตอนเอาเมาส์ชี้) */
 .settings-nav .nav-link:hover {
-    background-color: #f8f9fa;
-    color: #000;
+    background-color: var(--bg-hover);
+    color: var(--text-main);
 }
 
 /* --- สไตล์ตอน Active (หน้าที่เลือกอยู่) --- */
@@ -140,7 +137,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background-color: #e9ecef;
+    background-color: var(--bg-accent);
     margin-right: 0.75rem;
     display: flex;
     align-items: center;
@@ -152,7 +149,7 @@
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background-color: #e9ecef;
+    background-color: var(--bg-accent);
     position: relative;
     overflow: hidden;
 }
@@ -181,7 +178,7 @@
 
 .profile-info-item {
     padding: 1rem 1.2rem 0.3rem 1.2rem;   
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--border-medium);
     width: 100%;
 }
 
@@ -195,14 +192,14 @@
 
 .profile-info-item .label {
     font-size: 1.3rem;
-    color: #000000;
+    color: var(--text-main);
     margin-bottom: 0.25rem;
 }
 
 .profile-info-item .value {
     font-size: 1rem;
     font-weight: 500;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-bottom: 0;
     padding-bottom: 0;
 }
@@ -213,17 +210,18 @@
 
 /* สไตล์ช่อง Input */
 .form-control-custom {
-    background-color: #f0f0f0;
+    background-color: var(--bg-input);
     border: none;
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
+    color: var(--text-main);
 }
 
 .form-control-custom:focus {
-    background-color: #e9ecef;
+    background-color: var(--bg-input-focus);
     box-shadow: none;
     border: 1px solid #fd7e14;
-    /* เส้นสีส้มตอนกด */
+    color: var(--text-main);
 }
 
 /* สไตล์ปุ่มสีส้ม */
@@ -356,17 +354,17 @@
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 4px;
-    color: #333;
+    color: var(--text-main);
 }
 
 .chat-text-group p {
     font-size: 0.9rem;
-    color: #9e9e9e; /* สีเทาอ่อนสำหรับคำอธิบาย */
+    color: var(--text-muted);
 }
 
 /* 4. เส้นขีดคั่นกลาง (Divider) */
 .chat-divider {
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--border-medium);
     margin: 10px 0;
 }
 
@@ -377,9 +375,9 @@
 /* กล่องสีเทาจำลอง (Placeholder) ในหน้า AI */
 .gray-input-placeholder {
     width: 100%;
-    height: 50px; /* ความสูงของกล่อง */
-    background-color: #eef0f2; /* สีเทาอ่อนๆ ตามภาพ */
-    border-radius: 12px; /* ความมนของมุม */
+    height: 50px;
+    background-color: var(--bg-input);
+    border-radius: 12px;
     margin-top: 10px;
 }
 
@@ -390,9 +388,9 @@
 
 /* Floating card (centered panel like modal) */
 .floating-card {
-    background: #ffffff;
+    background: var(--bg-card);
     border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(20,20,30,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    box-shadow: 0 20px 40px var(--shadow-lg), 0 2px 6px var(--shadow-sm);
     width: min(920px, 88%);
     padding: 28px 32px;
     margin: 26px 0;
@@ -422,7 +420,7 @@
 
 /* Modal internal left nav tweaks */
 .floating-modal .modal-left-nav {
-    border-right: 1px solid #f1f1f1;
+    border-right: 1px solid var(--border-light);
     padding-right: 18px;
 }
 
@@ -449,17 +447,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0,0,0,0.04);
+    background: var(--shadow-overlay);
     z-index: 2000;
-    padding: 40px; /* keep space on small screens */
+    padding: 40px;
 }
 
 .floating-modal {
-    background: #fff;
+    background: var(--bg-card);
     height: clamp(920px, 92vh, 2000px);
     width: clamp(920px, 92vw, 2000px);
     border-radius: 12px;
-    box-shadow: 0 30px 60px rgba(20,20,30,0.12), 0 6px 12px rgba(0,0,0,0.06);
+    box-shadow: 0 30px 60px var(--shadow-lg), 0 6px 12px var(--shadow-md);
     max-height: calc(100vh - 120px);
     overflow: auto;
     padding: 28px 32px;
@@ -481,13 +479,13 @@
     font-size: 22px;
     line-height: 1;
     cursor: pointer;
-    color: #6c757d;
+    color: var(--text-secondary);
     padding: 6px 8px;
     border-radius: 6px;
 }
 .settings-close-btn:hover {
-    background: rgba(0,0,0,0.04);
-    color: #212529;
+    background: var(--bg-hover);
+    color: var(--text-main);
 }
 
 /* On small screens reduce padding */

@@ -236,7 +236,7 @@
 /* สีพื้นหลังและขอบมุมตอนล่างซ้าย ที่ใช้สำหรับข้อความที่ลูกค้าส่งมา */
 .mini-msg.customer .bubble {
   background: var(--bg-bubble-user);
-  color: var(--text-inverse);
+  color: var(--text-bubble-user);
   border: 1px solid var(--border-light);
   border-bottom-left-radius: 4px;
 }
@@ -244,7 +244,7 @@
 /* สีพื้นหลังให้เด่น และขอบมุมตอนล่างขวา สำหรับข้อความที่เรา (แอดมิน) ตอบกลับส่งไป */
 .mini-msg.own .bubble {
   background: var(--bg-bubble-admin);
-  color: var(--text-inverse);
+  color: var(--text-bubble-admin);
   border-bottom-right-radius: 4px;
 }
 
@@ -278,6 +278,8 @@
   font-size: 13px;
   outline: none;
   transition: border-color 0.2s ease;
+  background: var(--bg-input);
+  color: var(--text-main);
 }
 
 /* เปลี่ยนสีเส้นขอบช่อง input เป็นสีแบรนด์เมื่อพิม */

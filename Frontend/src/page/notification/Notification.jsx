@@ -1,78 +1,117 @@
-import { useState } from "react";
-import { Container, Form, InputGroup } from "react-bootstrap";
+import { useState, useEffect, useMemo } from "react";
+import { Container, Form, Spinner } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./notification.css";
 
-// ข้อมูลจำลอง (Mock Data) - เพิ่ม field 'sender' และ 'type' เพื่อให้กรองง่ายขึ้น
-const mockNotifications = [
-  {
-    id: 1,
-    avatar: new URL('../../assets/Image/Admins/pav1da.png', import.meta.url).href,
-    text: "pav1da ได้เข้าถึงข้อความของ Harumasa บน Facebook : Dew Flower Shop",
-    date: "25 ธันวาคม 2560 เวลา 14:40",
-    sender: "pav1da", // ใช้สำหรับกรองผู้ใช้
-    type: "access", // ใช้สำหรับกรองการกระทำ (access = เข้าถึง)
-  },
-  {
-    id: 2,
-    avatar: new URL('../../assets/Image/Customers/Harumasa.png', import.meta.url).href,
-    text: "มีข้อความใหม่จาก Harumasa ที่ Facebook: Dew Flower Shop",
-    date: "25 ธันวาคม 2560 เวลา 14:30",
-    sender: "Harumasa", // ใช้สำหรับกรองผู้ใช้
-    type: "new_msg", // ใช้สำหรับกรองการกระทำ (new_msg = ข้อความใหม่)
-  },
-  {
-    id: 3,
-    avatar: new URL('../../assets/Image/Customers/JaneDoe.png', import.meta.url).href,
-    text: "มีข้อความใหม่จาก Jane Dose ที่ Facebook: Dew Flower Shop",
-    date: "25 ธันวาคม 2560 เวลา 12:00",
-    sender: "Jane Dose", // ใช้สำหรับกรองผู้ใช้
-    type: "new_msg", // ใช้สำหรับกรองการกระทำ
-  },
-];
-
 function NotificationPage() {
-  // State สำหรับตัวกรองทั้ง 3 ตัว
-  const [searchTerm, setSearchTerm] = useState("");
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filterUser, setFilterUser] = useState("");
   const [filterAction, setFilterAction] = useState("");
 
-  // --- Logic การกรองข้อมูล ---
-  const filteredNotifications = mockNotifications.filter((item) => {
-    // 1. กรองจากคำค้นหา (Search) - ค้นหาใน text หรือ date
-    const matchSearch =
-      item.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.date.includes(searchTerm);
+  // ดึง notifications จาก API
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = sessionStorage.getItem("token");
+      const res = await fetch("/api/notifications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลการแจ้งเตือนได้");
+      const data = await res.json();
+      setNotifications(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // 2. กรองจากผู้ใช้ (User)
-    const matchUser = filterUser === "" || item.sender === filterUser;
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
-    // 3. กรองจากการกระทำ (Action)
+  // Mark as read
+  const handleMarkAsRead = async (id) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      await fetch(`/api/notifications/${id}/read`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+      );
+    } catch {
+      // silent fail
+    }
+  };
+
+  // สร้าง unique lists สำหรับ filter dropdowns
+  const uniqueSenders = useMemo(
+    () => [...new Set(notifications.map((n) => n.sender_name).filter(Boolean))],
+    [notifications]
+  );
+  const uniqueTypes = useMemo(
+    () => [...new Set(notifications.map((n) => n.type).filter(Boolean))],
+    [notifications]
+  );
+
+  // จัดรูปแบบ type เป็นภาษาไทย
+  const typeLabel = (type) => {
+    const map = {
+      access: "เข้าถึงข้อความ",
+      new_msg: "ข้อความใหม่",
+      system: "ระบบ",
+    };
+    return map[type] || type;
+  };
+
+  // Filter logic
+  const filtered = notifications.filter((item) => {
+    const matchUser =
+      filterUser === "" || item.sender_name === filterUser;
     const matchAction = filterAction === "" || item.type === filterAction;
-
-    // ต้องตรงตามเงื่อนไขทั้ง 3 ข้อ
-    return matchSearch && matchUser && matchAction;
+    return matchUser && matchAction;
   });
+
+  // จัดรูปแบบวันที่
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const localDateStr = dateStr.replace(" ", "T");
+    const d = new Date(localDateStr);
+    return d.toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (dateStr) => {
+    if (!dateStr) return "";
+    const localDateStr = dateStr.replace(" ", "T");
+    const d = new Date(localDateStr);
+    return d.toLocaleTimeString("th-TH", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <Container fluid className="kanit-regular px-5 py-4 mx-4 page-wrap">
-      {/* --- ส่วนหัว (Header) --- */}
+      {/* --- Header --- */}
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 mx-3 mt-3">
-        {/* หัวข้อสีส้ม */}
-        <p className="fs-2 mb-0" style={{ color: "#F26623" }}>
+        <p className="fs-2 mb-0" style={{ color: "var(--primary-color)" }}>
           Notification
         </p>
 
-        {/* ส่วนเครื่องมือกรอง (Filters & Search) */}
+        {/* Filters */}
         <div className="d-flex gap-4 align-items-center flex-wrap">
-          {/* 2. กรองโดยผู้ใช้ */}
+          {/* กรองโดยผู้ใช้ */}
           <div className="d-flex align-items-center gap-2">
-            <span
-              className="fs-6"
-              style={{
-                whiteSpace: "nowrap",
-              }}
-            >
+            <span className="fs-6" style={{ whiteSpace: "nowrap" }}>
               กรองโดยผู้ใช้ :
             </span>
             <Form.Select
@@ -83,20 +122,15 @@ function NotificationPage() {
               style={{ minWidth: "250px", cursor: "pointer" }}
             >
               <option value="">ทั้งหมด</option>
-              <option value="pav1da">pav1da (แอดมิน)</option>
-              <option value="Harumasa">Harumasa</option>
-              <option value="Jane Dose">Jane Dose</option>
+              {uniqueSenders.map((u) => (
+                <option key={u} value={u}>{u}</option>
+              ))}
             </Form.Select>
           </div>
 
-          {/* 3. กรองโดยการกระทำ */}
+          {/* กรองโดยการกระทำ */}
           <div className="d-flex align-items-center gap-2">
-            <span
-              className="fs-6"
-              style={{
-                whiteSpace: "nowrap",
-              }}
-            >
+            <span className="fs-6" style={{ whiteSpace: "nowrap" }}>
               กรองโดยการกระทำ :
             </span>
             <Form.Select
@@ -107,80 +141,70 @@ function NotificationPage() {
               style={{ minWidth: "250px", cursor: "pointer" }}
             >
               <option value="">ทั้งหมด</option>
-              <option value="access">เข้าถึงข้อความ</option>
-              <option value="new_msg">ข้อความใหม่</option>
+              {uniqueTypes.map((t) => (
+                <option key={t} value={t}>{typeLabel(t)}</option>
+              ))}
             </Form.Select>
           </div>
         </div>
       </div>
 
-      <hr style={{ borderTop: "1px solid #444", marginBottom: "25px" }} />
+      <hr className="notif-divider" />
 
-      {/* --- รายการแจ้งเตือน (Notification List) --- */}
+      {/* --- Notification List --- */}
       <div className="d-flex flex-column gap-3">
-        {/* ใช้ filteredNotifications แทน mockNotifications เดิม */}
-        {filteredNotifications.length > 0 ? (
-          filteredNotifications.map((item) => (
+        {loading ? (
+          <div className="text-center py-5">
+            <Spinner animation="border" variant="secondary" />
+            <p className="mt-3 text-muted">กำลังโหลดการแจ้งเตือน...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-5 text-danger">
+            <i className="bi bi-exclamation-triangle display-6 mb-3 d-block"></i>
+            <p>{error}</p>
+          </div>
+        ) : filtered.length > 0 ? (
+          filtered.map((item) => (
             <div
               key={item.id}
-              className="d-flex align-items-center p-3 notification-card"
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: "16px",
-                border: "1px solid #c5c5c5",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#EAEBEF";
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#fff";
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
+              className={`d-flex align-items-center p-3 notification-card ${!item.is_read ? "unread" : ""}`}
+              onClick={() => !item.is_read && handleMarkAsRead(item.id)}
             >
-              {/* รูปโปรไฟล์ */}
-              <div
-                className="px-2"
-                style={{ flexShrink: 0, marginRight: "15px" }}
-              >
-                <img
-                  src={item.avatar}
-                  alt="avatar"
-                  style={{
-                    width: "70px",
-                    height: "70px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                  }}
-                />
+              {/* Avatar */}
+              <div className="px-2" style={{ flexShrink: 0, marginRight: "15px" }}>
+                {item.sender_avatar ? (
+                  <img
+                    src={item.sender_avatar}
+                    alt="avatar"
+                    className="notif-avatar"
+                  />
+                ) : (
+                  <div className="notif-avatar-placeholder">
+                    {(item.sender_name || "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
 
-              {/* ข้อความ */}
-              <div className="py-3 ">
-                <div
-                  className="fs-5"
-                  style={{
-                    color: "#000",
-                    marginBottom: "4px",
-                  }}
-                >
+              {/* Content */}
+              <div className="py-3 flex-grow-1">
+                <div className="notif-text">
                   {item.text}
                 </div>
-                <div className="fs-6" style={{ color: "#666" }}>
-                  วันที่ {item.date}
+                <div className="notif-date">
+                  วันที่ {formatDate(item.created_at)} เวลา {formatTime(item.created_at)}
                 </div>
               </div>
+
+              {/* Unread dot */}
+              {!item.is_read && (
+                <div className="notif-unread-dot"></div>
+              )}
             </div>
           ))
         ) : (
-          // กรณีไม่พบข้อมูล
-          <div className="text-center py-5 text-muted">
-            <i className="bi bi-search display-6 mb-3 d-block"></i>
-            ไม่พบการแจ้งเตือนที่ค้นหา
+          <div className="text-center py-5" style={{ color: "var(--text-muted)" }}>
+            <i className="bi bi-bell-slash display-6 mb-3 d-block"></i>
+            ไม่พบการแจ้งเตือน
           </div>
         )}
       </div>
