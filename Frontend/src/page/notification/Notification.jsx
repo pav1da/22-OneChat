@@ -42,7 +42,7 @@ function NotificationPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
       );
     } catch {
       // silent fail
@@ -52,11 +52,11 @@ function NotificationPage() {
   // สร้าง unique lists สำหรับ filter dropdowns
   const uniqueSenders = useMemo(
     () => [...new Set(notifications.map((n) => n.sender_name).filter(Boolean))],
-    [notifications]
+    [notifications],
   );
   const uniqueTypes = useMemo(
     () => [...new Set(notifications.map((n) => n.type).filter(Boolean))],
-    [notifications]
+    [notifications],
   );
 
   // จัดรูปแบบ type เป็นภาษาไทย
@@ -71,8 +71,7 @@ function NotificationPage() {
 
   // Filter logic
   const filtered = notifications.filter((item) => {
-    const matchUser =
-      filterUser === "" || item.sender_name === filterUser;
+    const matchUser = filterUser === "" || item.sender_name === filterUser;
     const matchAction = filterAction === "" || item.type === filterAction;
     return matchUser && matchAction;
   });
@@ -100,15 +99,11 @@ function NotificationPage() {
   };
 
   return (
-    <Container fluid className="kanit-regular px-5 py-4 mx-4 page-wrap">
+    <Container fluid className="kanit-regular px-4">
       {/* --- Header --- */}
-      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 mx-3 mt-3">
-        <p className="fs-2 mb-0" style={{ color: "var(--primary-color)" }}>
-          Notification
-        </p>
-
+      <div className="d-flex justify-content-end align-items-end mb-4">
         {/* Filters */}
-        <div className="d-flex gap-4 align-items-center flex-wrap">
+        <div className="d-flex gap-4 ">
           {/* กรองโดยผู้ใช้ */}
           <div className="d-flex align-items-center gap-2">
             <span className="fs-6" style={{ whiteSpace: "nowrap" }}>
@@ -123,7 +118,9 @@ function NotificationPage() {
             >
               <option value="">ทั้งหมด</option>
               {uniqueSenders.map((u) => (
-                <option key={u} value={u}>{u}</option>
+                <option key={u} value={u}>
+                  {u}
+                </option>
               ))}
             </Form.Select>
           </div>
@@ -142,24 +139,24 @@ function NotificationPage() {
             >
               <option value="">ทั้งหมด</option>
               {uniqueTypes.map((t) => (
-                <option key={t} value={t}>{typeLabel(t)}</option>
+                <option key={t} value={t}>
+                  {typeLabel(t)}
+                </option>
               ))}
             </Form.Select>
           </div>
+
         </div>
       </div>
-
-      <hr className="notif-divider" />
-
       {/* --- Notification List --- */}
       <div className="d-flex flex-column gap-3">
         {loading ? (
-          <div className="text-center py-5">
+          <div className="text-center">
             <Spinner animation="border" variant="secondary" />
             <p className="mt-3 text-muted">กำลังโหลดการแจ้งเตือน...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-5 text-danger">
+          <div className="text-center text-danger">
             <i className="bi bi-exclamation-triangle display-6 mb-3 d-block"></i>
             <p>{error}</p>
           </div>
@@ -171,7 +168,10 @@ function NotificationPage() {
               onClick={() => !item.is_read && handleMarkAsRead(item.id)}
             >
               {/* Avatar */}
-              <div className="px-2" style={{ flexShrink: 0, marginRight: "15px" }}>
+              <div
+                className="px-2"
+                style={{ flexShrink: 0, marginRight: "15px" }}
+              >
                 {item.sender_avatar ? (
                   <img
                     src={item.sender_avatar}
@@ -187,22 +187,22 @@ function NotificationPage() {
 
               {/* Content */}
               <div className="py-3 flex-grow-1">
-                <div className="notif-text">
-                  {item.text}
-                </div>
+                <div className="notif-text">{item.text}</div>
                 <div className="notif-date">
-                  วันที่ {formatDate(item.created_at)} เวลา {formatTime(item.created_at)}
+                  วันที่ {formatDate(item.created_at)} เวลา{" "}
+                  {formatTime(item.created_at)}
                 </div>
               </div>
 
               {/* Unread dot */}
-              {!item.is_read && (
-                <div className="notif-unread-dot"></div>
-              )}
+              {!item.is_read && <div className="notif-unread-dot"></div>}
             </div>
           ))
         ) : (
-          <div className="text-center py-5" style={{ color: "var(--text-muted)" }}>
+          <div
+            className="text-center py-5"
+            style={{ color: "var(--text-muted)" }}
+          >
             <i className="bi bi-bell-slash display-6 mb-3 d-block"></i>
             ไม่พบการแจ้งเตือน
           </div>
