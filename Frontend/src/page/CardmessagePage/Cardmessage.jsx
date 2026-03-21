@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Button,
@@ -18,25 +18,37 @@ const Cardmessage = () => {
   const [show, setShow] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
-  const [items, setItems] = useState([
-    {
-      id: "C001",
-      type: "รูปภาพ",
-      title: "ช่อวัน Congrats",
-      created: "25/7/2025, 17:32:05 AM",
-      image: new URL("../../assets/Image/Product/image.png", import.meta.url)
-        .href,
-      message: "",
-    },
-    {
-      id: "M001",
-      type: "ข้อความ",
-      title: "วิธีสั่งซื้อ",
-      created: "20/7/2025, 13:02:12 AM",
-      image: "",
-      message: "วิธีสั่งซื้อ 1.เลือกแบบช่อที่ต้องการ",
-    },
-  ]);
+  const [items, setItems] = useState([]);
+
+  const fetchItems = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/templates");
+      const resData = await response.json();
+      if (resData.status === "success") {
+        const backendItems = resData.data.map((item) => {
+          let content = {};
+          try {
+            content = typeof item.content === 'string' ? JSON.parse(item.content) : item.content;
+          } catch(e){}
+          return {
+            id: item.id,
+            type: item.type,
+            title: item.name,
+            created: new Date(item.created_at).toLocaleString(),
+            image: content?.image || "",
+            message: content?.message || "",
+          };
+        });
+        setItems(backendItems);
+      }
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
   // Modal สร้างเทมเพลตใหม่
   const [newItem, setNewItem] = useState({
     type: "รูปภาพ",
@@ -56,38 +68,40 @@ const Cardmessage = () => {
       item.type.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleCreateItem = () => {
+  const handleCreateItem = async () => {
     if (!newItem.title) {
       alert("กรุณากรอกชื่อไอเทม");
       return;
     }
 
-    if (editingItem) {
-      const updated = items.map((i) =>
-        i.id === editingItem.id ? { ...editingItem, ...newItem } : i,
-      );
-      setItems(updated);
-      setEditingItem(null);
-      setShow(false);
-      return;
-    }
-
-    const data = {
-      id: "X" + (items.length + 1).toString().padStart(3, "0"),
-      created: new Date().toLocaleString(),
-      ...newItem,
+    const payload = {
+      name: newItem.title,
+      type: newItem.type,
+      content: { image: newItem.image, message: newItem.message },
+      created_by: 1
     };
 
-    setItems([...items, data]);
-    setShow(false);
-
-    // reset
-    setNewItem({
-      type: "รูปภาพ",
-      title: "",
-      image: "",
-      message: "",
-    });
+    try {
+      if (editingItem) {
+        await fetch(`http://localhost:3000/api/templates/${editingItem.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        await fetch("http://localhost:3000/api/templates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      }
+      setShow(false);
+      setEditingItem(null);
+      setNewItem({ type: "รูปภาพ", title: "", image: "", message: "" });
+      fetchItems();
+    } catch (error) {
+      console.error("Error saving template:", error);
+    }
   };
 
   return (
@@ -185,9 +199,15 @@ const Cardmessage = () => {
 
                 <Dropdown.Menu>
                   <Dropdown.Item
-                    onClick={() => {
-                      // ลบไอเทมนี้ออกจาก state
-                      setItems(items.filter((i) => i.id !== item.id));
+                    onClick={async () => {
+                      if(window.confirm("คุณต้องการลบเทมเพลตนี้ใช่หรือไม่?")) {
+                         try {
+                           await fetch(`http://localhost:3000/api/templates/${item.id}`, { method: "DELETE" });
+                           fetchItems();
+                         } catch (error) {
+                           console.error("Error deleting template:", error);
+                         }
+                      }
                     }}
                   >
                     ลบ

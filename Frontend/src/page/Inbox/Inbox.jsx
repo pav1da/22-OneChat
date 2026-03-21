@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 
 import { useChat } from "../../context/ChatContext";
 import ChatList from "./chatList/ChatList";
@@ -36,6 +37,45 @@ const Inbox = ({ currentUser }) => {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState("");
+
+  // โหลด Notes และ Socket.io
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/notes");
+        const data = await res.json();
+        if (data.status === "success") {
+          const formatted = data.data.map(n => ({
+            id: n.id,
+            text: n.content,
+            date: new Date(n.created_at),
+            customerName: n.user,
+            author: "Admin",
+            color: "#FFF8DC"
+          }));
+          setNotes(formatted);
+        }
+      } catch (err) {
+        console.error("Error fetching notes:", err);
+      }
+    };
+    fetchNotes();
+
+    const socket = io("http://localhost:3000");
+    socket.on("new_note", (n) => {
+      setNotes(prev => [{
+        id: n.id, text: n.content, date: new Date(n.created_at || Date.now()), customerName: n.user, author: "Admin", color: "#FFF8DC"
+      }, ...prev]);
+    });
+    socket.on("updated_note", (n) => {
+      setNotes(prev => prev.map(old => old.id === n.id ? { ...old, text: n.content, customerName: n.user } : old));
+    });
+    socket.on("deleted_note", ({ id }) => {
+      setNotes(prev => prev.filter(n => n.id !== id));
+    });
+
+    return () => socket.disconnect();
+  }, []);
 
   // Start Sort Logic Section
   const sortedCustomers = [...customer].sort((a, b) => {
@@ -100,35 +140,27 @@ const Inbox = ({ currentUser }) => {
   };
 
   // ฟังก์ชันสำหรับเพิ่มโน้ตใหม่
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (newNote.trim()) {
-      const noteObj = {
-        id: Date.now(),
-        text: newNote,
-        date: new Date(),
-        customerName: selectedCustomer?.name || "ลูกค้า",
-        author: currentUser?.name || "Admin",
-        color: "#FFF8DC",
-      };
-
-      setNotes([...notes, noteObj]);
-
-      // บันทึกโน้ตลงใน sessionStorage (ใช้สำหรับจำลองการเก็บข้อมูลข้ามหน้า)
-      const existingNotes = JSON.parse(
-        sessionStorage.getItem("dashboardNotes") || "[]",
-      );
-      const updatedNotes = [noteObj, ...existingNotes];
-      sessionStorage.setItem("dashboardNotes", JSON.stringify(updatedNotes));
-
-      // รีเซ็ตฟอร์ม
-      setNewNote("");
-      setIsAddingNote(false);
+      try {
+        await fetch("http://localhost:3000/api/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user: selectedCustomer?.name || "ลูกค้า", content: newNote, created_by: 1, admin_name: currentUser?.name || "Admin" })
+        });
+        setNewNote("");
+        setIsAddingNote(false);
+      } catch(err) { console.error("Error saving note :", err); }
     }
   };
 
   // ฟังก์ชันสำหรับลบโน้ต
-  const handleDeleteNote = (id) => {
-    setNotes(notes.filter((note) => note.id !== id));
+  const handleDeleteNote = async (id) => {
+    if(window.confirm("ยืนยันการลบโน้ต?")) {
+      try {
+        await fetch(`http://localhost:3000/api/notes/${id}`, { method: "DELETE" });
+      } catch(err) { console.error("Error deleting note:", err); }
+    }
   };
 
   // เริ่มต้นโหมดแก้ไขโน้ต
@@ -138,15 +170,18 @@ const Inbox = ({ currentUser }) => {
   };
 
   // บันทึกการแก้ไขโน้ต
-  const handleSaveEdit = (id) => {
+  const handleSaveEdit = async (id) => {
     if (editingText.trim()) {
-      setNotes(
-        notes.map((note) =>
-          note.id === id ? { ...note, text: editingText } : note,
-        ),
-      );
-      setEditingNoteId(null);
-      setEditingText("");
+      try {
+        const noteToEdit = notes.find(n => n.id === id);
+        await fetch(`http://localhost:3000/api/notes/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user: noteToEdit.customerName, content: editingText, admin_name: currentUser?.name || "Admin" })
+        });
+        setEditingNoteId(null);
+        setEditingText("");
+      } catch(err) { console.error("Error editing note:", err); }
     }
   };
 
@@ -509,9 +544,9 @@ const Inbox = ({ currentUser }) => {
                     </div>
                   )}
 
-                  {/* Notes List: แสดงโน้ตทั้งหมด */}
+                  {/* Notes List: แสดงโน้ตทั้งหมดของลูกค้าคนนี้ */}
                   <div className="d-flex flex-column gap-2">
-                    {notes.map((note) => (
+                    {notes.filter(n => n.customerName === selectedCustomer?.name).map((note) => (
                       <div
                         key={note.id}
                         className="border rounded-3 p-3 bg-white"

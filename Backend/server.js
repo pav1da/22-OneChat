@@ -17,6 +17,8 @@ const usersRouter = require("./routers/usersRouter");
 const logsRouter = require('./routers/logsRouter');
 const notificationRouter = require('./routers/notificationRouter');
 const notificationSettingsRouter = require('./routers/notificationSettingsRouter');
+const templatesRouter = require('./routers/templatesRouter');
+const notesRouter = require('./routers/notesRouter');
 
 const app = express();
 const server = http.createServer(app);
@@ -73,6 +75,10 @@ app.use('/api/logs', logsRouter);
 app.use('/api/notifications', notificationRouter);
 
 app.use('/api/notification-settings', notificationSettingsRouter);
+
+app.use('/api/templates', templatesRouter);
+
+app.use('/api/notes', notesRouter);
 
 // Route สำหรับรับ Webhook จาก LINE
 app.post("/webhook", line.middleware(config), lineController.handleWebhook);
