@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useMemo } from "react";
-import { teams as allTeams } from "../data/teams";
+
+// data/teams ถูกลบไปแล้ว — ใช้ array เปล่าเป็น fallback (จะเชื่อม API ทีหลัง)
+const allTeams = [];
 
 const TeamContext = createContext(null);
 

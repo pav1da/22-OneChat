@@ -1,6 +1,4 @@
-import { createContext, useContext, useState, useCallback } from "react";
-import { initialChatMessages } from "../data/messages";
-import { fetchCustomer } from "../data/customer";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 // สถานะของแชทลูกค้า
 const STATUS = {
@@ -11,43 +9,115 @@ const STATUS = {
 
 const ChatContext = createContext(null);
 
-export const ChatProvider = ({ children }) => {
-  const [messages, setMessages] = useState(initialChatMessages);
-  const [customers, setCustomers] = useState(() => {
-    const allCustomers = fetchCustomer();
-    return allCustomers.map((c) => ({
-      ...c,
-      originalName: c.name,
-      status:
-        c.inprocess === true
-          ? STATUS.IN_PROGRESS
-          : c.inprocess === false
-            ? STATUS.DONE
-            : STATUS.NOT_STARTED,
-    }));
-  });
+// Helper: ดึง token จาก localStorage
+const getToken = () => localStorage.getItem("token");
 
-  // ส่งข้อความ — ใช้ได้ทั้งจาก mini chat และ Inbox
-  const sendMessage = useCallback((customerId, text) => {
+const getHeaders = () => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${getToken()}`,
+});
+
+export const ChatProvider = ({ children }) => {
+  const [messages, setMessages] = useState({});
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ---------- โหลดข้อมูลตอน mount ----------
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = getToken();
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
+        // ดึงลูกค้าและข้อความพร้อมกัน
+        const [custRes, msgRes] = await Promise.all([
+          fetch("/api/customers", { headers: getHeaders() }),
+          fetch("/api/messages", { headers: getHeaders() }),
+        ]);
+
+        if (custRes.ok) {
+          const custData = await custRes.json();
+          // แปลงข้อมูลให้ตรงกับ format เดิมที่ frontend ใช้
+          const mapped = custData.map((c) => ({
+            id: c.id,
+            name: c.display_name || `Customer #${c.id}`,
+            originalName: c.display_name || `Customer #${c.id}`,
+            img: c.picture_url || "",
+            app: c.platform ? `${c.platform === "line" ? "Line" : "Facebook"}` : "",
+            platform: c.platform,
+            platform_id: c.platform_id,
+            status: STATUS.NOT_STARTED,
+            last: "",
+          }));
+          setCustomers(mapped);
+        }
+
+        if (msgRes.ok) {
+          const msgData = await msgRes.json();
+          setMessages(msgData);
+
+          // อัปเดต last message ของแต่ละลูกค้า
+          setCustomers((prev) =>
+            prev.map((c) => {
+              const msgs = msgData[c.id];
+              if (msgs && msgs.length > 0) {
+                const lastMsg = msgs[msgs.length - 1];
+                return { ...c, last: lastMsg.text || "(รูปภาพ)" };
+              }
+              return c;
+            })
+          );
+        }
+      } catch (err) {
+        console.error("Failed to fetch chat data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // ---------- ส่งข้อความ ----------
+  const sendMessage = useCallback(async (customerId, text) => {
     const newMsg = {
       id: Date.now(),
       sender: "own",
       text: text,
     };
 
+    // อัปเดต UI ทันที (optimistic)
     setMessages((prev) => ({
       ...prev,
       [customerId]: [...(prev[customerId] || []), newMsg],
     }));
 
-    // อัปเดตข้อความล่าสุดบน card
     setCustomers((prev) =>
-      prev.map((c) => (c.id === customerId ? { ...c, last: text } : c)),
+      prev.map((c) => (c.id === customerId ? { ...c, last: text } : c))
     );
+
+    // ส่งไป API
+    try {
+      await fetch("/api/messages", {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          customer_id: customerId,
+          sender: "own",
+          message_type: "text",
+          message_text: text,
+        }),
+      });
+    } catch (err) {
+      console.error("Send message error:", err);
+    }
   }, []);
 
-  // ส่งข้อความแบบมีรูป
-  const sendImageMessage = useCallback((customerId, imageUrl) => {
+  // ---------- ส่งรูปภาพ ----------
+  const sendImageMessage = useCallback(async (customerId, imageUrl) => {
     const newMsg = {
       id: Date.now(),
       sender: "own",
@@ -58,20 +128,45 @@ export const ChatProvider = ({ children }) => {
       ...prev,
       [customerId]: [...(prev[customerId] || []), newMsg],
     }));
+
+    try {
+      await fetch("/api/messages", {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          customer_id: customerId,
+          sender: "own",
+          message_type: "image",
+          message_text: imageUrl,
+        }),
+      });
+    } catch (err) {
+      console.error("Send image error:", err);
+    }
   }, []);
 
-  // อัปเดตสถานะลูกค้า
+  // ---------- อัปเดตสถานะลูกค้า (local only) ----------
   const updateCustomerStatus = useCallback((customerId, newStatus) => {
     setCustomers((prev) =>
-      prev.map((c) => (c.id === customerId ? { ...c, status: newStatus } : c)),
+      prev.map((c) => (c.id === customerId ? { ...c, status: newStatus } : c))
     );
   }, []);
 
-  // อัปเดตชื่อลูกค้า
-  const updateCustomerName = useCallback((customerId, newName) => {
+  // ---------- อัปเดตชื่อลูกค้า ----------
+  const updateCustomerName = useCallback(async (customerId, newName) => {
     setCustomers((prev) =>
-      prev.map((c) => (c.id === customerId ? { ...c, name: newName } : c)),
+      prev.map((c) => (c.id === customerId ? { ...c, name: newName } : c))
     );
+
+    try {
+      await fetch(`/api/customers/${customerId}/name`, {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ name: newName }),
+      });
+    } catch (err) {
+      console.error("Update name error:", err);
+    }
   }, []);
 
   return (
@@ -79,6 +174,7 @@ export const ChatProvider = ({ children }) => {
       value={{
         messages,
         customers,
+        loading,
         sendMessage,
         sendImageMessage,
         updateCustomerStatus,

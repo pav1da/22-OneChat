@@ -33,7 +33,8 @@ function Setting({ user }) {
     // ฟังก์ชันตรวจสอบสิทธิ์
     const allow = (roles) => {
         if (!user) return false;
-        if (user.role === 'it') return true; // it เห็นหมด
+        if (user.role === 'admin') return true; 
+        if (user.role === 'manager') return true;
         return roles.includes(user.role);
     };
 
@@ -90,9 +91,9 @@ function Setting({ user }) {
                             {/* ========== แก้ไขตรงนี้ ========== */}
                             {/* ใช้ allow([]) เพื่อให้เห็นแค่ IT เท่านั้น (User/Admin จะไม่เห็น) */}
                             {allow([]) && (
-                                <Nav.Link eventKey="connect">
-                                    <Link45deg size={20} /> เชื่อมต่อบัญชีใหม่
-                                </Nav.Link>
+                            <Nav.Link eventKey="connect">
+                                <Link45deg size={20} /> เชื่อมต่อบัญชีใหม่
+                            </Nav.Link>
                             )}
                             {/* =============================== */}
 
@@ -166,9 +167,9 @@ function Setting({ user }) {
                                         <Person size={18} /> บัญชีของฉัน
                                     </Nav.Link>
                                     {allow([]) && (
-                                        <Nav.Link eventKey="connect">
-                                            <Link45deg size={18} /> เชื่อมต่อบัญชีใหม่
-                                        </Nav.Link>
+                                    <Nav.Link eventKey="connect">
+                                        <Link45deg size={18} /> เชื่อมต่อบัญชีใหม่
+                                    </Nav.Link>
                                     )}
 
                                     <div className="nav-heading mt-4">ทั่วไป</div>

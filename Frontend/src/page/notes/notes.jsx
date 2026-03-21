@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Modal, Container, Form, Row, Col, Card, Dropdown } from "react-bootstrap";
-import { fetchCustomer } from "../../data/customer";
 import "./notes.css";
 
 function Dashboard() {
@@ -114,14 +113,7 @@ function Dashboard() {
                   cursor: "pointer",
                 }}
                 onClick={() => {
-                  const customers = fetchCustomer();
-                  const matchedCustomer = customers.find(
-                    (c) => c.name === note.user || c.customerName === note.user,
-                  );
-                  const targetChatId = matchedCustomer
-                    ? matchedCustomer.id
-                    : note.id;
-                  navigate("/inbox", { state: { chatId: targetChatId } });
+                  navigate("/inbox", { state: { chatId: note.id } });
                 }}
                 title="คลิกเพื่อไปยังหน้าแชทของลูกค้ารายนี้"
               >

@@ -34,7 +34,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
   } = useTeam();
 
   const isPrivilegedUserLocal =
-    currentUser?.role === "it" || currentUser?.role === "admin";
+    currentUser?.role === "manager" || currentUser?.role === "admin";
 
   // ปิด dropdown เมื่อคลิกข้างนอก
   useEffect(() => {
@@ -240,7 +240,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
         </button>
         {starredOpen && (
           <Nav className="flex-column sidebar-nav sidebar-starred-list">
-            {isPrivilegedUserLocal && (
+            {(isPrivilegedUserLocal || currentUser?.role === "staff") && (
               <>
                 <Nav.Link
                   as={Link}
@@ -258,6 +258,10 @@ const Sidebar = ({ onLogout, currentUser }) => {
                   <i className="bi bi-people"></i>
                   <span>Teams</span>
                 </Nav.Link>
+              </>
+            )}
+            {(isPrivilegedUserLocal || currentUser?.role === "admin") && (
+              <>
                 <Nav.Link
                   as={Link}
                   to="/log"
@@ -266,6 +270,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
                   <i className="bi bi-file-earmark-text"></i>
                   <span>ตรวจสอบบันทึก</span>
                 </Nav.Link>
+
                 <Nav.Link
                   as={Link}
                   to="/tokenreport"

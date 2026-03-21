@@ -16,6 +16,9 @@ const lineController = require("./controllers/lineController");
 const usersRouter = require("./routers/usersRouter");
 const logsRouter = require('./routers/logsRouter');
 const notificationRouter = require('./routers/notificationRouter');
+const customersRouter = require('./routers/customersRouter');
+const messagesRouter = require('./routers/messagesRouter');
+const notesRouter = require('./routers/notesRouter');
 
 const app = express();
 const server = http.createServer(app);
@@ -70,6 +73,9 @@ app.use("/api/users", usersRouter);
 app.use('/api/logs', logsRouter);
 
 app.use('/api/notifications', notificationRouter);
+app.use('/api/customers', customersRouter);
+app.use('/api/messages', messagesRouter);
+app.use('/api/notes', notesRouter);
 
 // Route สำหรับรับ Webhook จาก LINE
 app.post("/webhook", line.middleware(config), lineController.handleWebhook);
