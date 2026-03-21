@@ -11,7 +11,11 @@ const Sidebar = ({ onLogout, currentUser }) => {
   const location = useLocation();
   const isActive = (path) => location.pathname.startsWith(path);
 
-  const userImage = currentUser?.image?.startsWith("/") || currentUser?.image?.startsWith("http") ? currentUser.image : defaultProfile;
+  const userImage =
+    currentUser?.image?.startsWith("/") ||
+    currentUser?.image?.startsWith("http")
+      ? currentUser.image
+      : defaultProfile;
   const userName = currentUser?.name || "User";
 
   const [starredOpen, setStarredOpen] = useState(true);
@@ -69,9 +73,13 @@ const Sidebar = ({ onLogout, currentUser }) => {
   return (
     <div className="kanit-regular sidebar-container">
       {/* User Profile Header */}
-      <div className="sidebar-header my-3" ref={userDropdownRef} style={{ position: "relative" }}>
-        <div 
-          className="sidebar-user-info" 
+      <div
+        className="sidebar-header my-3"
+        ref={userDropdownRef}
+        style={{ position: "relative" }}
+      >
+        <div
+          className="sidebar-user-info"
           onClick={() => setUserDropdownOpen(!userDropdownOpen)}
           style={{ cursor: "pointer" }}
         >
@@ -105,13 +113,14 @@ const Sidebar = ({ onLogout, currentUser }) => {
           <i className="bi bi-chat"></i>
           <span>Inbox</span>
         </Nav.Link>
+
         <Nav.Link
           as={Link}
-          to="/member"
-          className={`sidebar-nav-item ${isActive("/member") ? "active" : ""}`}
+          to="/notification"
+          className={`sidebar-nav-item ${isActive("/notification") ? "active" : ""}`}
         >
-          <i className="bi bi-people"></i>
-          <span>Members</span>
+          <i className="bi bi-bell"></i>
+          <span>การแจ้งเตือน</span>
         </Nav.Link>
       </Nav>
 
@@ -233,6 +242,22 @@ const Sidebar = ({ onLogout, currentUser }) => {
           <Nav className="flex-column sidebar-nav sidebar-starred-list">
             {isPrivilegedUserLocal && (
               <>
+                <Nav.Link
+                  as={Link}
+                  to="/member"
+                  className={`sidebar-nav-item ${isActive("/member") ? "active" : ""}`}
+                >
+                  <i className="bi bi-people"></i>
+                  <span>Members</span>
+                </Nav.Link>
+                <Nav.Link
+                  as={Link}
+                  to="/teams"
+                  className={`sidebar-nav-item ${isActive("/teams") ? "active" : ""}`}
+                >
+                  <i className="bi bi-people"></i>
+                  <span>Teams</span>
+                </Nav.Link>
                 <Nav.Link
                   as={Link}
                   to="/log"

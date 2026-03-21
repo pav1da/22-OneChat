@@ -13,6 +13,7 @@ import Setting from "./page/SettingPages/Setting";
 import Notifiacation from "./page/notification/Notification";
 import Log from "./page/Log";
 import Member from "./page/member/Member";
+import Teams from "./page/team/team";
 import TokenReport from "./page/TokenReport";
 import AllChat from "./page/allchat/Allchat";
 import CardMessage from "./page/CardmessagePage/Cardmessage";
@@ -133,6 +134,7 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                     <Route path="/log" element={<Log />} />
                     <Route path="/notification" element={<Notifiacation />} />
                     <Route path="/member" element={<Member />} />
+                    <Route path="/teams" element={<Teams />} />
                     <Route path="/tokenreport" element={<TokenReport />} />
                     <Route path="/setting" element={<Setting user={currentUser} />} />
                 </Route>
