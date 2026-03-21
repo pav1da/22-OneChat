@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Modal, Container, Form, Row, Col, Card, Dropdown } from "react-bootstrap";
+import { fetchCustomer } from "../../data/customer";
+import { io } from "socket.io-client";
 import "./notes.css";
 
 function Dashboard() {
@@ -18,21 +20,39 @@ function Dashboard() {
   // เก็บ ID ของโน้ตที่กำลังถูกแก้ไข (ถ้า null แปลว่ากำลังสร้างใหม่)
   const [editingId, setEditingId] = useState(null);
 
-  // โหลดโน้ตจาก sessionStorage ตอนเปิดหน้า
+  // โหลดโน้ตจาก API และตั้งค่า Socket.io
   useEffect(() => {
-    const savedNotes = JSON.parse(
-      sessionStorage.getItem("dashboardNotes") || "[]",
-    );
+    const fetchNotes = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/notes");
+        const data = await res.json();
+        if (data.status === "success") {
+          setNotes(data.data);
+        }
+      } catch (err) {
+        console.error("Error fetching notes:", err);
+      }
+    };
 
-    // แปลง Format ให้เหมือนกับโครงสร้างใหม่ของระบบ
-    const formattedNotes = savedNotes.map((note) => ({
-      ...note,
-      content: note.text || note.content, // ถ้าเคยใช้ key: text ก็เอามาแทน
-      user: note.customerName || note.user || "Unknown",
-      id: note.id,
-    }));
+    fetchNotes();
 
-    setNotes(formattedNotes);
+    const socket = io("http://localhost:3000");
+
+    socket.on("new_note", (note) => {
+      setNotes((prev) => [note, ...prev]);
+    });
+
+    socket.on("updated_note", (updatedNote) => {
+      setNotes((prev) => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
+    });
+
+    socket.on("deleted_note", ({ id }) => {
+      setNotes((prev) => prev.filter(n => n.id !== id));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   // ปิด Modal
@@ -53,38 +73,39 @@ function Dashboard() {
   };
 
   // บันทึกโน้ต หรือ แก้ไขโน้ต
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
     if (newNote.user && newNote.content) {
-      let updatedNotes;
-
-      // ถ้าอยู่ในโหมดแก้ไข - อัปเดตเฉพาะตัวนั้น
-      if (editingId) {
-        updatedNotes = notes.map((note) =>
-          note.id === editingId ? { ...note, ...newNote } : note,
-        );
+      try {
+        if (editingId) {
+          // โหมดแก้ไข
+          await fetch(`http://localhost:3000/api/notes/${editingId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: newNote.user, content: newNote.content, admin_name: "Admin" })
+          });
+        } else {
+          // สร้างใหม่
+          await fetch("http://localhost:3000/api/notes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: newNote.user, content: newNote.content, admin_name: "Admin", created_by: 1 })
+          });
+        }
+        handleClose();
+      } catch (error) {
+        console.error("Error saving note:", error);
       }
-      // ถ้ากำลังเพิ่มใหม่ - สร้าง id ใหม่ด้วย Date.now()
-      else {
-        updatedNotes = [{ ...newNote, id: Date.now() }, ...notes];
-      }
-
-      // เซ็ต state ใหม่
-      setNotes(updatedNotes);
-
-      // เก็บลง sessionStorage
-      sessionStorage.setItem("dashboardNotes", JSON.stringify(updatedNotes));
-
-      handleClose();
     }
   };
 
   // ลบโน้ต
-  const handleDeleteNote = (id) => {
+  const handleDeleteNote = async (id) => {
     if (window.confirm("ยืนยันการลบโน้ต?")) {
-      const updatedNotes = notes.filter((note) => note.id !== id);
-
-      setNotes(updatedNotes);
-      sessionStorage.setItem("dashboardNotes", JSON.stringify(updatedNotes));
+      try {
+        await fetch(`http://localhost:3000/api/notes/${id}`, { method: "DELETE" });
+      } catch (error) {
+        console.error("Error deleting note:", error);
+      }
     }
   };
 

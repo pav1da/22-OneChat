@@ -16,7 +16,7 @@ function Account({ user }) {
         password: '',
     });
 
-    const [imagePreview, setImagePreview] = useState("https://via.placeholder.com/150");
+    const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
 
     // Modal states
@@ -52,7 +52,7 @@ function Account({ user }) {
                         phone: data.phone || '',
                         password: '',
                     });
-                    setImagePreview(data.image || "https://via.placeholder.com/150");
+                    setImagePreview(data.image || null);
                 }
             } catch (err) {
                 console.error('Error fetching user data:', err);
@@ -108,6 +108,17 @@ function Account({ user }) {
     };
 
     const handleNextStep = async () => {
+        // ตรวจสอบรหัสผ่านใหม่ตรงกัน
+        if (modalType === 'password') {
+            if (pwdNew !== pwdConfirm) {
+                alert('รหัสผ่านใหม่ไม่ตรงกัน');
+                return;
+            }
+            if (pwdNew.length < 6) {
+                alert('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร');
+                return;
+            }
+        }
         await saveDataAndClose();
     };
 
@@ -455,7 +466,7 @@ function Account({ user }) {
                         </div>
                     </Col>
                     <Col xs="auto">
-                        <Button variant="dark" style={btnDarkStyle}>เปิดใช้งาน 2FA</Button>
+                        <Button variant="dark" style={btnDarkStyle} onClick={() => alert('ฟีเจอร์ 2FA จะเปิดให้ใช้งานเร็วๆ นี้')}>เปิดใช้งาน 2FA</Button>
                     </Col>
                 </Row>
             </div>

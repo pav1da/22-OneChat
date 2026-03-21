@@ -19,26 +19,28 @@ const notificationRouter = require('./routers/notificationRouter');
 const customersRouter = require('./routers/customersRouter');
 const messagesRouter = require('./routers/messagesRouter');
 const notesRouter = require('./routers/notesRouter');
+const notificationSettingsRouter = require('./routers/notificationSettingsRouter');
+const templatesRouter = require('./routers/templatesRouter');
 
 const app = express();
 const server = http.createServer(app);
 
 // ===== Socket.IO =====
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+    },
 });
 
 // แชร์ io instance ให้ routers ใช้ได้
 app.set("io", io);
 
 io.on("connection", (socket) => {
-  console.log(`🔌 Client connected: ${socket.id}`);
-  socket.on("disconnect", () => {
-    console.log(`❌ Client disconnected: ${socket.id}`);
-  });
+    console.log(`🔌 Client connected: ${socket.id}`);
+    socket.on("disconnect", () => {
+        console.log(`❌ Client disconnected: ${socket.id}`);
+    });
 });
 
 // ===== Middleware =====
@@ -72,10 +74,12 @@ app.use("/api/users", usersRouter);
 
 app.use('/api/logs', logsRouter);
 
-app.use('/api/notifications', notificationRouter);
+app.use('/api/notification-settings', notificationSettingsRouter);
 app.use('/api/customers', customersRouter);
 app.use('/api/messages', messagesRouter);
 app.use('/api/notes', notesRouter);
+app.use('/api/templates', templatesRouter);
+
 
 // Route สำหรับรับ Webhook จาก LINE
 app.post("/webhook", line.middleware(config), lineController.handleWebhook);

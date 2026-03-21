@@ -1,19 +1,18 @@
-
 .settings-page-wrapper {
     background: var(--bg-main);
-    height: calc(100vh - 45px); 
+    height: calc(100vh - 45px);
     overflow: hidden;
-    padding-bottom: 0; 
+    padding-bottom: 0;
     display: flex;
     flex-direction: column;
     border-radius: 24px;
 }
 
 .scrollable-col {
-  height: 100%; 
-  overflow-y: auto; 
-  overflow-x: hidden; 
-  padding-bottom: 50px;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 50px;
 }
 
 @media (min-width: 768px) {
@@ -85,7 +84,8 @@
     margin-bottom: 0.5rem;
     padding-left: 1rem;
     font-weight: 400;
-    text-transform: none; /* ไม่บังคับตัวพิมพ์ใหญ่ */
+    text-transform: none;
+    /* ไม่บังคับตัวพิมพ์ใหญ่ */
 }
 
 /* สไตล์ลิงก์ปกติ (ตอนยังไม่กด) */
@@ -112,9 +112,12 @@
 /* --- สไตล์ตอน Active (หน้าที่เลือกอยู่) --- */
 /* ใช้ !important เพื่อให้มั่นใจว่าทับของเก่าแน่นอน */
 .settings-nav .nav-link.active {
-    background-color: #fff5f0 !important; /* พื้นหลังสีส้มจางๆ */
-    color: #fd7e14 !important; /* ตัวหนังสือสีส้ม */
-    border: 1px solid #fd7e14 !important; /* เส้นขอบสีส้ม */
+    background-color: #fff5f0 !important;
+    /* พื้นหลังสีส้มจางๆ */
+    color: #fd7e14 !important;
+    /* ตัวหนังสือสีส้ม */
+    border: 1px solid #fd7e14 !important;
+    /* เส้นขอบสีส้ม */
     font-weight: 600;
 }
 
@@ -177,7 +180,7 @@
 
 
 .profile-info-item {
-    padding: 1rem 1.2rem 0.3rem 1.2rem;   
+    padding: 1rem 1.2rem 0.3rem 1.2rem;
     border-bottom: 1px solid var(--border-medium);
     width: 100%;
 }
@@ -235,7 +238,7 @@
 
 .btn-custom-orange:hover {
     background-color: #e67312;
-  
+
 }
 
 .btn-custom-orange:active,
@@ -261,49 +264,49 @@
 
 /* เพิ่มเฉพาะหน้า Ai */
 .ai-page .profile-info-item {
-    padding: 2rem 1.2rem; 
+    padding: 2rem 1.2rem;
 }
 
 .connect-page .profile-info-item {
-    padding: 2rem 1.2rem; 
+    padding: 2rem 1.2rem;
 }
 
 .disconnect-page .profile-info-item {
-    padding: 2rem 1.2rem; 
+    padding: 2rem 1.2rem;
 }
 
 
 /* สำหรับหน้า Policy */
 .policy-page {
-    font-size: 0.95rem; 
-    line-height: 1.6;  
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
 .policy-page h2 {
-    font-size: 2rem;    
+    font-size: 2rem;
 }
 
 
 .policy-page h4 {
     font-size: 0.95rem;
-    font-weight: 600;  
+    font-weight: 600;
 }
 
 
 
 /* สำหรับหน้า About */
 .about-page {
-    font-size: 0.95rem;   
-    line-height: 1.6;     
-    color: #212529;       
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #212529;
 }
 
 .about-page h2 {
-    font-size: 2rem;      
+    font-size: 2rem;
 }
 
 .about-page h4 {
-    font-size: 1rem;      
+    font-size: 1rem;
     font-weight: 600;
 }
 
@@ -326,11 +329,14 @@
 
 /* 1. สไตล์ปุ่ม "แก้ไข" สีเทาเข้ม */
 .btn-edit-dark {
-    background-color: #424242;  /* สีเทาเข้มตามภาพ */
+    background-color: #424242;
+    /* สีเทาเข้มตามภาพ */
     color: #ffffff;
     border: none;
-    border-radius: 8px;      /* ความมนของขอบปุ่ม */
-    padding: 6px 20px;       /* ขนาดปุ่ม */
+    border-radius: 8px;
+    /* ความมนของขอบปุ่ม */
+    padding: 6px 20px;
+    /* ขนาดปุ่ม */
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
@@ -338,13 +344,15 @@
 }
 
 .btn-edit-dark:hover {
-    background-color: #2b2b2b; /* เข้มขึ้นเมื่อเอาเมาส์ชี้ */
+    background-color: #2b2b2b;
+    /* เข้มขึ้นเมื่อเอาเมาส์ชี้ */
     color: #ffffff;
 }
 
 /* 2. ปรับแต่งรายการในหน้า Chat ให้ระยะห่างสวยงาม */
 .chat-page-container .profile-info-item {
-    border-bottom: none; /* เอาเส้นขีดล่างเดิมออก (เพราะเราจะขีดเส้นแบ่งโซนเอง) */
+    border-bottom: none;
+    /* เอาเส้นขีดล่างเดิมออก (เพราะเราจะขีดเส้นแบ่งโซนเอง) */
     padding-top: 1.2rem;
     padding-bottom: 1.2rem;
 }
@@ -406,8 +414,11 @@
 .settings-page-wrapper.dim-backdrop::before {
     content: "";
     position: absolute;
-    left: 0; top: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.03);
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.03);
     pointer-events: none;
     border-radius: 24px;
 }
@@ -483,9 +494,19 @@
     padding: 6px 8px;
     border-radius: 6px;
 }
+
 .settings-close-btn:hover {
     background: var(--bg-hover);
     color: var(--text-main);
+}
+
+/* Bootstrap Modal must appear above settings overlay (z-index: 2000) */
+.modal-backdrop {
+    z-index: 2100 !important;
+}
+
+.modal {
+    z-index: 2200 !important;
 }
 
 /* On small screens reduce padding */

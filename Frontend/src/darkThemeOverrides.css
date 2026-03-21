@@ -1,0 +1,96 @@
+/* Dark Theme Bootstrap Overrides */
+[data-theme="dark"] {
+
+    /* Form Controls */
+    .form-control,
+    .form-select {
+        background-color: #1a1a1a !important;
+        border-color: #333333 !important;
+        color: #ffffff !important;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: #2a2a2a !important;
+        border-color: #f4a460 !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 0 0.25rem rgba(244, 164, 96, 0.25) !important;
+    }
+
+    .form-control::placeholder {
+        color: #808080 !important;
+    }
+
+    /* Dropdowns */
+    .dropdown-menu {
+        background-color: #1a1a1a !important;
+        border-color: #333333 !important;
+    }
+
+    .dropdown-item {
+        color: #ffffff !important;
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        background-color: #2a2a2a !important;
+        color: #f4a460 !important;
+    }
+
+    /* Buttons */
+    .btn-light {
+        background-color: #2a2a2a !important;
+        border-color: #333333 !important;
+        color: #ffffff !important;
+    }
+
+    .btn-light:hover {
+        background-color: #3a3a3a !important;
+        border-color: #444444 !important;
+        color: #ffffff !important;
+    }
+
+    /* Modals */
+    .modal-content {
+        background-color: #1a1a1a !important;
+        border-color: #333333 !important;
+        color: #ffffff !important;
+    }
+
+    .modal-header,
+    .modal-footer {
+        border-color: #333333 !important;
+    }
+
+    /* Cards */
+    .card {
+        background-color: #1a1a1a !important;
+        border-color: #333333 !important;
+        color: #ffffff !important;
+    }
+
+    .card-header {
+        background-color: #2a2a2a !important;
+        border-color: #333333 !important;
+    }
+
+    /* Text colors */
+    .text-muted {
+        color: #b0b0b0 !important;
+    }
+
+    .text-secondary {
+        color: #b0b0b0 !important;
+    }
+
+    .text-dark {
+        color: #ffffff !important;
+    }
+
+    /* Borders */
+    .border,
+    .border-bottom,
+    .border-top {
+        border-color: #333333 !important;
+    }
+}

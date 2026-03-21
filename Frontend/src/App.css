@@ -1,126 +1,142 @@
 @import url("https://fonts.googleapis.com/css2?family=Kanit:wght@400&display=swap");
 
 :root {
-  /* Light */
-  --base-color: #ffffff;
+    /* Light */
+    --base-color: #ffffff;
 
-  /* Primary Colors */
-  --primary-color: #f26623;
-  --secondary-color: #fff2ec;
-  --brand-orange: #f26623;
-  --brand-orange-light: #ff7a00;
-  --brand-peach: #f4a482;
+    /* Primary Colors */
+    --primary-color: #f26623;
+    --secondary-color: #fff2ec;
+    --brand-orange: #f26623;
+    --brand-orange-light: #ff7a00;
+    --brand-peach: #f4a482;
 
-  /* Background Colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-accent: #e9ecef;
+    /* Background Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-accent: #e9ecef;
 
-  /* Text Colors */
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --text-light: #f8f9fa;
+    /* Text Colors */
+    --text-primary: #212429;
+    --text-secondary: #6c757d;
+    --text-light: #f8f9fa;
 }
 
 [data-theme="dark"] {
-  --base-color: #1a1a2e;
-  --secondary-color: #2a2235;
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #16213e;
-  --bg-accent: #2a2a4a;
-  --text-primary: #e8e8ee;
-  --text-secondary: #a0a0b8;
-  --text-light: #2a2a4a;
+    --base-color: #000000;
+    --secondary-color: #1a1a1a;
+    --bg-primary: #000000;
+    --bg-secondary: #1a1a1a;
+    --bg-accent: #2a2a2a;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --text-light: #e0e0e0;
+    --border-light: #333333;
+    --bg-hover: #2a2a2a;
+    --shadow-sm: rgba(255, 255, 255, 0.1);
+    --shadow-md: rgba(255, 255, 255, 0.15);
+    --bg-card: #1a1a1a;
 }
 
 /* ============ Kanit Font ============ */
 /* Set Kanit as default, use .kanit-{weight} for specific weights */
 .kanit-regular {
-  font-family: "Kanit", sans-serif;
-  font-weight: 400;
+    font-family: "Kanit", sans-serif;
+    font-weight: 400;
 }
 
 /* ============ Shared Layout Classes ============ */
 
 /* Full-page centered container (used by SignIn, SignUp) */
 .page-centered {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  width: 100%;
-  background-color: var(--bg-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    background-color: var(--bg-primary);
 }
 
 /* App logo positioned top-left (used by Home, SignIn, SignUp) */
 .app-logo {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
 }
 
 /* Content panel with white background (used by Member, Log, TokenReport) */
 .content-panel {
-  padding-left: 6%;
-  padding-right: 6%;
-  overflow-y: auto;
+    padding-left: 6%;
+    padding-right: 6%;
+    overflow-y: auto;
 }
 
 /* Section header color */
 .section-title {
-  color: var(--brand-orange-light);
+    color: var(--brand-orange-light);
 }
 
 /* Brand-colored text */
 .text-brand {
-  color: var(--brand-orange);
+    color: var(--brand-orange);
 }
 
 /* ============ Log Item Hover Effect ============ */
 .log-item {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-light, #e9ecef);
-  cursor: pointer;
-  transition: all 0.2s ease;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-light, #e9ecef);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .log-item {
+    background-color: #1a1a1a;
+    border-color: #333333;
+    color: #ffffff;
 }
 
 .log-item:hover {
-  background-color: var(--bg-hover, #eaebef);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px var(--shadow-sm);
+    background-color: var(--bg-hover, #eaebef);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px var(--shadow-sm);
+}
+
+[data-theme="dark"] .log-item:hover {
+    background-color: #2a2a2a;
+    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
 }
 
 /* ============ AI Panel ============ */
 .ai-panel {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  height: 70%;
-  background-color: var(--bg-card, white);
-  border-radius: 10px;
-  box-shadow: 0 4px 12px var(--shadow-md);
-  z-index: 1050;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 70%;
+    background-color: var(--bg-card, white);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px var(--shadow-md);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 /* ============ Global ============ */
 body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .no-caret-toggle::after {
-  display: none !important;
+    display: none !important;
 }
