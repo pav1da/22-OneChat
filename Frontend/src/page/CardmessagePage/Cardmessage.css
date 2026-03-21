@@ -5,6 +5,11 @@
     flex-direction: column;
 }
 
+[data-theme="dark"] .main-content {
+    background-color: #000000;
+    color: #ffffff;
+}
+
 /* Container */
 .card-table-container {
     padding: 0;
@@ -24,7 +29,12 @@
     /* เส้นด้านล่างเท่ากับแถว */
     margin: 0;
     /* ลบ margin เกิน */
+}
 
+[data-theme="dark"] .card-table-header {
+    background-color: #f26623;
+    color: #ffffff;
+    border-bottom: 1px solid #333333;
 }
 
 /* Data Rows */
@@ -39,7 +49,12 @@
     border-top: 1px solid #dee2e6;
     margin: 0;
     /* ลบ margin เกิน */
+}
 
+[data-theme="dark"] .card-table-row {
+    background-color: #000000;
+    color: #ffffff;
+    border-top: 1px solid #333333;
 }
 
 /* รูปภาพในตาราง */
