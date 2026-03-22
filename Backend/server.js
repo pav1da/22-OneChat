@@ -27,6 +27,7 @@ const messagesRouter = require("./routers/messagesRouter");
 const notesRouter = require("./routers/notesRouter");
 const notificationSettingsRouter = require("./routers/notificationSettingsRouter");
 const templatesRouter = require("./routers/templatesRouter");
+const apiKeysRouter = require("./routers/apiKeysRouter");
 
 const app = express();
 const server = http.createServer(app);
@@ -75,6 +76,7 @@ if (!fs.existsSync(chatImagesDir)) {
 app.use("/api/users", usersRouter);
 
 app.use("/api/logs", logsRouter);
+app.use("/api/notifications", notificationRouter);
 app.use("/api/notification-settings", notificationSettingsRouter);
 
 app.use("/api/customers", customersRouter);
@@ -82,6 +84,7 @@ app.use("/api/messages", messagesRouter);
 
 app.use("/api/notes", notesRouter);
 app.use("/api/templates", templatesRouter);
+app.use("/api/api-keys", apiKeysRouter);
 
 // เปิดเซิร์ฟเวอร์ (ใช้ server.listen แทน app.listen เพื่อให้ Socket.IO ทำงาน)
 server.listen(3000, () =>
