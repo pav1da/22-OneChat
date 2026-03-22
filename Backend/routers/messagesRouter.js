@@ -3,7 +3,7 @@ const router = express.Router();
 const Message = require('../models/message');
 const auth = require('../middleware/auth');
 
-// GET /api/messages — ดึงข้อความทั้งหมด (grouped by customer_id)
+// GET /api/messages — ดึงข้อความทั้งหมด (by customer_id)
 router.get('/', auth, async (req, res) => {
   try {
     const grouped = await Message.findAllGrouped();

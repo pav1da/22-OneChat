@@ -13,7 +13,8 @@ const client = new line.Client(config);
 
 // รับข้อมูลจาก Route แล้วแยกกระจายงาน
 exports.handleWebhook = (req, res) => {
-  Promise.all(req.body.events.map(handleEvent))
+  const io = req.app.get("io");
+  Promise.all(req.body.events.map((event) => handleEvent(event, io)))
     .then(() => res.status(200).send("OK"))
     .catch((err) => {
       console.error(err);
@@ -21,8 +22,7 @@ exports.handleWebhook = (req, res) => {
     });
 };
 
-// แกะกล่องข้อมูล และบันทึกลง Database
-async function handleEvent(event) {
+async function handleEvent(event, io) {
   if (!event.source || !event.source.userId) return null;
 
   const userId = event.source.userId;
@@ -38,6 +38,7 @@ async function handleEvent(event) {
       VALUES ('line', ?, ?, ?) 
       ON DUPLICATE KEY UPDATE display_name = ?, picture_url = ?
     `;
+
     await db.query(userSql, [
       userId,
       displayName,
@@ -59,9 +60,20 @@ async function handleEvent(event) {
       if (event.message.type === "text") {
         const text = event.message.text;
         const msgSql =
-          "INSERT INTO chat_messages (customer_id, message_type, message_text) VALUES (?, 'text', ?)";
-        await db.query(msgSql, [customerId, text]);
+          "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', 'text', ?)";
+        const [result] = await db.query(msgSql, [customerId, text]);
         console.log(`บันทึกข้อความ: ${text}`);
+
+        // ส่ง real-time ไป Frontend
+        if (io) {
+          io.emit("new-message", {
+            id: result.insertId,
+            customer_id: customerId,
+            sender: "customer",
+            text: text,
+            image: null,
+          });
+        }
       }
 
       // Image (รูปภาพ)
@@ -76,7 +88,6 @@ async function handleEvent(event) {
         const buffer = Buffer.concat(chunks);
 
         const filename = `${messageId}.jpg`;
-        // เปลี่ยนให้บันทึกลงไปในโฟลเดอร์ chat-images
         const filepath = path.join(
           __dirname,
           "../uploads/chat-images",
@@ -87,8 +98,18 @@ async function handleEvent(event) {
         console.log(`บันทึกรูปภาพสำเร็จ: ${filename}`);
 
         const msgSql =
-          "INSERT INTO chat_messages (customer_id, message_type, message_text) VALUES (?, 'image', ?)";
-        await db.query(msgSql, [customerId, filename]);
+          "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', 'image', ?)";
+        const [result] = await db.query(msgSql, [customerId, filename]);
+
+        if (io) {
+          io.emit("new-message", {
+            id: result.insertId,
+            customer_id: customerId,
+            sender: "customer",
+            text: null,
+            image: `/uploads/chat-images/${filename}`,
+          });
+        }
       }
 
       // Sticker (สติกเกอร์)
@@ -97,9 +118,19 @@ async function handleEvent(event) {
         const stickerUrl = `https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png`;
 
         const msgSql =
-          "INSERT INTO chat_messages (customer_id, message_type, message_text) VALUES (?, 'sticker', ?)";
-        await db.query(msgSql, [customerId, stickerUrl]);
+          "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', 'sticker', ?)";
+        const [result] = await db.query(msgSql, [customerId, stickerUrl]);
         console.log(`บันทึกสติกเกอร์สำเร็จ!`);
+
+        if (io) {
+          io.emit("new-message", {
+            id: result.insertId,
+            customer_id: customerId,
+            sender: "customer",
+            text: null,
+            image: stickerUrl,
+          });
+        }
       }
     }
   } catch (err) {

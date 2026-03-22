@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { io } from "socket.io-client";
 
 // สถานะของแชทลูกค้า
 const STATUS = {
@@ -79,6 +80,30 @@ export const ChatProvider = ({ children }) => {
     };
 
     fetchData();
+  }, []);
+
+  // ---------- Socket.IO: รับข้อความ real-time ----------
+  useEffect(() => {
+    const socket = io();
+
+    socket.on("new-message", (msg) => {
+      const cid = msg.customer_id;
+
+      // เพิ่มข้อความเข้า state
+      setMessages((prev) => ({
+        ...prev,
+        [cid]: [...(prev[cid] || []), msg],
+      }));
+
+      // อัปเดต last message ของลูกค้า
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === cid ? { ...c, last: msg.text || "(รูปภาพ)" } : c
+        )
+      );
+    });
+
+    return () => socket.disconnect();
   }, []);
 
   // ---------- ส่งข้อความ ----------

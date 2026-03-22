@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Modal, Container, Form, Row, Col, Card, Dropdown } from "react-bootstrap";
-import { fetchCustomer } from "../../data/customer";
 import { io } from "socket.io-client";
 import "./notes.css";
 

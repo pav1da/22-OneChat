@@ -9,39 +9,48 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
+// ===== LINE Config =====
+const config = {
+  channelAccessToken: process.env.Channel_ID,
+  channelSecret: process.env.channelSecret,
+};
+
 // นำเข้า Controller
 const lineController = require("./controllers/lineController");
 
 // นำเข้า Routers
 const usersRouter = require("./routers/usersRouter");
-const logsRouter = require('./routers/logsRouter');
-const notificationRouter = require('./routers/notificationRouter');
-const customersRouter = require('./routers/customersRouter');
-const messagesRouter = require('./routers/messagesRouter');
-const notesRouter = require('./routers/notesRouter');
-const notificationSettingsRouter = require('./routers/notificationSettingsRouter');
-const templatesRouter = require('./routers/templatesRouter');
+const logsRouter = require("./routers/logsRouter");
+const notificationRouter = require("./routers/notificationRouter");
+const customersRouter = require("./routers/customersRouter");
+const messagesRouter = require("./routers/messagesRouter");
+const notesRouter = require("./routers/notesRouter");
+const notificationSettingsRouter = require("./routers/notificationSettingsRouter");
+const templatesRouter = require("./routers/templatesRouter");
 
 const app = express();
 const server = http.createServer(app);
 
 // ===== Socket.IO =====
 const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-    },
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
 });
 
 // แชร์ io instance ให้ routers ใช้ได้
 app.set("io", io);
 
 io.on("connection", (socket) => {
-    console.log(`🔌 Client connected: ${socket.id}`);
-    socket.on("disconnect", () => {
-        console.log(`❌ Client disconnected: ${socket.id}`);
-    });
+  console.log(`🔌 Client connected: ${socket.id}`);
+  socket.on("disconnect", () => {
+    console.log(`❌ Client disconnected: ${socket.id}`);
+  });
 });
+
+// ===== LINE Webhook =====
+app.post("/webhook", line.middleware(config), lineController.handleWebhook);
 
 // ===== Middleware =====
 app.use(cors());
@@ -56,34 +65,25 @@ const uploadDir = path.join(__dirname, "uploads");
 const chatImagesDir = path.join(__dirname, "uploads", "chat-images");
 
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
+  fs.mkdirSync(uploadDir);
 }
 if (!fs.existsSync(chatImagesDir)) {
-    fs.mkdirSync(chatImagesDir);
+  fs.mkdirSync(chatImagesDir);
 }
 
-// ===== LINE Config =====
-const config = {
-    channelAccessToken: process.env.Channel_ID,
-    channelSecret: process.env.channelSecret,
-};
-
 // ===== Routes =====
-// API Routes
 app.use("/api/users", usersRouter);
 
-app.use('/api/logs', logsRouter);
+app.use("/api/logs", logsRouter);
+app.use("/api/notification-settings", notificationSettingsRouter);
 
-app.use('/api/notification-settings', notificationSettingsRouter);
-app.use('/api/customers', customersRouter);
-app.use('/api/messages', messagesRouter);
-app.use('/api/notes', notesRouter);
-app.use('/api/templates', templatesRouter);
+app.use("/api/customers", customersRouter);
+app.use("/api/messages", messagesRouter);
 
-
-// Route สำหรับรับ Webhook จาก LINE
-app.post("/webhook", line.middleware(config), lineController.handleWebhook);
+app.use("/api/notes", notesRouter);
+app.use("/api/templates", templatesRouter);
 
 // เปิดเซิร์ฟเวอร์ (ใช้ server.listen แทน app.listen เพื่อให้ Socket.IO ทำงาน)
-server.listen(3000, () => console.log("Server is running on port 3000 (with Socket.IO)"));
-
+server.listen(3000, () =>
+  console.log("Server is running on port 3000 (with Socket.IO)"),
+);
