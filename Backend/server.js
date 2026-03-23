@@ -6,6 +6,7 @@ const line = require("@line/bot-sdk");
 const path = require("path");
 const fs = require("fs");
 const dotenv = require("dotenv");
+const setupSwagger = require("./config/swagger");
 
 dotenv.config();
 
@@ -71,6 +72,9 @@ if (!fs.existsSync(uploadDir)) {
 if (!fs.existsSync(chatImagesDir)) {
   fs.mkdirSync(chatImagesDir);
 }
+
+// ===== Swagger =====
+setupSwagger(app);
 
 // ===== Routes =====
 app.use("/api/users", usersRouter);
