@@ -52,7 +52,10 @@ io.on("connection", (socket) => {
 });
 
 // ===== LINE Webhook =====
-app.post("/webhook", line.middleware(config), lineController.handleWebhook);
+app.post("/webhook", (req, res, next) => {
+  console.log("🔥 [RADAR] มีข้อมูลวิ่งเข้ามาที่ Webhook แล้ว!");
+  next();
+}, line.middleware(config), lineController.handleWebhook);
 
 // ===== Middleware =====
 app.use(cors());
