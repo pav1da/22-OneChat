@@ -10,9 +10,8 @@ const setupSwagger = require("./config/swagger.js");
 
 dotenv.config();
 
-// ===== LINE Config =====
-const config = {
-  channelAccessToken: process.env.Channel_ID,
+// ===== LINE Webhook Middleware Config =====
+const lineMiddlewareConfig = {
   channelSecret: process.env.channelSecret,
 };
 
@@ -55,7 +54,7 @@ io.on("connection", (socket) => {
 app.post("/webhook", (req, res, next) => {
   console.log("🔥 [RADAR] มีข้อมูลวิ่งเข้ามาที่ Webhook แล้ว!");
   next();
-}, line.middleware(config), lineController.handleWebhook);
+}, line.middleware(lineMiddlewareConfig), lineController.handleWebhook);
 
 // ===== Middleware =====
 app.use(cors());

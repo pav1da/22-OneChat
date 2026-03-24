@@ -2,14 +2,21 @@ const line = require("@line/bot-sdk");
 const fs = require("fs");
 const path = require("path");
 const db = require("../config/db.js");
+const Log = require("../models/log.js");
 
-const config = {
-  channelAccessToken: process.env.Channel_ID,
-  channelSecret: process.env.channelSecret,
+const channelAccessToken = process.env.Channel_ID;
+const channelSecret = process.env.channelSecret;
+
+// สร้าง Client ของ LINE (v10 API)
+const client = new line.messagingApi.MessagingApiClient({ channelAccessToken });
+const blobClient = new line.messagingApi.MessagingApiBlobClient({ channelAccessToken });
+
+// Helper: สร้างวันที่เวลาแบบ MySQL format
+const getLocalDatetime = () => {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
-
-// สร้าง Client ของ LINE
-const client = new line.Client(config);
 
 // รับข้อมูลจาก Route แล้วแยกกระจายงาน
 exports.handleWebhook = (req, res) => {
@@ -34,6 +41,13 @@ async function handleEvent(event, io) {
     const displayName = profile.displayName;
     const pictureUrl = profile.pictureUrl || "";
 
+    // ตรวจสอบว่าลูกค้าเคยมีอยู่แล้วหรือยัง
+    const [existingRows] = await db.query(
+      "SELECT id FROM customers WHERE platform = 'line' AND platform_id = ?",
+      [userId],
+    );
+    const isNewCustomer = existingRows.length === 0;
+
     const userSql = `
       INSERT INTO customers (platform, platform_id, display_name, picture_url) 
       VALUES ('line', ?, ?, ?) 
@@ -55,6 +69,17 @@ async function handleEvent(event, io) {
     );
     const customerId = rows[0].id;
 
+    // ถ้าเป็นลูกค้าใหม่ ส่ง event ไป Frontend เพื่ออัปเดต sidebar แบบ real-time
+    if (isNewCustomer && io) {
+      io.emit("new-customer", {
+        id: customerId,
+        display_name: displayName,
+        picture_url: pictureUrl,
+        platform: "line",
+        platform_id: userId,
+      });
+    }
+
     // ตรวจสอบและบันทึกข้อความลงตาราง chat_messages
     if (event.type === "message") {
       // Text (ข้อความ)
@@ -64,6 +89,23 @@ async function handleEvent(event, io) {
           "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', 'text', ?)";
         const [result] = await db.query(msgSql, [customerId, text]);
         console.log(`บันทึกข้อความ: ${text}`);
+
+        // บันทึก Log
+        try {
+          const logData = {
+            user: displayName,
+            avatar: pictureUrl || null,
+            action: "ส่งข้อความเข้ามา",
+            target: "LINE",
+            details: text.length > 50 ? text.substring(0, 50) + "..." : text,
+          };
+          const logResult = await Log.create(logData);
+          if (io) {
+            io.emit("new-log", { ...logData, log_id: logResult.insertId, created_at: getLocalDatetime() });
+          }
+        } catch (logErr) {
+          console.error("Chat log error:", logErr.message);
+        }
 
         // ส่ง real-time ไป Frontend
         if (io) {
@@ -80,7 +122,7 @@ async function handleEvent(event, io) {
       // Image (รูปภาพ)
       else if (event.message.type === "image") {
         const messageId = event.message.id;
-        const stream = await client.getMessageContent(messageId);
+        const stream = await blobClient.getMessageContent(messageId);
         const chunks = [];
 
         for await (const chunk of stream) {
@@ -97,6 +139,23 @@ async function handleEvent(event, io) {
 
         fs.writeFileSync(filepath, buffer);
         console.log(`บันทึกรูปภาพสำเร็จ: ${filename}`);
+
+        // บันทึก Log
+        try {
+          const logData = {
+            user: displayName,
+            avatar: pictureUrl || null,
+            action: "ส่งรูปภาพเข้ามา",
+            target: "LINE",
+            details: filename,
+          };
+          const logResult = await Log.create(logData);
+          if (io) {
+            io.emit("new-log", { ...logData, log_id: logResult.insertId, created_at: getLocalDatetime() });
+          }
+        } catch (logErr) {
+          console.error("Chat log error:", logErr.message);
+        }
 
         const msgSql =
           "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', 'image', ?)";
@@ -124,11 +183,29 @@ async function handleEvent(event, io) {
         const [result] = await db.query(msgSql, [customerId, stickerUrl]);
         console.log(`บันทึกสติกเกอร์สำเร็จ!`);
 
+        // บันทึก Log
+        try {
+          const logData = {
+            user: displayName,
+            avatar: pictureUrl || null,
+            action: "ส่งสติกเกอร์เข้ามา",
+            target: "LINE",
+            details: `Sticker ID: ${stickerId}`,
+          };
+          const logResult = await Log.create(logData);
+          if (io) {
+            io.emit("new-log", { ...logData, log_id: logResult.insertId, created_at: getLocalDatetime() });
+          }
+        } catch (logErr) {
+          console.error("Chat log error:", logErr.message);
+        }
+
         if (io) {
           io.emit("new-message", {
             id: result.insertId,
             customer_id: customerId,
             sender: "customer",
+            message_type: "sticker",
             text: null,
             image: stickerUrl,
           });
@@ -139,3 +216,6 @@ async function handleEvent(event, io) {
     console.error("เกิดข้อผิดพลาด:", err);
   }
 }
+
+// Export LINE client เพื่อให้ module อื่นใช้ส่งข้อความกลับไปยัง LINE ได้
+exports.lineClient = client;
