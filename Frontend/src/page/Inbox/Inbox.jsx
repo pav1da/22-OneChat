@@ -323,10 +323,10 @@ const Inbox = ({ currentUser }) => {
                 <button type="button" className="icon-btn" aria-label="mic">
                   <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
-                {/* <button type="button" className="icon-btn" aria-label="image" onClick={() => fileInputRef.current?.click()}>
+               <button type="button" className="icon-btn" aria-label="image" onClick={() => fileInputRef.current?.click()}>
                   <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
-                <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleUploadImage} /> */}
+                <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleUploadImage} />
                 <button type="submit" className="icon-btn send-btn" aria-label="send">
                   <i className="bi bi-send-fill fs-5" style={{ lineHeight: 1 }}></i>
                 </button>

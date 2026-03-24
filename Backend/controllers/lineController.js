@@ -78,7 +78,6 @@ async function handleEvent(event, io) {
       }
 
       // Image (รูปภาพ)
-      /*
       else if (event.message.type === "image") {
         const messageId = event.message.id;
         const stream = await client.getMessageContent(messageId);
@@ -113,7 +112,7 @@ async function handleEvent(event, io) {
           });
         }
       }
-      */
+     
 
       // Sticker (สติกเกอร์)
       else if (event.message.type === "sticker") {
