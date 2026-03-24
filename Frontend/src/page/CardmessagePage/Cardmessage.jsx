@@ -28,14 +28,17 @@ const Cardmessage = () => {
         const backendItems = resData.data.map((item) => {
           let content = {};
           try {
-            content = typeof item.content === 'string' ? JSON.parse(item.content) : item.content;
-          } catch(e){}
+            content =
+              typeof item.content === "string"
+                ? JSON.parse(item.content)
+                : item.content;
+          } catch (e) {}
           return {
             id: item.id,
             type: item.type,
             title: item.name,
             created: new Date(item.created_at).toLocaleString(),
-            image: content?.image || "",
+            images: content?.images || [],
             message: content?.message || "",
           };
         });
@@ -51,9 +54,10 @@ const Cardmessage = () => {
   }, []);
   // Modal สร้างเทมเพลตใหม่
   const [newItem, setNewItem] = useState({
-    type: "รูปภาพ",
+    type: "ข้อความ",
     title: "",
     image: "",
+    images: [],
     message: "",
   });
 
@@ -77,8 +81,12 @@ const Cardmessage = () => {
     const payload = {
       name: newItem.title,
       type: newItem.type,
-      content: { image: newItem.image, message: newItem.message },
-      created_by: 1
+      content: {
+        image: newItem.image,
+        message: newItem.message,
+        images: newItem.images,
+      },
+      created_by: 1,
     };
 
     try {
@@ -86,18 +94,24 @@ const Cardmessage = () => {
         await fetch(`http://localhost:3000/api/templates/${editingItem.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
       } else {
         await fetch("http://localhost:3000/api/templates", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
       }
       setShow(false);
       setEditingItem(null);
-      setNewItem({ type: "รูปภาพ", title: "", image: "", message: "" });
+      setNewItem({
+        type: "ข้อความ",
+        title: "",
+        image: "",
+        images: [],
+        message: "",
+      });
       fetchItems();
     } catch (error) {
       console.error("Error saving template:", error);
@@ -163,25 +177,35 @@ const Cardmessage = () => {
           <Row key={item.id} className="card-table-row">
             {/* ID */}
             <Col className="col-id">{item.id}</Col>
-
             {/* รูป/ข้อความ */}
             <Col className="col-item">
-              {item.type === "รูปภาพ" && item.image ? (
-                <img src={item.image} alt={item.title} className="item-image" />
+              {item.type === "รูปภาพ" && item.images?.length > 0 ? (
+                <img
+                  src={item.images[0]}
+                  alt="preview"
+                  className="item-image"
+                />
               ) : (
-                <span>{item.message}</span>
+                <span
+                  style={{
+                    display: "inline-block",
+                    maxWidth: "120px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    fontWeight: 500,
+                  }}
+                >
+                  {item.title}
+                </span>
               )}
             </Col>
-
             {/* ชื่อไอเทม */}
             <Col>{item.title}</Col>
-
             {/* วันสร้าง */}
             <Col className="col-created">{item.created}</Col>
-
             {/* ประเภท */}
             <Col className="col-type">{item.type}</Col>
-
             {/* จุดสามจุด + Dropdown */}
             <Col style={{ width: "40px", textAlign: "center" }}>
               <Dropdown>
@@ -190,23 +214,22 @@ const Cardmessage = () => {
                   id={`dropdown-${item.id}`}
                   className="p-0 m-0 item-options"
                 >
-                  <img
-                    src="/src/assets/Icon/icon-dot-h.png"
-                    alt="options"
-                    style={{ width: "20px", height: "20px", cursor: "pointer" }}
-                  />
+                  <i className="bi bi-three-dots-vertical"></i>
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
                   <Dropdown.Item
                     onClick={async () => {
-                      if(window.confirm("คุณต้องการลบเทมเพลตนี้ใช่หรือไม่?")) {
-                         try {
-                           await fetch(`http://localhost:3000/api/templates/${item.id}`, { method: "DELETE" });
-                           fetchItems();
-                         } catch (error) {
-                           console.error("Error deleting template:", error);
-                         }
+                      if (window.confirm("คุณต้องการลบเทมเพลตนี้ใช่หรือไม่?")) {
+                        try {
+                          await fetch(
+                            `http://localhost:3000/api/templates/${item.id}`,
+                            { method: "DELETE" },
+                          );
+                          fetchItems();
+                        } catch (error) {
+                          console.error("Error deleting template:", error);
+                        }
                       }
                     }}
                   >
@@ -259,30 +282,93 @@ const Cardmessage = () => {
                   setNewItem({ ...newItem, type: e.target.value })
                 }
               >
-                <option value="รูปภาพ">รูปภาพ</option>
                 <option value="ข้อความ">ข้อความ</option>
+                <option value="รูปภาพ">รูปภาพ</option>
               </Form.Select>
             </Form.Group>
 
-            {/* ถ้าเป็นรูปภาพ → ให้ผู้ใช้อัพโหลดรูป */}
+            {/* ถ้าเป็นรูปภาพ → ให้ผู้ใช้อัพโหลดรูปรวมทั้งหมด 10 รูป*/}
             {newItem.type === "รูปภาพ" && (
               <Form.Group className="mb-3">
-                <Form.Label>เลือกรูปภาพ</Form.Label>
-                <Form.Control
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
+                <Form.Label>
+                  เลือกรูปภาพ (รวมสูงสุด 10 ภาพ -
+                  เลือกทีละรูปหรือทีละหลายรูปได้)
+                </Form.Label>
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={newItem.images?.length >= 10}
+                    onChange={(e) => {
+                      const remain = 10 - (newItem.images?.length || 0);
+                      const files = Array.from(e.target.files).slice(0, remain);
+                      if (!files.length) return;
 
-                    const reader = new FileReader();
-                    // เก็บรูปไว้ใน state
-                    reader.onloadend = () => {
-                      setNewItem({ ...newItem, image: reader.result });
-                    };
-                    reader.readAsDataURL(file);
-                  }}
-                />
+                      const imagePromises = files.map((file) => {
+                        return new Promise((resolve) => {
+                          const reader = new FileReader();
+                          reader.onloadend = () => resolve(reader.result);
+                          reader.readAsDataURL(file);
+                        });
+                      });
+                      Promise.all(imagePromises).then((results) => {
+                        setNewItem((prev) => ({
+                          ...prev,
+                          images: [...(prev.images || []), ...results],
+                        }));
+                      });
+
+                      // Clear file input so same file can be selected again if needed
+                      e.target.value = null;
+                    }}
+                  />
+                  <small className="text-muted text-nowrap">
+                    {newItem.images?.length || 0}/10
+                  </small>
+                </div>
+                {newItem.images && newItem.images.length > 0 && (
+                  <div className="mt-2 d-flex flex-wrap gap-2 p-2 border rounded bg-light">
+                    {newItem.images.map((img, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          position: "relative",
+                          display: "inline-block",
+                        }}
+                      >
+                        <img
+                          src={img}
+                          alt={`preview-${idx}`}
+                          style={{
+                            width: "65px",
+                            height: "65px",
+                            objectFit: "cover",
+                            borderRadius: "8px",
+                            border: "1px solid #ddd",
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn-close btn-sm bg-white rounded-circle shadow-sm"
+                          style={{
+                            position: "absolute",
+                            top: -5,
+                            right: -5,
+                            padding: "4px",
+                            fontSize: "10px",
+                          }}
+                          onClick={() => {
+                            setNewItem((prev) => ({
+                              ...prev,
+                              images: prev.images.filter((_, i) => i !== idx),
+                            }));
+                          }}
+                        ></button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </Form.Group>
             )}
 

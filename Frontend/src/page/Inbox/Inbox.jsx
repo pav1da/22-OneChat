@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Modal, Button, Card } from "react-bootstrap";
 import { useChat } from "../../context/ChatContext";
 import ChatList from "./chatList/ChatList";
 import "./inbox.css";
@@ -11,12 +12,12 @@ const Inbox = ({ currentUser }) => {
   const endRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Shared context
   const {
     messages,
     customers: customer,
     sendMessage,
     sendImageMessage,
+    sendTemplateMessage,
     updateCustomerStatus,
     updateCustomerName,
     STATUS,
@@ -33,6 +34,10 @@ const Inbox = ({ currentUser }) => {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState("");
+
+  // Template Modal State
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [templates, setTemplates] = useState([]);
 
   // ---------- Derived state ----------
   const selectedCustomer = customer.find((c) => c.id === selectedChatId);
@@ -107,8 +112,33 @@ const Inbox = ({ currentUser }) => {
   // ---------- Helper: get auth headers ----------
   const getHeaders = () => ({
     "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
+    Authorization: `Bearer ${sessionStorage.getItem("token") || localStorage.getItem("token")}`,
   });
+
+  // ---------- Fetch Templates ----------
+  useEffect(() => {
+    if (showTemplateModal) {
+      const fetchTemplates = async () => {
+        try {
+          const res = await fetch("/api/templates", { headers: getHeaders() });
+          if (res.ok) {
+            const data = await res.json();
+            setTemplates(data.data || []);
+          }
+        } catch (err) {
+          console.error("Fetch templates error:", err);
+        }
+      };
+      fetchTemplates();
+    }
+  }, [showTemplateModal]);
+
+  const handleSendTemplate = (tmpl) => {
+    if (!selectedChatId) return;
+    sendTemplateMessage(selectedChatId, tmpl);
+    setShowTemplateModal(false);
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   // ---------- Load notes from API ----------
   useEffect(() => {
@@ -326,6 +356,9 @@ const Inbox = ({ currentUser }) => {
                <button type="button" className="icon-btn" aria-label="image" onClick={() => fileInputRef.current?.click()}>
                   <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
+                <button type="button" className="icon-btn" aria-label="template" onClick={() => setShowTemplateModal(true)}>
+                  <i className="bi bi-ui-checks-grid fs-4" style={{ lineHeight: 1 }}></i>
+                </button>
                 <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleUploadImage} />
                 <button type="submit" className="icon-btn send-btn" aria-label="send">
                   <i className="bi bi-send-fill fs-5" style={{ lineHeight: 1 }}></i>
@@ -447,9 +480,11 @@ const Inbox = ({ currentUser }) => {
                             <button type="button" className="icon-btn" onClick={() => handleEditNote(note)}>
                               <i className="bi bi-pencil" style={{ fontSize: "14px" }}></i>
                             </button>
-                            <button type="button" className="icon-btn" onClick={() => handleDeleteNote(note.id)}>
-                              <i className="bi bi-trash" style={{ fontSize: "14px" }}></i>
-                            </button>
+                            {(currentUser?.role === "admin" || currentUser?.role === "manager") && (
+                              <button type="button" className="icon-btn" onClick={() => handleDeleteNote(note.id)}>
+                                <i className="bi bi-trash" style={{ fontSize: "14px", color: "red" }}></i>
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -465,6 +500,33 @@ const Inbox = ({ currentUser }) => {
           </div>
         )}
       </div>
+
+      {/* ========== Template Selection Modal ========== */}
+      <Modal show={showTemplateModal} onHide={() => setShowTemplateModal(false)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>เลือก Template</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-0">
+          <div className="list-group list-group-flush" style={{ maxHeight: "60vh", overflowY: "auto" }}>
+            {templates.length === 0 ? (
+              <div className="p-4 text-center text-muted">ไม่พบ Template</div>
+            ) : (
+              templates.map((tmpl) => (
+                <button
+                  key={tmpl.id}
+                  className="list-group-item list-group-item-action d-flex flex-column gap-1 py-3"
+                  onClick={() => handleSendTemplate(tmpl)}
+                >
+                  <div className="d-flex justify-content-between align-items-center w-100">
+                    <h6 className="mb-0 fw-bold">{tmpl.name}</h6>
+                    <span className="badge bg-secondary text-capitalize">{tmpl.type}</span>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

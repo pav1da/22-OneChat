@@ -125,3 +125,47 @@ exports.deleteTemplate = async (req, res) => {
         res.status(500).json({ status: 'error', message: 'เกิดข้อผิดพลาดในการลบ Template' });
     }
 };
+
+// ดึง รูปภาพของ Template (สำหรับส่ง LINE หรือแสดงผลภายนอก)
+exports.getTemplateImage = async (req, res) => {
+    try {
+        const { id, index } = req.params;
+        const template = await Template.findById(id);
+
+        if (!template) {
+            return res.status(404).json({ status: 'error', message: 'ไม่พบ Template' });
+        }
+
+        let content = typeof template.content === 'string' ? JSON.parse(template.content) : template.content;
+        let base64String = null;
+
+        if (index === 'single') {
+            base64String = content.image;
+        } else {
+            const idx = parseInt(index, 10);
+            if (content.images && content.images[idx]) {
+                base64String = content.images[idx];
+            }
+        }
+
+        if (!base64String) {
+            return res.status(404).json({ status: 'error', message: 'ไม่พบรูปภาพ' });
+        }
+
+        const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            return res.status(400).json({ status: 'error', message: 'รูปแบบรูปภาพไม่ถูกต้อง' });
+        }
+
+        const mimeType = matches[1];
+        const dataBuffer = Buffer.from(matches[2], 'base64');
+        
+        res.setHeader('Content-Type', mimeType);
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+        res.send(dataBuffer);
+    } catch (error) {
+        console.error('Error in getTemplateImage:', error);
+        res.status(500).json({ status: 'error', message: 'เกิดข้อผิดพลาดในการดึงรูปภาพ' });
+    }
+};
+

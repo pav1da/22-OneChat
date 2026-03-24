@@ -10,6 +10,18 @@ const Note = {
     return rows;
   },
 
+  // ดึงโน้ตทั้งหมด (ใช้สำหรับหน้ารวม Notes)
+  findAll: async () => {
+    // ใช้ LEFT JOIN เพื่อเอาชื่อลูกค้ามาแสดงด้วย (ถ้าตาราง customers มีคอลัมน์ display_name)
+    const [rows] = await pool.query(
+      `SELECT notes.id, notes.customer_id, notes.text, notes.author, notes.created_at, customers.display_name AS customerName 
+       FROM notes 
+       LEFT JOIN customers ON notes.customer_id = customers.id 
+       ORDER BY notes.created_at DESC`
+    );
+    return rows;
+  },
+
   // สร้างโน้ตใหม่
   create: async ({ customer_id, text, author }) => {
     const [result] = await pool.query(

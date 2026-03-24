@@ -116,7 +116,8 @@ const Template = {
 
     // ค้นหา Template ทั้งหมด
     findAll: async () => {
-        const [rows] = await pool.query('SELECT * FROM templates ORDER BY created_at DESC');
+        const [rows] = await pool.query('SELECT * FROM templates');
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         return rows;
     },
 
@@ -128,7 +129,8 @@ const Template = {
 
     // ค้นหา Template ตามประเภท
     findByType: async (type) => {
-        const [rows] = await pool.query('SELECT * FROM templates WHERE type = ? ORDER BY created_at DESC', [type]);
+        const [rows] = await pool.query('SELECT * FROM templates WHERE type = ?', [type]);
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         return rows;
     },
 

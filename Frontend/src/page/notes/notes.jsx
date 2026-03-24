@@ -23,7 +23,13 @@ function Dashboard() {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/notes");
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const res = await fetch("/api/notes", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          }
+        });
         const data = await res.json();
         if (data.status === "success") {
           setNotes(data.data);
@@ -75,19 +81,26 @@ function Dashboard() {
   const handleSaveNote = async () => {
     if (newNote.user && newNote.content) {
       try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const headers = { 
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        };
+
         if (editingId) {
           // โหมดแก้ไข
-          await fetch(`http://localhost:3000/api/notes/${editingId}`, {
+          await fetch(`/api/notes/${editingId}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user: newNote.user, content: newNote.content, admin_name: "Admin" })
+            headers,
+            body: JSON.stringify({ text: newNote.content, author: "Admin" })
           });
         } else {
-          // สร้างใหม่
-          await fetch("http://localhost:3000/api/notes", {
+          // สร้างใหม่ (ถ้าเป็นหน้าหลัก เราต้องการให้ user พิมพ์ชื่อลูกค้า แต่โครงสร้างใหม่ต้องใช้ customer_id
+          // เพื่อความง่ายหากใน note นี้ ไม่ได้ผูก customer_id ก็สามารถส่ง null หรือ mock ไปก่อน หรือให้ค้นหา id)
+          await fetch("/api/notes", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user: newNote.user, content: newNote.content, admin_name: "Admin", created_by: 1 })
+            headers,
+            body: JSON.stringify({ customer_id: newNote.user, text: newNote.content, author: "Admin" })
           });
         }
         handleClose();
@@ -101,7 +114,11 @@ function Dashboard() {
   const handleDeleteNote = async (id) => {
     if (window.confirm("ยืนยันการลบโน้ต?")) {
       try {
-        await fetch(`http://localhost:3000/api/notes/${id}`, { method: "DELETE" });
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        await fetch(`/api/notes/${id}`, { 
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` }
+        });
       } catch (error) {
         console.error("Error deleting note:", error);
       }
@@ -145,7 +162,7 @@ function Dashboard() {
                     overflowWrap: "break-word",
                   }}
                 >
-                  {note.content}
+                  {note.text}
                 </Card.Text>
               </div>
 
@@ -154,7 +171,7 @@ function Dashboard() {
               {/* รายชื่อผู้เขียน + เมนูแก้ไข/ลบ */}
               <div className="d-flex justify-content-between align-items-center pt-3">
                 <span className="fs-6" style={{ fontSize: "0.95rem" }}>
-                  {note.user}
+                  {note.customerName || `Customer #${note.customer_id}`}
                 </span>
 
                 <Dropdown align="end">
