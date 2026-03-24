@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, Modal } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./member.css";
+// นำเข้า useSocket จาก SocketContext เพื่อใช้ตรวจสอบสถานะ online/offline ของ user
+import { useSocket } from "../../context/SocketContext";
 
 const Member = () => {
   // ================== 1. STATE MANAGEMENT ==================
@@ -23,6 +25,11 @@ const Member = () => {
 
   const [activePopupId, setActivePopupId] = useState(null);
 
+  // ===== Socket.IO: ดึงฟังก์ชันเช็คสถานะ online จาก SocketContext =====
+  // isUserOnline(emp_id) จะ return true ถ้า user คนนั้นกำลัง online อยู่
+  // ข้อมูลจะอัปเดตแบบ real-time โดยอัตโนมัติผ่าน Socket.IO events
+  const { isUserOnline } = useSocket();
+
   // ================== 2. INITIALIZATION (FROM API) ==================
   useEffect(() => {
     const fetchUsers = async () => {
@@ -39,7 +46,6 @@ const Member = () => {
             name: u.username || u.name,
             role: u.role || "staff",
             team: u.team || "",
-            status: "กำลังใช้งาน",
             color: "#607D8B",
             email: u.email,
             phone: u.phone,
@@ -184,69 +190,88 @@ const Member = () => {
 
       {/* Member List */}
       <div className="d-flex flex-column pb-5">
-        {displayMembers.map((member) => (
-          <div key={member.id} className="member-row">
-            {/* Name */}
-            <div className="col-name">
-              <img
-                src={member.image || "/img/default.png"}
-                alt={member.name}
-                className="member-avatar"
-              />
-              <span>{member.name}</span>
-            </div>
+        {displayMembers.map((member) => {
+          // ตรวจสอบว่า user คนนี้ online หรือไม่ ผ่าน SocketContext
+          // ค่า online จะเปลี่ยนแบบ real-time เมื่อ server broadcast event
+          const online = isUserOnline(member.id);
+          return (
+            <div key={member.id} className="member-row">
+              {/* ชื่อ + Avatar พร้อมตัวบ่งชี้สถานะ online/offline */}
+              <div className="col-name">
+                {/* avatar-wrapper: ครอบ avatar + จุดสถานะ (position: relative) */}
+                <div className="avatar-wrapper">
+                  <img
+                    src={member.image || "/img/default.png"}
+                    alt={member.name}
+                    // avatar-online = ขอบเขียว, avatar-offline = ขอบเทา
+                    className={`member-avatar ${online ? "avatar-online" : "avatar-offline"}`}
+                  />
+                  {/* จุดสถานะมุมขวาล่างของ avatar */}
+                  {/* dot-online = สีเขียว + กะพริบ (pulse), dot-offline = สีเทา */}
+                  <span className={`avatar-status-dot ${online ? "dot-online" : "dot-offline"}`}></span>
+                </div>
+                <span>{member.name}</span>
+              </div>
 
-            <div className="col-team">{member.team}</div>
+              <div className="col-team">{member.team}</div>
 
-            <div className="col-role">{member.role}</div>
+              <div className="col-role">{member.role}</div>
 
-            <div className="col-status">{member.status}</div>
+              {/* Badge แสดงสถานะ: "ออนไลน์" (พื้นเขียวอ่อน) หรือ "ออฟไลน์" (พื้นเทา) */}
+              <div className="col-status">
+                <span className={`status-badge ${online ? "status-online" : "status-offline"}`}>
+                  {/* จุดเล็กๆ ใน badge: dot-green (เขียว) หรือ dot-gray (เทา) */}
+                  <span className={`status-dot ${online ? "dot-green" : "dot-gray"}`}></span>
+                  {online ? "ออนไลน์" : "ออฟไลน์"}
+                </span>
+              </div>
 
-            {/* Actions */}
-            <div className="col-actions">
-              <Button
-                variant="secondary"
-                className="btn-action"
-                onClick={() => openEditModal(member)}
-              >
-                <i
-                  className="bi bi-pencil-fill"
-                  style={{ fontSize: "0.8rem" }}
-                ></i>
-              </Button>
-
-              {/* Popup */}
-              <div className="position-relative">
+              {/* Actions */}
+              <div className="col-actions">
                 <Button
                   variant="secondary"
                   className="btn-action"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActivePopupId(
-                      activePopupId === `member-${member.id}`
-                        ? null
-                        : `member-${member.id}`,
-                    );
-                  }}
+                  onClick={() => openEditModal(member)}
                 >
-                  <i className="bi bi-three-dots"></i>
+                  <i
+                    className="bi bi-pencil-fill"
+                    style={{ fontSize: "0.8rem" }}
+                  ></i>
                 </Button>
 
-                {activePopupId === `member-${member.id}` && (
-                  <div className="action-popup">
-                    <div
-                      className="action-item"
-                      onClick={() => handleDeleteUser(member.id)}
-                    >
-                      <i className="bi bi-trash me-2"></i>
-                      ลบ
+                {/* Popup */}
+                <div className="position-relative">
+                  <Button
+                    variant="secondary"
+                    className="btn-action"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActivePopupId(
+                        activePopupId === `member-${member.id}`
+                          ? null
+                          : `member-${member.id}`,
+                      );
+                    }}
+                  >
+                    <i className="bi bi-three-dots"></i>
+                  </Button>
+
+                  {activePopupId === `member-${member.id}` && (
+                    <div className="action-popup">
+                      <div
+                        className="action-item"
+                        onClick={() => handleDeleteUser(member.id)}
+                      >
+                        <i className="bi bi-trash me-2"></i>
+                        ลบ
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {displayMembers.length === 0 && (
           <div className="text-center py-5 text-muted">ไม่พบข้อมูลสมาชิก</div>

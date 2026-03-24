@@ -19,6 +19,9 @@ import AllChat from "./page/allchat/Allchat";
 import CardMessage from "./page/CardmessagePage/Cardmessage";
 import { ChatProvider } from "./context/ChatContext";
 import { TeamProvider } from "./context/TeamContext";
+// นำเข้า SocketProvider สำหรับจัดการ Socket.IO connection (ระบบ online/offline)
+// SocketProvider จะครอบ component ทั้งหมดที่ต้องการเข้าถึงสถานะ online
+import { SocketProvider, useSocket } from "./context/SocketContext";
 
 // stylesheets
 import "./App.css";
@@ -75,6 +78,10 @@ function App() {
                 }).catch(() => {});
             }
         } catch {}
+        // ส่ง event "app-logout" ให้ SocketContext รับฟัง
+        // SocketContext จะ disconnect socket ก่อนที่ sessionStorage จะถูกล้าง
+        // ทำให้ Backend รับรู้ว่า user offline ทันที (ไม่ต้องรอ socket timeout)
+        window.dispatchEvent(new Event("app-logout"));
         setCurrentUser(null);
         sessionStorage.removeItem("myAppUser");
         sessionStorage.removeItem("token");
@@ -119,11 +126,15 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                             user={currentUser}
                             allowedRoles={["admin", "manager", "staff"]}
                         >
-                            <TeamProvider currentUser={currentUser}>
-                                <ChatProvider>
-                                    <Layouts onLogout={handleLogout} user={currentUser} />
-                                </ChatProvider>
-                            </TeamProvider>
+                            {/* SocketProvider: สร้าง Socket.IO connection เชื่อมกับ Backend */}
+                            {/* ทุก component ด้านในสามารถใช้ useSocket() เพื่อเช็คสถานะ online ได้ */}
+                            <SocketProvider>
+                                <TeamProvider currentUser={currentUser}>
+                                    <ChatProvider>
+                                        <Layouts onLogout={handleLogout} user={currentUser} />
+                                    </ChatProvider>
+                                </TeamProvider>
+                            </SocketProvider>
                         </ProtectedRoute>
                     }
                 >

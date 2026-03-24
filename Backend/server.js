@@ -7,6 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const dotenv = require("dotenv");
 const setupSwagger = require("./config/swagger.js");
+const pool = require("./config/db.js"); // นำเข้า MySQL connection pool สำหรับอัปเดตสถานะ online/offline
 
 dotenv.config();
 
@@ -43,10 +44,78 @@ const io = new Server(server, {
 // แชร์ io instance ให้ routers ใช้ได้
 app.set("io", io);
 
-io.on("connection", (socket) => {
-  console.log(`🔌 Client connected: ${socket.id}`);
-  socket.on("disconnect", () => {
-    console.log(`❌ Client disconnected: ${socket.id}`);
+// ===== ระบบติดตามสถานะ Online/Offline =====
+// ใช้ Map เก็บ emp_id -> Set ของ socket IDs
+// เหตุผล: user 1 คนอาจเปิดหลาย tab/device พร้อมกัน → ต้องเก็บหลาย socket ID ต่อ user
+// จะถือว่า offline ก็ต่อเมื่อปิด tab/device สุดท้าย (Set ว่าง)
+const onlineUsers = new Map();
+
+// เมื่อมี client เชื่อมต่อ Socket.IO เข้ามา
+io.on("connection", async (socket) => {
+  // ดึง emp_id ที่ frontend ส่งมาผ่าน socket.handshake.auth
+  // (frontend ส่งตอนสร้าง connection: io({ auth: { emp_id: ... } }))
+  const empId = socket.handshake.auth.emp_id;
+  console.log(`🔌 Client connected: ${socket.id}, emp_id: ${empId}`);
+
+  if (empId) {
+    // === ขั้นตอนที่ 1: เก็บ socket ID ของ user ใน Map ===
+    // ถ้า user คนนี้ยังไม่มีใน Map → สร้าง Set ใหม่
+    if (!onlineUsers.has(empId)) {
+      onlineUsers.set(empId, new Set());
+    }
+    // เพิ่ม socket ID ลงใน Set ของ user (รองรับกรณีเปิดหลาย tab)
+    onlineUsers.get(empId).add(socket.id);
+
+    // === ขั้นตอนที่ 2: อัปเดต Database ให้ user เป็น online ===
+    // เขียนลง column is_online ในตาราง EMP ที่อยู่บน Railway MySQL
+    try {
+      await pool.query("UPDATE EMP SET is_online = 1 WHERE emp_id = ?", [empId]);
+    } catch (err) {
+      console.error("Error updating online status:", err.message);
+    }
+
+    // === ขั้นตอนที่ 3: Broadcast สถานะ "online" ให้ทุก client ที่เชื่อมต่ออยู่ ===
+    // ทุก client จะได้รับ event "user-status-changed" และอัปเดต UI ทันที
+    io.emit("user-status-changed", { emp_id: empId, is_online: true });
+  }
+
+  // === ขั้นตอนที่ 4: ส่งรายชื่อ user ที่ online อยู่ทั้งหมดให้ client ที่เพิ่งเชื่อมต่อ ===
+  // เพื่อให้ client ใหม่รู้ว่าตอนนี้ใครออนไลน์อยู่บ้าง (ไม่ต้องรอ event ทีละคน)
+  const currentOnline = Array.from(onlineUsers.keys()).map((id) => ({
+    emp_id: id,
+    is_online: true,
+  }));
+  socket.emit("online-users", currentOnline);
+
+  // === เมื่อ client ตัดการเชื่อมต่อ (ปิดแท็บ, logout, หรือเน็ตหลุด) ===
+  socket.on("disconnect", async () => {
+    console.log(`❌ Client disconnected: ${socket.id}, emp_id: ${empId}`);
+
+    if (empId && onlineUsers.has(empId)) {
+      // ลบ socket ID ที่ disconnect ออกจาก Set ของ user
+      onlineUsers.get(empId).delete(socket.id);
+
+      // ตรวจสอบว่า user ยังมี socket อื่นเหลืออยู่ไหม
+      // (กรณีเปิดหลาย tab → ปิดแค่ tab เดียวยังไม่ถือว่า offline)
+      if (onlineUsers.get(empId).size === 0) {
+        // ไม่มี socket เหลือแล้ว = user offline จริง
+        onlineUsers.delete(empId);
+
+        // อัปเดต Database: ตั้ง is_online = 0 และบันทึกเวลา last_seen
+        // last_seen จะใช้แสดง "ออนไลน์ล่าสุดเมื่อ ..." ในอนาคตได้
+        try {
+          await pool.query(
+            "UPDATE EMP SET is_online = 0, last_seen = NOW() WHERE emp_id = ?",
+            [empId]
+          );
+        } catch (err) {
+          console.error("Error updating offline status:", err.message);
+        }
+
+        // Broadcast สถานะ "offline" ให้ทุก client อัปเดต UI
+        io.emit("user-status-changed", { emp_id: empId, is_online: false });
+      }
+    }
   });
 });
 
