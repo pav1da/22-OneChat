@@ -114,6 +114,112 @@
   height: 56px;
   object-fit: cover;
   border-radius: 50%;
+  border: 3px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+/* =========================================================================
+   ส่วนแสดงสถานะ Online/Offline (เพิ่มใหม่สำหรับ real-time status)
+   - avatar-wrapper: ครอบรูป avatar + จุดสถานะ
+   - avatar-online/offline: ขอบสีเขียว/เทา รอบรูป avatar
+   - avatar-status-dot: จุดกลมเล็กมุมขวาล่างของ avatar
+   - status-badge: ป้ายแสดง "ออนไลน์" / "ออฟไลน์" ในคอลัมน์สถานะ
+   - pulse-green: animation กระพริบสำหรับจุดสีเขียว (online)
+   ========================================================================= */
+
+/* Wrapper ครอบรูป avatar กับจุดสถานะ (ใช้ position: relative เพื่อวางจุดทับ) */
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ขอบสีเขียวรอบ avatar เมื่อ user online */
+.avatar-online {
+  border-color: #22c55e;
+}
+
+/* ขอบสีเทารอบ avatar เมื่อ user offline */
+.avatar-offline {
+  border-color: #d1d5db;
+}
+
+/* จุดกลมเล็กๆ มุมขวาล่างของ avatar (แสดงสถานะ online/offline) */
+/* border สีขาวทำให้จุดดูเด่นชัดบน avatar */
+.avatar-status-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2.5px solid var(--bg-main, #ffffff);
+}
+
+/* จุดสีเขียว = online พร้อม animation กระพริบ */
+.dot-online {
+  background-color: #22c55e;
+  animation: pulse-green 2s infinite;
+}
+
+/* จุดสีเทา = offline (ไม่มี animation) */
+.dot-offline {
+  background-color: #9ca3af;
+}
+
+/* ป้ายแสดงสถานะในคอลัมน์ "สถานะ" (แบบ pill/capsule) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px; /* ทำให้เป็นรูป capsule */
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* ป้ายสีเขียวอ่อน สำหรับ "ออนไลน์" */
+.status-online {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+/* ป้ายสีเทาอ่อน สำหรับ "ออฟไลน์" */
+.status-offline {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+/* จุดเล็กๆ ภายใน badge (ข้างซ้ายของข้อความ) */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* สีเขียว สำหรับจุดใน badge "ออนไลน์" */
+.dot-green {
+  background-color: #22c55e;
+}
+
+/* สีเทา สำหรับจุดใน badge "ออฟไลน์" */
+.dot-gray {
+  background-color: #9ca3af;
+}
+
+/* Animation กระพริบ (pulse) สำหรับจุดสีเขียว online */
+/* สร้างเอฟเฟกต์ "แสงกระจาย" รอบจุด ทำให้ดูมีชีวิตชีวา */
+@keyframes pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); /* เริ่มต้น: แสงเขียวรอบจุด */
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); /* กระจายออก 6px แล้วจางหาย */
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); /* กลับสู่สถานะเริ่มต้น */
+  }
 }
 
 /* =========================================================================
