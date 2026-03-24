@@ -138,7 +138,6 @@ const AllChat = () => {
     [sendMessage],
   );
 
-  // Helper function: สร้าง UserCard (ใช้ร่วมกันทั้ง normal grid และ split layout)
   const renderUserCard = (customer, isActive) => {
     let statusBadge = null;
     if (customer.inprocess === true) {
