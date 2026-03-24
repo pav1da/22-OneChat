@@ -1,9 +1,6 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
-const PORT = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
-
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -14,8 +11,8 @@ const options = {
         },
         servers: [
             {
-                url: BASE_URL,
-                description: process.env.BASE_URL ? 'Production Server (Railway)' : 'Development Server',
+                url: 'http://localhost:3000',
+                description: 'Development Server',
             },
         ],
         components: {
@@ -46,7 +43,7 @@ const setupSwagger = (app) => {
         res.send(swaggerSpec);
     });
 
-    console.log(`📄 Swagger UI: ${BASE_URL}/api-docs`);
+    console.log('📄 Swagger UI: http://localhost:3000/api-docs');
 };
 
 module.exports = setupSwagger;
