@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require('../config/db.js');
 
 const Notification = {
     create: async ({ text, sender_id, receiver_id, type, ref_id, ref_type }) => {

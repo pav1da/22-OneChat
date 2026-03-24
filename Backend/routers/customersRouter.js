@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Customer = require('../models/customer');
-const auth = require('../middleware/auth');
+const Customer = require('../models/customer.js');
+const auth = require('../middleware/auth.js');
 
 // GET /api/customers — ดึงลูกค้าทั้งหมด
 router.get('/', auth, async (req, res) => {

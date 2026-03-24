@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const usersController = require('../controllers/usersController');
-const auth = require('../middleware/auth');
-const authorize = require('../middleware/authorize');
-const upload = require('../middleware/upload');
+const usersController = require('../controllers/usersController.js');
+const auth = require('../middleware/auth.js');
+const authorize = require('../middleware/authorize.js');
+const upload = require('../middleware/upload.js');
 
 // ============================================================
 //  Swagger Component Schemas

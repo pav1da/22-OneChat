@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Message = require('../models/message');
-const auth = require('../middleware/auth');
+const Message = require('../models/message.js');
+const auth = require('../middleware/auth.js');
 
 // GET /api/messages — ดึงข้อความทั้งหมด (by customer_id)
 router.get('/', auth, async (req, res) => {

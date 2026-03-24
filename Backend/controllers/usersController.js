@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
-const Log = require('../models/log');
+const User = require('../models/user.js');
+const Log = require('../models/log.js');
 require('dotenv').config();
 
 // Helper: สร้างวันที่เวลาท้องถิ่นแบบ MySQL format (YYYY-MM-DD HH:mm:ss)

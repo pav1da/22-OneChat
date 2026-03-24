@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const ApiKey = require('../models/apiKey');
-const auth = require('../middleware/auth');
+const ApiKey = require('../models/apiKey.js');
+const auth = require('../middleware/auth.js');
 
 /**
  * @swagger

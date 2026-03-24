@@ -1,5 +1,5 @@
-const Note = require('../models/note');
-const Log = require('../models/log');
+const Note = require('../models/note.js');
+const Log = require('../models/log.js');
 
 // Helper แปลงชื่อผู้ใช้งานที่ทำการ Request
 const getAdminName = (req) => req.user?.username || req.body.admin_name || 'Admin';

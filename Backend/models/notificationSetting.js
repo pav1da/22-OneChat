@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const pool = require('../config/db.js');
 
 // ดึง setting ของ user
 const getByUserId = async (userId) => {

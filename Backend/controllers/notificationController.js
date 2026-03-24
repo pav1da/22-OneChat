@@ -1,4 +1,4 @@
-const NotificationSettings = require('../models/notificationSetting');
+const NotificationSettings = require('../models/notificationSetting.js');
 
 // ดึงการตั้งค่าการแจ้งเตือน
 const getNotification = async (req, res) => {

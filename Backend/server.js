@@ -6,7 +6,7 @@ const line = require("@line/bot-sdk");
 const path = require("path");
 const fs = require("fs");
 const dotenv = require("dotenv");
-const setupSwagger = require("./config/swagger");
+const setupSwagger = require("./config/swagger.js");
 
 dotenv.config();
 
@@ -17,7 +17,7 @@ const config = {
 };
 
 // นำเข้า Controller
-const lineController = require("./controllers/lineController");
+const lineController = require("./controllers/lineController.js");
 
 // นำเข้า Routers
 const usersRouter = require("./routers/usersRouter");

@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const pool = require('../config/db.js');
 
 const Customer = {
   // ดึงลูกค้าทั้งหมด

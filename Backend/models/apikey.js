@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require('../config/db.js');
 const crypto = require('crypto');
 
 // สร้าง API Key แบบ random

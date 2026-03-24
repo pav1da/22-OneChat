@@ -1,5 +1,5 @@
-const Template = require('../models/template');
-const Log = require('../models/log');
+const Template = require('../models/template.js');
+const Log = require('../models/log.js');
 
 // ช่วยแปลง user id ชั่วคราว (หรือจะรับจาก req.user ถ้ามี auth)
 const getUsername = (req) => req.user?.username || req.body.username || 'Admin';

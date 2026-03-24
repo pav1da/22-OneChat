@@ -1,5 +1,5 @@
 // ทดสอบดึงข้อมูลจากตาราง EMP ใน DB onechat
-const pool = require('./config/db');
+const pool = require('./config/db.js');
 
 async function testEMP() {
   try {

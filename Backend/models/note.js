@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const pool = require('../config/db.js');
 
 const Note = {
   // ดึงโน้ตตาม customer_id

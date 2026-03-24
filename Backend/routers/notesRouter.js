@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Note = require('../models/note');
-const auth = require('../middleware/auth');
+const Note = require('../models/note.js');
+const auth = require('../middleware/auth.js');
 
 // GET /api/notes/:customerId — ดึงโน้ตของลูกค้า
 router.get('/:customerId', auth, async (req, res) => {
