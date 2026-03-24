@@ -91,6 +91,10 @@ app.use("/api/templates", templatesRouter);
 app.use("/api/api-keys", apiKeysRouter);
 
 // เปิดเซิร์ฟเวอร์ (ใช้ server.listen แทน app.listen เพื่อให้ Socket.IO ทำงาน)
-server.listen(3000, () =>
-  console.log("Server is running on port 3000 (with Socket.IO)"),
-);
+// ดึง Port จาก Railway ถ้าไม่มีให้ใช้ 3000 (สำหรับรันในเครื่อง)
+const PORT = process.env.PORT || 3000;
+
+// เปิดเซิร์ฟเวอร์
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server is running on port ${PORT} (with Socket.IO)`);
+});
