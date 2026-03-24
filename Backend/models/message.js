@@ -24,11 +24,8 @@ const Message = {
       grouped[cid].push({
         id: row.id,
         sender: row.sender || 'customer',
-        message_type: row.message_type,
         text: row.message_type === 'text' ? row.message_text : null,
-        image: row.message_type === 'image' ? `/uploads/chat-images/${row.message_text}`
-             : row.message_type === 'sticker' ? row.message_text
-             : null,
+        image: row.message_type === 'image' ? row.message_text : null,
         created_at: row.created_at,
       });
     }

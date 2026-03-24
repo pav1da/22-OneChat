@@ -88,7 +88,7 @@ const Log = () => {
     // จัดรูปแบบวันที่ (รับ string จาก MySQL เช่น "2024-03-18 15:30:00")
     const formatDate = (dateStr) => {
         if (!dateStr) return "";
-        // DB เก็บเวลา Bangkok แล้ว (TZ=Asia/Bangkok) แสดงตรงๆ ได้เลย
+        // แทนที่ ' ' ด้วย 'T' เพื่อให้เบราว์เซอร์มองว่าเป็น Local Time ไม่ใช่ UTC
         const localDateStr = dateStr.replace(" ", "T");
         const d = new Date(localDateStr);
         return d.toLocaleDateString("th-TH", {

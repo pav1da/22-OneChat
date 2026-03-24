@@ -107,7 +107,7 @@ const Inbox = ({ currentUser }) => {
   // ---------- Helper: get auth headers ----------
   const getHeaders = () => ({
     "Content-Type": "application/json",
-    Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
   });
 
   // ---------- Load notes from API ----------
@@ -277,27 +277,17 @@ const Inbox = ({ currentUser }) => {
               {msg.sender === "customer" && (
                 <img src={selectedCustomer?.img} alt="Customer" />
               )}
-              {msg.message_type === "sticker" ? (
-                <div className="sticker">
-                  <img
-                    src={msg.image}
-                    alt="sticker"
-                    style={{ width: "120px", height: "120px", objectFit: "contain" }}
-                  />
-                </div>
-              ) : msg.image ? (
-                <div className="chat-image">
+              <div className="texts">
+                {msg.image ? (
                   <img
                     src={msg.image}
                     alt="upload"
-                    style={{ maxWidth: "220px", maxHeight: "300px", borderRadius: "12px", objectFit: "cover" }}
+                    style={{ maxWidth: "220px", borderRadius: "8px" }}
                   />
-                </div>
-              ) : (
-                <div className="texts">
+                ) : (
                   <p className={msg.sender === "own" ? "own" : ""}>{msg.text}</p>
-                </div>
-              )}
+                )}
+              </div>
               {msg.sender === "own" && (
                 <img src={currentUser?.image} alt="Admin" />
               )}

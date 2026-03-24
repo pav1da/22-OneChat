@@ -11,8 +11,9 @@ const pool = require("./config/db.js"); // นำเข้า MySQL connection p
 
 dotenv.config();
 
-// ===== LINE Webhook Middleware Config =====
-const lineMiddlewareConfig = {
+// ===== LINE Config =====
+const config = {
+  channelAccessToken: process.env.Channel_ID,
   channelSecret: process.env.channelSecret,
 };
 
@@ -124,7 +125,7 @@ io.on("connection", async (socket) => {
 app.post("/webhook", (req, res, next) => {
   console.log("🔥 [RADAR] มีข้อมูลวิ่งเข้ามาที่ Webhook แล้ว!");
   next();
-}, line.middleware(lineMiddlewareConfig), lineController.handleWebhook);
+}, line.middleware(config), lineController.handleWebhook);
 
 // ===== Middleware =====
 app.use(cors());

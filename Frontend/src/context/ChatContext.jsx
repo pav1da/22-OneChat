@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { io } from "socket.io-client";
 
 // สถานะของแชทลูกค้า
@@ -9,10 +9,9 @@ const STATUS = {
 };
 
 const ChatContext = createContext(null);
-const socketRef = { current: null };
 
 // Helper: ดึง token จาก localStorage
-const getToken = () => sessionStorage.getItem("token");
+const getToken = () => localStorage.getItem("token");
 
 const getHeaders = () => ({
   "Content-Type": "application/json",
@@ -86,7 +85,6 @@ export const ChatProvider = ({ children }) => {
   // ---------- Socket.IO: รับข้อความ real-time ----------
   useEffect(() => {
     const socket = io();
-    socketRef.current = socket;
 
     socket.on("new-message", (msg) => {
       const cid = msg.customer_id;
@@ -100,31 +98,9 @@ export const ChatProvider = ({ children }) => {
       // อัปเดต last message ของลูกค้า
       setCustomers((prev) =>
         prev.map((c) =>
-          c.id === cid ? { ...c, last: msg.text || (msg.image && msg.image.includes("stickershop") ? "(สติกเกอร์)" : "(รูปภาพ)") } : c
+          c.id === cid ? { ...c, last: msg.text || "(รูปภาพ)" } : c
         )
       );
-    });
-
-    // รับลูกค้าใหม่แบบ real-time (ไม่ต้องรีเฟรช)
-    socket.on("new-customer", (cust) => {
-      setCustomers((prev) => {
-        // ตรวจสอบว่ามีอยู่แล้วหรือยัง
-        if (prev.some((c) => c.id === cust.id)) return prev;
-        return [
-          {
-            id: cust.id,
-            name: cust.display_name || `Customer #${cust.id}`,
-            originalName: cust.display_name || `Customer #${cust.id}`,
-            img: cust.picture_url || "",
-            app: cust.platform === "line" ? "Line" : "Facebook",
-            platform: cust.platform,
-            platform_id: cust.platform_id,
-            status: STATUS.NOT_STARTED,
-            last: "",
-          },
-          ...prev,
-        ];
-      });
     });
 
     return () => socket.disconnect();
@@ -158,7 +134,6 @@ export const ChatProvider = ({ children }) => {
           sender: "own",
           message_type: "text",
           message_text: text,
-          socket_id: socketRef.current?.id || null,
         }),
       });
     } catch (err) {
@@ -188,7 +163,6 @@ export const ChatProvider = ({ children }) => {
           sender: "own",
           message_type: "image",
           message_text: imageUrl,
-          socket_id: socketRef.current?.id || null,
         }),
       });
     } catch (err) {

@@ -71,19 +71,7 @@ const MiniChatPanel = ({
             {msg.sender === "customer" && (
               <img src={customer.img} alt="" className="mini-avatar" />
             )}
-            {msg.message_type === "sticker" ? (
-              <div style={{ background: "transparent", padding: 0 }}>
-                <img src={msg.image} alt="sticker" style={{ width: "80px", height: "80px", objectFit: "contain" }} />
-              </div>
-            ) : (
-              <div className="bubble">
-                {msg.image ? (
-                  <img src={msg.image} alt="upload" style={{ maxWidth: "100px", maxHeight: "100px", borderRadius: "6px" }} />
-                ) : (
-                  msg.text
-                )}
-              </div>
-            )}
+            <div className="bubble">{msg.text}</div>
           </div>
         ))}
       </div>
