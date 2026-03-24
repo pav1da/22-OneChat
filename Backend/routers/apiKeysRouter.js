@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ApiKey = require('../models/apiKey.js');
+const ApiKey = require('../models/apikey.js');
 const auth = require('../middleware/auth.js');
 
 /**

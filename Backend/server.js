@@ -20,15 +20,15 @@ const config = {
 const lineController = require("./controllers/lineController.js");
 
 // นำเข้า Routers
-const usersRouter = require("./routers/usersRouter");
-const logsRouter = require("./routers/logsRouter");
-const notificationRouter = require("./routers/notificationRouter");
-const customersRouter = require("./routers/customersRouter");
-const messagesRouter = require("./routers/messagesRouter");
-const notesRouter = require("./routers/notesRouter");
-const notificationSettingsRouter = require("./routers/notificationSettingsRouter");
-const templatesRouter = require("./routers/templatesRouter");
-const apiKeysRouter = require("./routers/apiKeysRouter");
+const usersRouter = require("./routers/usersRouter.js");
+const logsRouter = require("./routers/logsRouter.js");
+const notificationRouter = require("./routers/notificationRouter.js");
+const customersRouter = require("./routers/customersRouter.js");
+const messagesRouter = require("./routers/messagesRouter.js");
+const notesRouter = require("./routers/notesRouter.js");
+const notificationSettingsRouter = require("./routers/notificationSettingsRouter.js");
+const templatesRouter = require("./routers/templatesRouter.js");
+const apiKeysRouter = require("./routers/apiKeysRouter.js");
 
 const app = express();
 const server = http.createServer(app);
