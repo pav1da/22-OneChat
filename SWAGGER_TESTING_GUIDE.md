@@ -210,3 +210,273 @@ LINE User  ──webhook──▶  Backend (Express + Socket.IO)  ◀──API�
 - **Backend → LINE**: ผ่าน `lineClient.pushMessage()` ใน `messagesRouter.js`
 - **Frontend ↔ Backend**: REST API (`/api/*`) + WebSocket (Socket.IO)
 - **Real-time**: Socket.IO events ทำให้ไม่ต้อง refresh หน้า
+
+---
+
+## ส่วนที่ 3: ทดสอบ Backend Return Code (สำคัญมาก!)
+
+### 3.1 Return Code คืออะไร?
+
+Return Code (HTTP Status Code) คือตัวเลขที่ backend ส่งกลับมาบอก frontend ว่า request สำเร็จหรือไม่
+
+### 3.2 วิธีดู Return Code
+
+#### วิธีที่ 1: ดูใน Swagger UI
+- กด Execute → ดูตรง **Server response → Code** (เช่น 200, 401)
+
+#### วิธีที่ 2: ดูใน Postman
+- กด Send → ดูตรงมุมขวาบน **Status: 200 OK**
+
+#### วิธีที่ 3: ดูใน Browser DevTools
+- กด F12 → แท็บ Network → คลิก request → ดู Status
+
+### 3.3 Return Code ของแต่ละ Route (ต้องท่องได้!)
+
+#### Users
+| Route | สำเร็จ | ข้อมูลไม่ครบ | รหัสผิด | ไม่มี token |
+|-------|--------|-------------|---------|------------|
+| `POST /api/users/register` | **201** | 400 | - | - |
+| `POST /api/users/login` | **200** | 400 | **401** | - |
+| `GET /api/users/me` | **200** | - | - | **401** |
+| `PUT /api/users/me/username` | **200** | 400 | 401 | 401 |
+| `PUT /api/users/me/email` | **200** | 400 | 401 | 401 |
+| `PUT /api/users/me/phone` | **200** | 400 | - | 401 |
+| `PUT /api/users/me/password` | **200** | 400 | 401 | 401 |
+| `PUT /api/users/me/avatar` | **200** | 400 | - | 401 |
+| `DELETE /api/users/:id` | **200** | - | - | 401 |
+
+#### Customers
+| Route | สำเร็จ | ไม่พบ | ข้อมูลไม่ครบ | ไม่มี token |
+|-------|--------|------|-------------|------------|
+| `GET /api/customers` | **200** | - | - | 401 |
+| `GET /api/customers/:id` | **200** | **404** | - | 401 |
+| `PUT /api/customers/:id/name` | **200** | 404 | **400** | 401 |
+
+#### Messages
+| Route | สำเร็จ | ข้อมูลไม่ครบ | ไม่มี token |
+|-------|--------|-------------|------------|
+| `GET /api/messages` | **200** | - | 401 |
+| `GET /api/messages/:customerId` | **200** | - | 401 |
+| `POST /api/messages` | **201** | **400** | 401 |
+
+#### Notes
+| Route | สำเร็จ | ไม่พบ | ข้อมูลไม่ครบ | ไม่มี token |
+|-------|--------|------|-------------|------------|
+| `GET /api/notes/:customerId` | **200** | - | - | 401 |
+| `POST /api/notes` | **201** | - | **400** | 401 |
+| `PUT /api/notes/:id` | **200** | **404** | 400 | 401 |
+| `DELETE /api/notes/:id` | **200** | **404** | - | 401 |
+
+#### Templates (ไม่ต้อง auth)
+| Route | สำเร็จ | ไม่พบ | ข้อมูลไม่ครบ |
+|-------|--------|------|-------------|
+| `GET /api/templates` | **200** | - | - |
+| `GET /api/templates/:id` | **200** | **404** | - |
+| `GET /api/templates/type/:type` | **200** | - | - |
+| `POST /api/templates` | **201** | - | **400** |
+| `PUT /api/templates/:id` | **200** | **404** | 400 |
+| `DELETE /api/templates/:id` | **200** | **404** | - |
+
+#### Logs (ไม่ต้อง auth)
+| Route | สำเร็จ |
+|-------|--------|
+| `GET /api/logs` | **200** |
+| `POST /api/logs` | **201** |
+
+#### API Keys
+| Route | สำเร็จ | ไม่มี token |
+|-------|--------|------------|
+| `GET /api/api-keys` | **200** | 401 |
+| `POST /api/api-keys` | **201** | 401 |
+| `PUT /api/api-keys/:id/toggle` | **200** | 401 |
+| `POST /api/api-keys/reset-personal` | **200** | 401 |
+
+#### Notifications
+| Route | สำเร็จ | ไม่มี token |
+|-------|--------|------------|
+| `POST /api/notifications` | **201** | 401 |
+| `GET /api/notifications` | **200** | 401 |
+| `GET /api/notifications/unread-count` | **200** | 401 |
+| `PUT /api/notifications/:id/read` | **200** | 401 |
+
+### 3.4 วิธีทดสอบ Return Code ให้ครบ
+
+ทุก endpoint ควรทดสอบ **อย่างน้อย 2 กรณี**:
+
+```
+กรณีที่ 1: Happy Path (สำเร็จ)
+  → ส่งข้อมูลถูกต้อง ครบทุก field
+  → ต้องได้ 200 หรือ 201
+
+กรณีที่ 2: Error Case
+  → ส่งข้อมูลไม่ครบ → ต้องได้ 400
+  → ไม่ส่ง token → ต้องได้ 401
+  → ส่ง ID ที่ไม่มี → ต้องได้ 404
+```
+
+---
+
+## ส่วนที่ 4: Postman — ต้องเตรียมไหม?
+
+### คำตอบ: เตรียมไว้ดีกว่า เผื่อถูกถาม
+
+### 4.1 ตั้งค่า Postman
+
+```
+1. เปิด Postman → New Collection → ตั้งชื่อ "OneChat API"
+2. ตั้ง Variable:
+   - base_url = http://localhost:3000
+   - token = (เว้นไว้ก่อน ได้จาก login)
+```
+
+### 4.2 ทดสอบ Login
+
+```
+Method: POST
+URL: {{base_url}}/api/users/login
+Headers:
+  Content-Type: application/json
+Body (raw JSON):
+{
+  "identifier": "admin1",
+  "password": "1234"
+}
+
+→ ได้ 200 + token กลับมา → คัดลอก token ไปใส่ Variable
+```
+
+### 4.3 ทดสอบ API ที่ต้อง Auth
+
+```
+Method: GET
+URL: {{base_url}}/api/customers
+Headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+→ ได้ 200 + array ของลูกค้า
+```
+
+### 4.4 ทดสอบ POST (สร้างข้อมูลใหม่)
+
+```
+Method: POST
+URL: {{base_url}}/api/messages
+Headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+Body (raw JSON):
+{
+  "customer_id": 1,
+  "sender": "own",
+  "message_type": "text",
+  "message_text": "ทดสอบจาก Postman"
+}
+
+→ ได้ 201 + { message: "ส่งข้อความสำเร็จ", id: ... }
+```
+
+### 4.5 ทดสอบ Error Case
+
+```
+# ไม่ส่ง token
+Method: GET
+URL: {{base_url}}/api/customers
+(ไม่ใส่ Authorization header)
+→ ได้ 401
+
+# ส่ง ID ที่ไม่มี
+Method: GET  
+URL: {{base_url}}/api/customers/99999
+Headers: Authorization: Bearer {{token}}
+→ ได้ 404
+
+# ส่งข้อมูลไม่ครบ
+Method: POST
+URL: {{base_url}}/api/messages
+Headers: Authorization: Bearer {{token}}
+Body: {}
+→ ได้ 400
+```
+
+---
+
+## ส่วนที่ 5: Frontend ที่เรียกใช้ API (ต้องชี้ได้!)
+
+### 5.1 แผนผังไฟล์ → API
+
+| ไฟล์ Frontend | API ที่เรียก | ทำอะไร |
+|--------------|-------------|--------|
+| **SignUpPage.jsx** | `POST /api/users/register` | สมัครสมาชิก |
+| **SignInPage.jsx** | `POST /api/users/login` | เข้าสู่ระบบ → ได้ token เก็บใน sessionStorage |
+| **ChatContext.jsx** | `GET /api/customers` | ดึงรายชื่อลูกค้าตอนเปิดหน้า |
+| **ChatContext.jsx** | `GET /api/messages` | ดึงข้อความทั้งหมดตอนเปิดหน้า |
+| **ChatContext.jsx** | `POST /api/messages` | ส่งข้อความ/รูปภาพไปหาลูกค้า |
+| **ChatContext.jsx** | `PUT /api/customers/:id/name` | เปลี่ยนชื่อลูกค้า |
+| **Inbox.jsx** | `GET /api/notes/:customerId` | ดึงโน้ตของลูกค้า |
+| **Inbox.jsx** | `POST /api/notes` | สร้างโน้ตใหม่ |
+| **Inbox.jsx** | `DELETE /api/notes/:id` | ลบโน้ต |
+| **Log.jsx** | `GET /api/logs` | ดึง log ทั้งหมด (มี filter) |
+| **Notification.jsx** | `GET /api/notifications` | ดึงการแจ้งเตือน |
+| **Notification.jsx** | `PUT /api/notifications/:id/read` | อ่านแจ้งเตือนแล้ว |
+| **Account.jsx** | `GET /api/users/me` | ดึงข้อมูลโปรไฟล์ |
+| **Account.jsx** | `PUT /api/users/me/username` | เปลี่ยน username |
+| **Account.jsx** | `PUT /api/users/me/email` | เปลี่ยน email |
+| **Account.jsx** | `PUT /api/users/me/phone` | เปลี่ยนเบอร์โทร |
+| **Account.jsx** | `PUT /api/users/me/password` | เปลี่ยนรหัสผ่าน |
+| **Account.jsx** | `PUT /api/users/me/avatar` | อัพรูปโปรไฟล์ |
+| **Connect.jsx** | `GET /api/api-keys` | ดึง API keys |
+| **Connect.jsx** | `POST /api/api-keys` | สร้าง key ใหม่ |
+| **Connect.jsx** | `PUT /api/api-keys/:id/toggle` | เปิด/ปิด key |
+| **Connect.jsx** | `POST /api/api-keys/reset-personal` | รีเซ็ต key |
+| **Member.jsx** | `GET /api/users` | ดึงรายชื่อสมาชิกทั้งหมด |
+| **Member.jsx** | `DELETE /api/users/:id` | ลบสมาชิก |
+
+### 5.2 ตัวอย่างโค้ด Frontend ที่เรียก API (ที่สำคัญ)
+
+#### Login (SignInPage.jsx)
+```javascript
+const res = await fetch("/api/users/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ identifier, password }),
+});
+// ได้ token → เก็บใน sessionStorage
+```
+
+#### ดึงข้อมูลลูกค้า + ข้อความ (ChatContext.jsx)
+```javascript
+const [custRes, msgRes] = await Promise.all([
+  fetch("/api/customers", { headers: getHeaders() }),
+  fetch("/api/messages", { headers: getHeaders() }),
+]);
+```
+
+#### ส่งข้อความ (ChatContext.jsx)
+```javascript
+await fetch("/api/messages", {
+  method: "POST",
+  headers: getHeaders(),  // มี Authorization: Bearer <token>
+  body: JSON.stringify({
+    customer_id: customerId,
+    sender: "own",
+    message_type: "text",
+    message_text: text,
+    socket_id: socketRef.current?.id || null,
+  }),
+});
+```
+
+#### ดึง Log (Log.jsx)
+```javascript
+const res = await fetch(`/api/logs?${params.toString()}`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+```
+
+### 5.3 สิ่งที่ต้องอธิบายได้
+
+1. **Token มาจากไหน?** → Login สำเร็จ → เก็บใน `sessionStorage`
+2. **ส่ง Token ยังไง?** → ใส่ใน Header: `Authorization: Bearer <token>`
+3. **ถ้า Token หมดอายุ?** → API ส่ง 401 → frontend ควร redirect ไป login
+4. **Real-time ทำงานยังไง?** → Socket.IO events: `new-message`, `new-customer`, `new-log`, `user-status-changed`
