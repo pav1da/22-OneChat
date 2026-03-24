@@ -8,17 +8,8 @@ const config = {
   channelSecret: process.env.channelSecret,
 };
 
-// สร้าง Client แบบ lazy — ป้องกัน crash ตอน import ถ้า env ยังไม่โหลด
-let client = null;
-function getLineClient() {
-  if (!client) {
-    client = new line.Client({
-      channelAccessToken: process.env.Channel_ID,
-      channelSecret: process.env.channelSecret,
-    });
-  }
-  return client;
-}
+// สร้าง Client ของ LINE
+const client = new line.Client(config);
 
 // รับข้อมูลจาก Route แล้วแยกกระจายงาน
 exports.handleWebhook = (req, res) => {
@@ -39,7 +30,7 @@ async function handleEvent(event, io) {
 
   try {
     // ดึงโปรไฟล์ลูกค้าและบันทึกลงตาราง customers
-    const profile = await getLineClient().getProfile(userId);
+    const profile = await client.getProfile(userId);
     const displayName = profile.displayName;
     const pictureUrl = profile.pictureUrl || "";
 
@@ -89,7 +80,7 @@ async function handleEvent(event, io) {
       // Image (รูปภาพ)
       else if (event.message.type === "image") {
         const messageId = event.message.id;
-        const stream = await getLineClient().getMessageContent(messageId);
+        const stream = await client.getMessageContent(messageId);
         const chunks = [];
 
         for await (const chunk of stream) {
