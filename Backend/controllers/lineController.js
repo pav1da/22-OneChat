@@ -13,6 +13,7 @@ const client = new line.Client(config);
 
 // รับข้อมูลจาก Route แล้วแยกกระจายงาน
 exports.handleWebhook = (req, res) => {
+  console.log("📩 รับข้อมูลจาก LINE แล้ว!");
   const io = req.app.get("io");
   Promise.all(req.body.events.map((event) => handleEvent(event, io)))
     .then(() => res.status(200).send("OK"))
@@ -77,6 +78,7 @@ async function handleEvent(event, io) {
       }
 
       // Image (รูปภาพ)
+      /*
       else if (event.message.type === "image") {
         const messageId = event.message.id;
         const stream = await client.getMessageContent(messageId);
@@ -111,6 +113,7 @@ async function handleEvent(event, io) {
           });
         }
       }
+      */
 
       // Sticker (สติกเกอร์)
       else if (event.message.type === "sticker") {
