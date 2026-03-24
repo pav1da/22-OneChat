@@ -79,6 +79,11 @@ if (!fs.existsSync(chatImagesDir)) {
 // ===== Swagger =====
 setupSwagger(app);
 
+// ===== Health Check =====
+app.get("/", (req, res) => {
+  res.send("API running");
+});
+
 // ===== Routes =====
 app.use("/api/users", usersRouter);
 
