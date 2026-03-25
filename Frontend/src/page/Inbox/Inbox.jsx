@@ -185,12 +185,18 @@ const Inbox = ({ currentUser }) => {
   };
 
   // ---------- Effects ----------
-  // Select first chat on load
+  // Select customer from navigation state (e.g., from notification) or first chat
   useEffect(() => {
-    if (customer.length > 0 && selectedChatId === null) {
+    if (location.state?.customerId) {
+      // กดจาก notification → เปิดแชทของลูกค้าที่ถูกต้อง
+      setSelectedChatId(location.state.customerId);
+      // Clear state หลังใช้แล้ว
+      navigate(location.pathname, { replace: true, state: {} });
+    } else if (customer.length > 0 && selectedChatId === null) {
+      // โหลดครั้งแรก → เปิดแชทแรก
       setSelectedChatId(customer[0].id);
     }
-  }, [customer, selectedChatId]);
+  }, [customer, selectedChatId, location.state, navigate, location.pathname]);
 
   // Scroll to latest message
   useEffect(() => {

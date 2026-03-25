@@ -55,7 +55,28 @@ const Log = () => {
         return () => socket.disconnect();
     }, []);
 
-    // ดึง logs ทั้งหมด (ไม่มี filter) เพื่อสร้าง dropdown options
+    // ดึงรายชื่อ users จาก EMP table (ข้อมูลปัจจุบัน)
+    const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const token = sessionStorage.getItem("token");
+                const res = await fetch("/api/users", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setUsers(data || []);
+                }
+            } catch {
+                // ignore — dropdown จะว่างเปล่า
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    // ดึง logs ทั้งหมด (ไม่มี filter) เพื่อสร้าง dropdown actions
     const [allLogs, setAllLogs] = useState([]);
 
     useEffect(() => {
@@ -70,16 +91,13 @@ const Log = () => {
                     setAllLogs(data.logs || []);
                 }
             } catch {
-                // ignore — dropdown จะว่างเปล่า
+                // ignore
             }
         };
         fetchAllLogs();
     }, []);
 
-    const uniqueUsers = useMemo(
-        () => [...new Set(allLogs.map((l) => l.user))],
-        [allLogs],
-    );
+    // ดึง unique actions จาก logs ทั้งหมด (ไม่ใช่แค่ที่กรองแล้ว)
     const uniqueActions = useMemo(
         () => [...new Set(allLogs.map((l) => l.action))],
         [allLogs],
@@ -124,9 +142,9 @@ const Log = () => {
                             style={{ minWidth: "250px" }}
                         >
                             <option value="">ค้นหาสมาชิก</option>
-                            {uniqueUsers.map((u) => (
-                                <option key={u} value={u}>
-                                    {u}
+                            {users.map((user) => (
+                                <option key={user.emp_id} value={user.username}>
+                                    {user.username}
                                 </option>
                             ))}
                         </Form.Select>

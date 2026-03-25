@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useTeam } from "../context/TeamContext";
 import UserProfileDropdown from "../components/UserProfileDropdown";
 import defaultProfile from "../assets/Image/Admins/pav1da.png";
+import { io } from "socket.io-client";
+import axios from "axios";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Sidebar.css";
 
@@ -21,6 +23,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
   const [starredOpen, setStarredOpen] = useState(true);
   const [teamDropdownOpen, setTeamDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const teamDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
@@ -35,6 +38,31 @@ const Sidebar = ({ onLogout, currentUser }) => {
 
   const isPrivilegedUserLocal =
     currentUser?.role === "manager" || currentUser?.role === "admin";
+
+  // ดึงจำนวน notification ที่ยังไม่อ่าน + real-time update
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const userId = String(user?.emp_id);
+
+    // Fetch initial count
+    if (token) {
+      axios.get("/api/notifications/unread-count", {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => setUnreadCount(res.data?.count || 0)).catch(() => {});
+    }
+
+    // Socket.IO: ใช้ new-message เป็น trigger (เพราะทำงาน real-time ได้ปกติ)
+    const socket = io("http://localhost:3000");
+    socket.on("new-message", (msg) => {
+      // เฉพาะข้อความจากลูกค้า → เพิ่ม badge 1
+      if (msg.sender === "customer") {
+        setUnreadCount(prev => prev + 1);
+      }
+    });
+
+    return () => socket.disconnect();
+  }, []);
 
   // ปิด dropdown เมื่อคลิกข้างนอก
   useEffect(() => {
@@ -118,9 +146,15 @@ const Sidebar = ({ onLogout, currentUser }) => {
           as={Link}
           to="/notification"
           className={`sidebar-nav-item ${isActive("/notification") ? "active" : ""}`}
+          onClick={() => setUnreadCount(0)}
         >
           <i className="bi bi-bell"></i>
           <span>การแจ้งเตือน</span>
+          {unreadCount > 0 && (
+            <span className="sidebar-notif-badge">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
         </Nav.Link>
       </Nav>
 
