@@ -35,8 +35,7 @@ const Member = () => {
     const fetchUsers = async () => {
       try {
         const token = sessionStorage.getItem("token");
-        // ดึงข้อมูลสมาชิกจาก Backend ผ่าน /api/members (membersRouter → membersController → DB)
-        const res = await fetch("/api/members", {
+        const res = await fetch("/api/users", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -51,9 +50,6 @@ const Member = () => {
             email: u.email,
             phone: u.phone,
             image: u.image || "",
-            // ดึงสถานะ is_online จาก DB เป็นค่าเริ่มต้น (fallback)
-            // ใช้กรณี Socket.IO ยังไม่ sync เสร็จตอนโหลดหน้าแรก
-            is_online_db: u.is_online === 1,
           }));
           setAllMembers(mapped);
         }
@@ -195,10 +191,9 @@ const Member = () => {
       {/* Member List */}
       <div className="d-flex flex-column pb-5">
         {displayMembers.map((member) => {
-          // ตรวจสอบสถานะ online:
-          // 1. ใช้ Socket.IO real-time (isUserOnline) เป็นหลัก
-          // 2. ถ้า Socket ยังไม่ sync → ใช้ค่า is_online จาก DB (is_online_db) เป็น fallback
-          const online = isUserOnline(member.id) || member.is_online_db;
+          // ตรวจสอบว่า user คนนี้ online หรือไม่ ผ่าน SocketContext
+          // ค่า online จะเปลี่ยนแบบ real-time เมื่อ server broadcast event
+          const online = isUserOnline(member.id);
           return (
             <div key={member.id} className="member-row">
               {/* ชื่อ + Avatar พร้อมตัวบ่งชี้สถานะ online/offline */}

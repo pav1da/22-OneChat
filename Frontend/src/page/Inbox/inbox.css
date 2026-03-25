@@ -209,6 +209,20 @@
   border-radius: 16px 16px 4px 16px;
 }
 
+/* Image (no bubble background) */
+.message .chat-image {
+  background: transparent;
+  padding: 0;
+  line-height: 0;
+}
+
+/* Sticker (no bubble background) */
+.message .sticker {
+  background: transparent;
+  padding: 0;
+  line-height: 0;
+}
+
 /* ==================== Input Bar ==================== */
 .custom-bottom-chat {
   background-color: var(--bg-input);
