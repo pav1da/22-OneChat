@@ -123,18 +123,14 @@ io.on("connection", async (socket) => {
 
 // ===== LINE Webhook =====
 app.post("/webhook", (req, res, next) => {
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-  const host = req.headers['x-forwarded-host'] || req.get('host');
-  global.APP_PUBLIC_URL = `${protocol}://${host}`;
-
-  console.log("🔥 [RADAR] มีข้อมูลวิ่งเข้ามาที่ Webhook แล้ว! (Public URL:", global.APP_PUBLIC_URL, ")");
+  console.log("🔥 [RADAR] มีข้อมูลวิ่งเข้ามาที่ Webhook แล้ว!");
   next();
 }, line.middleware(config), lineController.handleWebhook);
 
 // ===== Middleware =====
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // อนุญาตให้ดึงรูปจากโฟลเดอร์ uploads ไปแสดงผล
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

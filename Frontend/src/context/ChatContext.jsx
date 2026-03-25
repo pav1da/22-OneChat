@@ -10,8 +10,8 @@ const STATUS = {
 
 const ChatContext = createContext(null);
 
-// Helper: ดึง token จาก localStorage หรือ sessionStorage
-const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
+// Helper: ดึง token จาก localStorage
+const getToken = () => localStorage.getItem("token");
 
 const getHeaders = () => ({
   "Content-Type": "application/json",
@@ -170,35 +170,6 @@ export const ChatProvider = ({ children }) => {
     }
   }, []);
 
-  // ---------- ส่ง Template ----------
-  const sendTemplateMessage = useCallback(async (customerId, template) => {
-    const newMsg = {
-      id: Date.now(),
-      sender: "own",
-      text: `[Template] ${template.name}`,
-    };
-
-    setMessages((prev) => ({
-      ...prev,
-      [customerId]: [...(prev[customerId] || []), newMsg],
-    }));
-
-    try {
-      await fetch("/api/messages", {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify({
-          customer_id: customerId,
-          sender: "own",
-          message_type: "template",
-          message_text: JSON.stringify({ id: template.id, name: template.name, type: template.type, content: typeof template.content === 'string' ? JSON.parse(template.content) : template.content }),
-        }),
-      });
-    } catch (err) {
-      console.error("Send template error:", err);
-    }
-  }, []);
-
   // ---------- อัปเดตสถานะลูกค้า (local only) ----------
   const updateCustomerStatus = useCallback((customerId, newStatus) => {
     setCustomers((prev) =>
@@ -231,7 +202,6 @@ export const ChatProvider = ({ children }) => {
         loading,
         sendMessage,
         sendImageMessage,
-        sendTemplateMessage,
         updateCustomerStatus,
         updateCustomerName,
         STATUS,
