@@ -1,0 +1,274 @@
+/* Sidebar Container */
+.sidebar-container {
+  width: 280px;
+  height: 100vh;
+  background-color: var(--bg-main);
+  border-right: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 1000;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.sidebar-container::-webkit-scrollbar {
+  width: 0px;
+}
+
+/* User Profile Header */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+}
+
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sidebar-username {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+
+
+/* ===== Nav Items ===== */
+.sidebar-nav {
+  padding: 4px 8px;
+}
+
+.sidebar-nav-item {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px !important;
+  border-radius: 8px;
+  color: var(--text-main) !important;
+  font-size: 0.88rem;
+  font-weight: 400;
+  text-decoration: none !important;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sidebar-nav-item i {
+  font-size: 1.05rem;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.sidebar-nav-item:hover {
+  background-color: var(--primary-light);
+  color: var(--primary-color) !important;
+}
+
+.sidebar-nav-item:hover i {
+  color: var(--primary-color);
+}
+
+.sidebar-nav-item.active {
+  background-color: var(--primary-light);
+  color: var(--primary-color) !important;
+  font-weight: 500;
+}
+
+.sidebar-nav-item.active i {
+  color: var(--primary-color);
+}
+
+/* ===== Divider ===== */
+.sidebar-divider {
+  height: 1px;
+  background: var(--bg-main);
+  margin: 6px 16px;
+}
+
+/* ===== Team Section ===== */
+.sidebar-team-section {
+  position: relative;
+}
+
+.sidebar-team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.sidebar-team-header:hover {
+  background: var(--bg-hover);
+}
+
+.sidebar-team-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.sidebar-team-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sidebar-team-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  flex: 1;
+}
+
+/* ===== Team Dropdown ===== */
+.team-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  right: 12px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 8px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 999;
+  animation: teamDropdownIn 0.15s ease-out;
+}
+
+@keyframes teamDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.team-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.team-dropdown-item:hover {
+  background: var(--primary-light);
+}
+
+.team-dropdown-item.selected {
+  background: var(--primary-light);
+}
+
+.team-dropdown-check {
+  width: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--primary-color);
+  font-size: 0.85rem;
+}
+
+.team-dropdown-name {
+  font-size: 0.82rem;
+  color: var(--text-main);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.team-dropdown-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 6px 12px;
+}
+
+.team-dropdown-create {
+  color: var(--text-muted);
+}
+
+.team-dropdown-create i {
+  color: var(--text-muted);
+}
+
+.team-dropdown-create:hover {
+  color: var(--primary-color);
+}
+
+.team-dropdown .sidebar-team-avatar {
+  width: 22px;
+  height: 22px;
+  font-size: 0.65rem;
+}
+
+
+/* ===== Starred Section ===== */
+.sidebar-starred-section {
+  flex: 1;
+  padding: 4px 0;
+  overflow-y: auto;
+}
+
+.sidebar-starred-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 6px 16px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+
+.sidebar-starred-toggle:hover {
+  color: var(--text-main);
+}
+
+.sidebar-starred-list {
+  padding-top: 0;
+}
+
+

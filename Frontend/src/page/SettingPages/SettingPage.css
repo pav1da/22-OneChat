@@ -1,0 +1,518 @@
+.settings-page-wrapper {
+    background: var(--bg-main);
+    height: calc(100vh - 45px);
+    overflow: hidden;
+    padding-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    border-radius: 24px;
+}
+
+.scrollable-col {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 50px;
+}
+
+@media (min-width: 768px) {
+    .custom-vertical-divider {
+        border-right: 1px solid var(--border-medium);
+    }
+}
+
+.settings-nav .nav-heading {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+    text-transform: uppercase;
+}
+
+.settings-nav .nav-link {
+    color: var(--text-main);
+    padding: 0.7rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.settings-nav .nav-link svg {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+}
+
+/* สไตล์ตอน Hover */
+.settings-nav .nav-link:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+}
+
+/* 4. สไตล์ตอน Active */
+.settings-nav .nav-link.active {
+    background-color: #fff8f5;
+    color: #fd7e14;
+    font-weight: 600;
+}
+
+.settings-nav .nav-link.active svg {
+    color: #fd7e14;
+
+}
+
+
+/* =========================================
+   อัปเดตใหม่: Sidebar ด้านซ้าย (ให้เหมือนรูปเป๊ะๆ)
+   ========================================= */
+
+/* ปรับพื้นที่ Sidebar */
+.settings-sidebar {
+    background-color: transparent;
+}
+
+/* แก้ไขหัวข้อหมวดหมู่ (เช่น "ทั่วไป", "ตั้งค่าผู้ใช้") */
+.settings-nav .nav-heading {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    font-weight: 400;
+    text-transform: none;
+    /* ไม่บังคับตัวพิมพ์ใหญ่ */
+}
+
+/* สไตล์ลิงก์ปกติ (ตอนยังไม่กด) */
+.settings-nav .nav-link {
+    color: var(--text-main);
+    font-weight: 500;
+    padding: 10px 1rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
+    border: 1px solid transparent;
+    background-color: transparent;
+}
+
+/* Hover (ตอนเอาเมาส์ชี้) */
+.settings-nav .nav-link:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+}
+
+/* --- สไตล์ตอน Active (หน้าที่เลือกอยู่) --- */
+/* ใช้ !important เพื่อให้มั่นใจว่าทับของเก่าแน่นอน */
+.settings-nav .nav-link.active {
+    background-color: #fff5f0 !important;
+    /* พื้นหลังสีส้มจางๆ */
+    color: #fd7e14 !important;
+    /* ตัวหนังสือสีส้ม */
+    border: 1px solid #fd7e14 !important;
+    /* เส้นขอบสีส้ม */
+    font-weight: 600;
+}
+
+/* เปลี่ยนสีไอคอนเมื่อ Active */
+.settings-nav .nav-link.active svg {
+    fill: #fd7e14 !important;
+    color: #fd7e14 !important;
+}
+
+/* สไตล์ Profile ด้านบนซ้าย */
+.profile-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+
+.profile-placeholder-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--bg-accent);
+    margin-right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* สไตล์ Avatar ด้านขวา */
+.profile-avatar-lg {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: var(--bg-accent);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-avatar-lg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-edit-icon {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    background-color: #343a40;
+    color: white;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 2px solid white;
+    cursor: pointer;
+}
+
+
+.profile-info-item {
+    padding: 1rem 1.2rem 0.3rem 1.2rem;
+    border-bottom: 1px solid var(--border-medium);
+    width: 100%;
+}
+
+.no-border {
+    border-bottom: none !important;
+}
+
+
+
+
+
+.profile-info-item .label {
+    font-size: 1.3rem;
+    color: var(--text-main);
+    margin-bottom: 0.25rem;
+}
+
+.profile-info-item .value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+
+/* สไตล์สำหรับหน้า Privacy */
+
+
+/* สไตล์ช่อง Input */
+.form-control-custom {
+    background-color: var(--bg-input);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-main);
+}
+
+.form-control-custom:focus {
+    background-color: var(--bg-input-focus);
+    box-shadow: none;
+    border: 1px solid #fd7e14;
+    color: var(--text-main);
+}
+
+/* สไตล์ปุ่มสีส้ม */
+.btn-custom-orange {
+    background-color: #fd7e14;
+    border: none;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+}
+
+.btn-custom-orange:hover {
+    background-color: #e67312;
+
+}
+
+.btn-custom-orange:active,
+.btn-custom-orange:focus {
+    background-color: #e67312 !important;
+    box-shadow: 0 0 0 0.25rem rgba(253, 126, 20, 0.5) !important;
+}
+
+/* สไตล์สวิตช์ Toggle (เพื่อให้เป็นสีส้ม) */
+.form-check-input:checked {
+    background-color: #fd7e14;
+    border-color: #fd7e14;
+}
+
+
+
+
+.big-item {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+
+/* เพิ่มเฉพาะหน้า Ai */
+.ai-page .profile-info-item {
+    padding: 2rem 1.2rem;
+}
+
+.connect-page .profile-info-item {
+    padding: 2rem 1.2rem;
+}
+
+.disconnect-page .profile-info-item {
+    padding: 2rem 1.2rem;
+}
+
+
+/* สำหรับหน้า Policy */
+.policy-page {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.policy-page h2 {
+    font-size: 2rem;
+}
+
+
+.policy-page h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+
+
+/* สำหรับหน้า About */
+.about-page {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #212529;
+}
+
+.about-page h2 {
+    font-size: 2rem;
+}
+
+.about-page h4 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.about-page p {
+    margin-bottom: 1rem;
+}
+
+.about-page ul {
+    padding-left: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.about-page li {
+    margin-bottom: 0.5rem;
+}
+
+/* =========================================
+   เพิ่มใหม่สำหรับหน้า Chats (เพื่อให้เหมือนรูป)
+   ========================================= */
+
+/* 1. สไตล์ปุ่ม "แก้ไข" สีเทาเข้ม */
+.btn-edit-dark {
+    background-color: #424242;
+    /* สีเทาเข้มตามภาพ */
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    /* ความมนของขอบปุ่ม */
+    padding: 6px 20px;
+    /* ขนาดปุ่ม */
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-dark:hover {
+    background-color: #2b2b2b;
+    /* เข้มขึ้นเมื่อเอาเมาส์ชี้ */
+    color: #ffffff;
+}
+
+/* 2. ปรับแต่งรายการในหน้า Chat ให้ระยะห่างสวยงาม */
+.chat-page-container .profile-info-item {
+    border-bottom: none;
+    /* เอาเส้นขีดล่างเดิมออก (เพราะเราจะขีดเส้นแบ่งโซนเอง) */
+    padding-top: 1.2rem;
+    padding-bottom: 1.2rem;
+}
+
+/* 3. ปรับขนาดตัวหนังสือหัวข้อและคำอธิบาย */
+.chat-text-group h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-main);
+}
+
+.chat-text-group p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* 4. เส้นขีดคั่นกลาง (Divider) */
+.chat-divider {
+    border-top: 1px solid var(--border-medium);
+    margin: 10px 0;
+}
+
+
+
+
+
+/* กล่องสีเทาจำลอง (Placeholder) ในหน้า AI */
+.gray-input-placeholder {
+    width: 100%;
+    height: 50px;
+    background-color: var(--bg-input);
+    border-radius: 12px;
+    margin-top: 10px;
+}
+
+/* ปรับแต่งเพิ่มเติมให้ text-muted สีตรงกับภาพมากขึ้น */
+.text-muted {
+    color: #a0a0a0 !important;
+}
+
+/* Floating card (centered panel like modal) */
+.floating-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px var(--shadow-lg), 0 2px 6px var(--shadow-sm);
+    width: min(920px, 88%);
+    padding: 28px 32px;
+    margin: 26px 0;
+}
+
+/* When content inside is long, keep internal scrolling but card stays centered */
+.scrollable-col .floating-card {
+    max-height: calc(100vh - 140px);
+    overflow: auto;
+}
+
+/* Slight backdrop dim effect for the rest of the page (subtle) */
+.settings-page-wrapper.dim-backdrop::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.03);
+    pointer-events: none;
+    border-radius: 24px;
+}
+
+/* Hide background (page) sidebar when modal is open */
+.settings-page-wrapper.modal-open .settings-sidebar {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Modal internal left nav tweaks */
+.floating-modal .modal-left-nav {
+    border-right: 1px solid var(--border-light);
+    padding-right: 18px;
+}
+
+.floating-modal .modal-left-nav .settings-nav .nav-link {
+    padding: 8px 10px;
+}
+
+.floating-modal .modal-left-nav h5 {
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.floating-modal .modal-content-col {
+    padding-left: 20px;
+}
+
+/* Modal overlay that dims background and centers the panel */
+.settings-modal-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--shadow-overlay);
+    z-index: 2000;
+    padding: 40px;
+}
+
+.floating-modal {
+    background: var(--bg-card);
+    height: clamp(920px, 92vh, 2000px);
+    width: clamp(920px, 92vw, 2000px);
+    border-radius: 12px;
+    box-shadow: 0 30px 60px var(--shadow-lg), 0 6px 12px var(--shadow-md);
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+    padding: 28px 32px;
+}
+
+
+/* make floating-modal a positioned container for absolute children */
+.floating-modal {
+    position: relative;
+}
+
+/* Close button in the top-right of the modal */
+.settings-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+
+.settings-close-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-main);
+}
+
+/* Bootstrap Modal must appear above settings overlay (z-index: 2000) */
+.modal-backdrop {
+    z-index: 2100 !important;
+}
+
+.modal {
+    z-index: 2200 !important;
+}
+
+/* On small screens reduce padding */
+@media (max-width: 768px) {
+    .floating-modal {
+        padding: 18px 20px;
+        max-height: calc(100vh - 60px);
+    }
+}

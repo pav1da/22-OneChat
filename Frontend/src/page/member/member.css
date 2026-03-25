@@ -1,0 +1,363 @@
+/* =========================================================================
+   Member Page Stylesheet (member.css)
+   ========================================================================= */
+
+/* คอนเทนเนอร์หลักของหน้า Member */
+.member-container {
+  font-family: "Kanit", sans-serif; /* kanit-regular */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main, #ffffff);
+  overflow-y: auto;
+}
+
+/* หัวข้อ (Section Title) */
+.section-title {
+  font-size: 1.25rem;
+  margin-bottom: 0;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+/* ช่องค้นหา (Search Input) */
+.search-input {
+  min-width: 200px;
+  height: 38px;
+  background-color: var(--bg-surface, #f8f9fa) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding-left: 2.5rem !important; /* ps-5 */
+}
+
+/* ไอคอนแว่นขยายในช่องค้นหา */
+.search-icon {
+  position: absolute;
+  top: 8px;
+  left: 15px;
+  color: var(--text-muted, #6c757d);
+}
+
+/* เส้นแบ่ง (Divider) */
+.divider {
+  border-top: 1px solid var(--border-light, #e9ecef) !important;
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* =========================================================================
+   Team Section Styles
+   ========================================================================= */
+
+/* กล่องแต่ละทีม */
+.team-card {
+  border: 1px solid var(--border-light, #e9ecef);
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+/* ส่วนหัวของทีม (Team Header) */
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--bg-main, #ffffff);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.team-header:hover {
+  background-color: var(--bg-surface, #f8f9fa);
+}
+
+/* ปุ่มลบทีม */
+.btn-delete-team {
+  width: 30px;
+  height: 30px;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background-color: transparent !important;
+  color: var(--text-danger, #dc3545) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.btn-delete-team:hover {
+  background-color: var(--border-light, #e9ecef) !important;
+}
+
+/* พื้นที่แสดงสมาชิกในทีม */
+.team-members-area {
+  background-color: var(--bg-surface, #f8f9fa);
+  border-top: 1px solid var(--border-light, #e9ecef);
+  padding: 0.5rem 0;
+}
+
+/* แถวข้อมูลสมาชิกในทีมแต่ละคน */
+.team-member-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-light, #e9ecef);
+  padding-left: 3rem !important;
+}
+
+/* รูปโปรไฟล์สมาชิกในทีม */
+.member-avatar {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+/* =========================================================================
+   ส่วนแสดงสถานะ Online/Offline (เพิ่มใหม่สำหรับ real-time status)
+   - avatar-wrapper: ครอบรูป avatar + จุดสถานะ
+   - avatar-online/offline: ขอบสีเขียว/เทา รอบรูป avatar
+   - avatar-status-dot: จุดกลมเล็กมุมขวาล่างของ avatar
+   - status-badge: ป้ายแสดง "ออนไลน์" / "ออฟไลน์" ในคอลัมน์สถานะ
+   - pulse-green: animation กระพริบสำหรับจุดสีเขียว (online)
+   ========================================================================= */
+
+/* Wrapper ครอบรูป avatar กับจุดสถานะ (ใช้ position: relative เพื่อวางจุดทับ) */
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ขอบสีเขียวรอบ avatar เมื่อ user online */
+.avatar-online {
+  border-color: #22c55e;
+}
+
+/* ขอบสีเทารอบ avatar เมื่อ user offline */
+.avatar-offline {
+  border-color: #d1d5db;
+}
+
+/* จุดกลมเล็กๆ มุมขวาล่างของ avatar (แสดงสถานะ online/offline) */
+/* border สีขาวทำให้จุดดูเด่นชัดบน avatar */
+.avatar-status-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2.5px solid var(--bg-main, #ffffff);
+}
+
+/* จุดสีเขียว = online พร้อม animation กระพริบ */
+.dot-online {
+  background-color: #22c55e;
+  animation: pulse-green 2s infinite;
+}
+
+/* จุดสีเทา = offline (ไม่มี animation) */
+.dot-offline {
+  background-color: #9ca3af;
+}
+
+/* ป้ายแสดงสถานะในคอลัมน์ "สถานะ" (แบบ pill/capsule) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px; /* ทำให้เป็นรูป capsule */
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* ป้ายสีเขียวอ่อน สำหรับ "ออนไลน์" */
+.status-online {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+/* ป้ายสีเทาอ่อน สำหรับ "ออฟไลน์" */
+.status-offline {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+/* จุดเล็กๆ ภายใน badge (ข้างซ้ายของข้อความ) */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* สีเขียว สำหรับจุดใน badge "ออนไลน์" */
+.dot-green {
+  background-color: #22c55e;
+}
+
+/* สีเทา สำหรับจุดใน badge "ออฟไลน์" */
+.dot-gray {
+  background-color: #9ca3af;
+}
+
+/* Animation กระพริบ (pulse) สำหรับจุดสีเขียว online */
+/* สร้างเอฟเฟกต์ "แสงกระจาย" รอบจุด ทำให้ดูมีชีวิตชีวา */
+@keyframes pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); /* เริ่มต้น: แสงเขียวรอบจุด */
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); /* กระจายออก 6px แล้วจางหาย */
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); /* กลับสู่สถานะเริ่มต้น */
+  }
+}
+
+/* =========================================================================
+   Member Section Styles (ตารางสมาชิกทั้งหมด)
+   ========================================================================= */
+
+/* ส่วนหัวคอลัมน์ของตารางสมาชิก */
+.member-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+  gap: 12px;
+  padding: 0.5rem 1rem;
+  color: var(--primary-color);
+  font-size: 1rem;
+  font-weight: 400;
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* แถวข้อมูลสมาชิกแต่ละคน */
+.member-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+  gap: 12px;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  background-color: var(--bg-main, #ffffff);
+  font-size: 0.98rem;
+  border-bottom: 1px solid var(--border-light, #e9ecef);
+  transition:
+    background-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.member-row:hover {
+  background-color: var(--bg-surface, #f8f9fa);
+  transform: translateY(-1px);
+}
+
+/* กำหนดความกว้างของแต่ละคอลัมน์ (เหมือนใน inline styles) */
+.col-name {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+/* .col-team { } */
+.col-role {
+  text-transform: uppercase;
+}
+/* .col-status { } */
+.col-actions {
+  width: 80px;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  position: relative;
+}
+
+/* ปุ่ม Action ต่างๆ (รูปดินสอแก้ไข, รูป 3 จุด) */
+.btn-action {
+  width: 30px;
+  height: 30px;
+  background-color: var(--primary-color) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding: 0 !important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  color: white !important;
+  transition: opacity 0.2s ease;
+}
+
+.btn-action:hover {
+  opacity: 0.85;
+}
+
+/* กล่อง Popup เมนู Action (ลบ, นำออกจากทีม ฯลฯ) */
+.action-popup {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 50;
+  min-width: 120px;
+  background-color: var(--bg-main, #ffffff);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+  border-radius: 0.5rem;
+  padding: 0.4rem;
+  border: 1px solid var(--border-light, #e9ecef);
+}
+
+/* ไอเทมคลิกได้ในกล่อง Popup (ลบผู้ใช้, ลบออกจากทีม ฯลฯ) */
+.action-item {
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  color: var(--text-danger, #dc3545);
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.action-item:hover {
+  background-color: var(--bg-surface, #f8f9fa); /* hover-bg-light */
+}
+
+/* Responsive: stack columns on small screens */
+@media (max-width: 768px) {
+  .member-table-header {
+    display: none;
+  }
+
+  .member-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .col-name {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .col-team,
+  .col-role,
+  .col-status {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .col-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+  }
+
+  .member-avatar {
+    width: 48px;
+    height: 48px;
+  }
+}

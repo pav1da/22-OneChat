@@ -1,0 +1,75 @@
+.main-content {
+    height: 100vh;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+}
+
+[data-theme="dark"] .main-content {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Container */
+.card-table-container {
+    padding: 0;
+    width: 100%;
+}
+
+/* Head Row เลย์เอาท์ grid */
+.card-table-header {
+    display: grid;
+    grid-template-columns: 0.3fr 2fr 2fr 2fr 1fr 0.3fr;
+    /* ขนาดกำหนดเองได้ */
+    background-color: #EFB5AA;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #dee2e6;
+    /* เส้นด้านล่างเท่ากับแถว */
+    margin: 0;
+    /* ลบ margin เกิน */
+}
+
+[data-theme="dark"] .card-table-header {
+    background-color: #f26623;
+    color: #ffffff;
+    border-bottom: 1px solid #333333;
+}
+
+/* Data Rows */
+.card-table-row {
+    display: grid;
+    grid-template-columns: 0.3fr 2fr 2fr 2fr 1fr 0.3fr;
+    align-items: center;
+    text-align: center;
+    padding: 30px 10px;
+    column-gap: 20px;
+    /* ขยายพื้นที่ระหว่างช่อง ไม่ดันข้อความ */
+    border-top: 1px solid #dee2e6;
+    margin: 0;
+    /* ลบ margin เกิน */
+}
+
+[data-theme="dark"] .card-table-row {
+    background-color: #000000;
+    color: #ffffff;
+    border-top: 1px solid #333333;
+}
+
+/* รูปภาพในตาราง */
+.card-table-row img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+/* จุดสามจุด */
+.item-options {
+    cursor: pointer;
+}
+
+/* ปิดลูกศร dropdown */
+.dropdown-toggle::after {
+    display: none;
+}

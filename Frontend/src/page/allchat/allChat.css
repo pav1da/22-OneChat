@@ -1,0 +1,362 @@
+/* รีเซ็ตและปรับแต่ง Scrollbar สำหรับลิสต์แชทใน AllChat ให้ซ่อน Scrollbar */
+* {
+  &::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+}
+
+/* Container หลักสำหรับหน้า AllChat ทั้งหมด ควบคุมความสูงและการจัดวางแนวตั้ง */
+.allChat {
+  height: 100vh;
+  padding: 20px;
+  background-color: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  z-index: 500;
+}
+
+/* ===== ส่วนช่องค้นหา (Search Bar) ด้านบน ===== */
+
+/* กล่องครอบช่องค้นหา จัดเลย์เอาต์ไอคอนและขอบมน */
+.sidebar-search {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  transition: all 0.25s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+  min-width: 240px;
+}
+
+/* รูปร่างของกล่องครอบเวลาคลิกโฟกัสที่ช่องค้นหาเปลี่ยนสีขอบและแสดงเงา */
+.sidebar-search:focus-within {
+  border-color: var(--border-light);
+  background: var(--bg-main);
+}
+
+/* ไอคอนแว่นขยายในช่องค้นหา */
+.sidebar-search i {
+  color: var(--text-muted);
+  font-size: 1rem;
+  flex-shrink: 0;
+  transition: color 0.25s ease;
+}
+
+/* เปลี่ยนสีไอคอนแว่นขยายเวลากล่องค้นหาถูกโฟกัส */
+.sidebar-search:focus-within i {
+  color: var(--primary-color);
+}
+
+/* ช่อง input แบบ text สำหรับพิมพ์ข้อความค้นหาลบกรอบเพื่อกลมกลืนกับกล่องครอบ */
+.sidebar-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  width: 100%;
+  font-family: inherit;
+  padding: 0;
+}
+
+/* สีข้อความ Placeholder ในช่องค้นหา */
+.sidebar-search input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ===== ส่วนการ์ดผู้ใช้งาน (User Card) ใน Grid ลูกค้า ===== */
+/* กำหนดพื้นหลังหลักให้กับการ์ดผู้เล่น/ลูกค้ารายคนใน Grid */
+.user-card {
+  background-color: var(--bg-main);
+}
+
+/* สีเฉพาะสำหรับข้อความอธิบายย่อยหรือข้อความล่าสุดในการ์ด (รูปด้านขวาการ์ด) */
+.custom-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* กำหนดรูปทรงและขนาดคงที่สำหรับรูป Avatar ของลูกค้าในการ์ดหลัก */
+.custom-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* ===== แผง Mini Chat Panel (หน้าต่างแชทขนาดย่อมที่ขยายลงมาใต้การ์ด) ===== */
+
+/* กรอบรวมของหน้าต่าง Mini Chat แสดงแอนิเมชันตอนถูกเปิดออก */
+.mini-chat-panel {
+  background: var(--bg-main);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: slideDown 0.25s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== ส่วนหัวของ Mini Chat (Header) ===== */
+
+/* จัดวาง Profile Info กับ ปุ่ม Action ในส่วน Header ซ้าย-ขวา */
+.mini-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-main);
+}
+
+/* ห่อรูป Avatar และชื่อลูกค้าให้อยู่ในแกนเดียวกันฝั่งซ้ายของ Header */
+.mini-chat-header .profile-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ขนาดและการแสดงผลภาพ Avatar ในส่วน Header ขนาดย่อ */
+.mini-chat-header .profile-info img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* การตกแต่งชื่อลูกค้าด้านข้างรูปใน Header */
+.mini-chat-header .profile-info span {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+/* กลุ่มปุ่มดำเนินการในฝั่งขวาของ Header (เช่นปุ่ม เปิดเต็บจอ หรือ กากบาทปิด) */
+.mini-chat-header .header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* รูปแบบทั่วไปสำหรับปุ่มดำเนินการใน Header */
+.mini-chat-header .header-actions button {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+/* เอฟเฟคเมื่อเอาเมาส์ชี้ปุ่มดำเนินการใน Header */
+.mini-chat-header .header-actions button:hover {
+  background: var(--primary-light);
+  color: var(--primary-color);
+}
+
+/* ===== พื้นที่แสดงข้อความใน Mini Chat (Messages Box) ===== */
+
+/* กล่องที่มี Scrollbar ด้านในสำหรับแสดงประวัติข้อความ ความสูงคงที่เพื่อความสะอาดตา */
+.mini-chat-messages {
+  height: 350px; /* Fixed height for consistent chat window size */
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-main);
+}
+
+/* ปรับความกว้างของ Scrollbar ในกล่องข้อความ Mini Chat ให้แคบ */
+.mini-chat-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* กำหนดสี Scrollbar ของกล่องข้อความ */
+.mini-chat-messages::-webkit-scrollbar-thumb {
+  background-color: var(--primary-light);
+  border-radius: 4px;
+}
+
+/* ===== บับเบิลข้อความแต่ละข้อความ (Message Bubbles) ===== */
+
+/* ห่อหุ้มบับเบิลข้อความ และใช้จัดการทิศทางให้อยู่ติดขอบล่าง */
+.mini-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 85%;
+}
+
+/* หากเป็นลูกค้าส่งมา จัดชิดซ้าย */
+.mini-msg.customer {
+  align-self: flex-start;
+}
+
+/* หากผู้ดูแล (own) เป็นคนส่ง จัดชิดขวา และสลับฝั่งของ content ด้านใน */
+.mini-msg.own {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+/* โครงสร้างหลักและ Padding ของกล่องข้อความที่ถูกส่ง (บับเบิล) */
+.mini-msg .bubble {
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* สีพื้นหลังและขอบมุมตอนล่างซ้าย ที่ใช้สำหรับข้อความที่ลูกค้าส่งมา */
+.mini-msg.customer .bubble {
+  background: var(--bg-bubble-user);
+  color: var(--text-bubble-user);
+  border: 1px solid var(--border-light);
+  border-bottom-left-radius: 4px;
+}
+
+/* สีพื้นหลังให้เด่น และขอบมุมตอนล่างขวา สำหรับข้อความที่เรา (แอดมิน) ตอบกลับส่งไป */
+.mini-msg.own .bubble {
+  background: var(--bg-bubble-admin);
+  color: var(--text-bubble-admin);
+  border-bottom-right-radius: 4px;
+}
+
+/* รูป Avatar ขนาดย่อยที่แทรกข้างๆ กล่องข้อความที่ลูกค้าส่ง */
+.mini-msg .mini-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* ===== ส่วนพิมพ์ตอบกลับด้านล่างใน Mini Chat (Input Area) ===== */
+
+/* กล่องครอบการจัดเรียงช่องพิมพ์และปุ่มกดส่งข้อความใน Mini chat แถบล่างหน้าต่าง */
+.mini-chat-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-main);
+}
+
+/* ตกแต่งช่องพิมพ์ข้อความของตัว input ใน Mini Chat (ขอบมน) */
+.mini-chat-input input {
+  flex: 1;
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  background: var(--bg-input);
+  color: var(--text-main);
+}
+
+/* เปลี่ยนสีเส้นขอบช่อง input เป็นสีแบรนด์เมื่อพิม */
+.mini-chat-input input:focus {
+  border-color: var(--primary-color);
+}
+
+/* รูปร่างของปุ่มส่งข้อความ (ไอคอนจรวดหรือลูกศร) ทำปุ่มเป็นวงกลม */
+.mini-chat-input .send-btn {
+  border: none;
+  background: var(--primary-color);
+  color: var(--text-inverse);
+  width: 34px;
+  height: 34px;
+  padding-top: 2px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+  flex-shrink: 0;
+}
+
+/* แอนิเมชันปุ่มขยายขึ้นและมีแสงเงาโชว์ขึ้นเวลาเอาเมาส์มาวางทับเพื่อแสดงว่ากดได้ */
+.mini-chat-input .send-btn:hover {
+  transform: scale(1.08);
+  background-color: var(--bg-main);
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* สไตล์ปุ่มเมื่อส่งไม่ได้ (เช่น ตอนที่ไม่ได้พิมพ์เนื้อหาในช่องแชท) ซีดลงหรือมีสีเทา */
+.mini-chat-input .send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: var(--text-muted);
+  color: var(--text-inverse);
+}
+
+/* สีและระยะแสงเงาพิเศษเมื่อการ์ด Grid ลูกค้าถูกคลิก (เพื่อให้รู้ว่ากำลังเปิด Mini Chat รายนั้นอยู่) */
+.user-card.active-card {
+  border: 1px solid var(--primary-light) !important;
+  box-shadow: 0 2px 12px rgba(244, 164, 96, 0.15) !important;
+}
+
+/* ===== กลุ่มปุ่มตัวกรอง หรือ Filter Navigations ด้านบน (เช่น ทัั้งหมด, สถานะเสร็จสิ้น) ===== */
+
+/* สไตล์หลักปุ่ม Filter Navigation */
+.nav-search {
+  height: 30px;
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 5px 15px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+/* เปลี่ยนสีพื้นหลังละสีข้อความเมื่อเอาเมาส์วางชี้บนปุ่ม Filter */
+.nav-search:hover {
+  cursor: pointer;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  border-color: var(--primary-light);
+}
+
+/* สไตล์ให้คลิกลงบนปุ่ม Filter เพื่อให้เหมือนถูกกด (Active state) */
+.nav-search:active {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  border-color: var(--primary-light);
+}

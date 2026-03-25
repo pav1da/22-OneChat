@@ -1,0 +1,38 @@
+.teams-container {
+  font-family: "Kanit", sans-serif; /* kanit-regular */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main, #ffffff);
+  overflow-y: auto;
+}
+
+.teams-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+  gap: 12px;
+  padding: 0.5rem 1rem;
+  color: var(--primary-color);
+  font-size: 1rem;
+  font-weight: 400;
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.col-name {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+/* .col-team { } */
+.col-role {
+  text-transform: uppercase;
+}
+/* .col-status { } */
+.col-actions {
+  width: 80px;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  position: relative;
+}

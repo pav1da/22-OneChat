@@ -1,0 +1,21 @@
+[dotenv@17.3.1] injecting env (9) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+🔌 กำลังเชื่อมต่อ MySQL...
+✅ Connected to MySQL successfully!
+✅ เชื่อมต่อสำเร็จ!
+📊 จำนวนข้อมูลในตาราง EMP: 9 rows
+-----------------------------------
+📋 Columns: emp_id, username, name, email, phone, password, role, supervisor_id, created_at, is_online, last_seen
+-----------------------------------
+┌─────────┬────────┬────────────────────┬────────────────────┬───────────────────────┬────────────────┬────────────────┬───────────┬───────────────┬───────────────────────┬───────────┬───────────┐
+│ (index) │ emp_id │ username           │ name               │ email                 │ phone          │ password       │ role      │ supervisor_id │ created_at            │ is_online │ last_seen │
+├─────────┼────────┼────────────────────┼────────────────────┼───────────────────────┼────────────────┼────────────────┼───────────┼───────────────┼───────────────────────┼───────────┼───────────┤
+│ 0       │ 1      │ 'admin1'           │ 'Admin One'        │ 'admin@test.com'      │ '0800000001'   │ '1234'         │ 'admin'   │ null          │ '2026-03-17 08:23:46' │ 0         │ null      │
+│ 1       │ 2      │ 'manager1'         │ 'Manager One'      │ 'manager@test.com'    │ '0800000002'   │ '1234'         │ 'manager' │ null          │ '2026-03-17 08:23:46' │ 0         │ null      │
+│ 2       │ 3      │ 'staff1'           │ 'Staff One'        │ 'staff1@test.com'     │ '0800000003'   │ '1234'         │ 'staff'   │ null          │ '2026-03-17 08:23:46' │ 0         │ null      │
+│ 3       │ 4      │ 'staff2'           │ 'Staff Two'        │ 'staff2@test.com'     │ '0800000004'   │ '1234'         │ 'staff'   │ null          │ '2026-03-17 08:23:46' │ 0         │ null      │
+│ 4       │ 5      │ 'testuser_updated' │ 'testuser_updated' │ 'updated@onechat.com' │ '099-999-0000' │ 'newpass5678'  │ 'staff'   │ null          │ '2026-03-17 08:45:07' │ 0         │ null      │
+│ 5       │ 6      │ 'ham'              │ 'ham'              │ 'ham@gmail.com'       │ null           │ '1234'         │ 'staff'   │ null          │ '2026-03-17 08:51:01' │ 0         │ null      │
+│ 6       │ 7      │ 'ham2'             │ 'ham2'             │ 'ham@test.com'        │ null           │ '1233'         │ 'staff'   │ null          │ '2026-03-17 08:55:22' │ 0         │ null      │
+│ 7       │ 8      │ 'jeab'             │ 'jeab'             │ 'jeab@test.com'       │ null           │ '1234'         │ 'staff'   │ null          │ '2026-03-18 01:15:43' │ 0         │ null      │
+│ 8       │ 9      │ 'testuser'         │ 'testuser'         │ 'test@example.com'    │ null           │ 'testpassword' │ 'staff'   │ null          │ '2026-03-21 20:57:43' │ 0         │ null      │
+└─────────┴────────┴────────────────────┴────────────────────┴───────────────────────┴────────────────┴────────────────┴───────────┴───────────────┴───────────────────────┴───────────┴───────────┘
