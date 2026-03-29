@@ -26,22 +26,19 @@ const Cardmessage = () => {
       const response = await fetch("/api/templates", {
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server error:", response.status, errorText);
+        return;
+      }
       const resData = await response.json();
       if (resData.status === "success") {
-        const backendItems = resData.data.map((item) => {
-          let content = {};
-          try {
-            content = typeof item.content === 'string' ? JSON.parse(item.content) : item.content;
-          } catch(e){}
-          return {
-            id: item.id,
-            type: item.type,
-            title: item.name,
-            created: new Date(item.created_at).toLocaleString(),
-            image: content?.image || "",
-            message: content?.message || "",
-          };
-        });
+        const backendItems = resData.data.map((item) => ({
+          id: item.id,
+          type: item.type,
+          title: item.name,
+          created: new Date(item.created_at).toLocaleString(),
+        }));
         setItems(backendItems);
       }
     } catch (error) {
@@ -62,7 +59,9 @@ const Cardmessage = () => {
 
   const handleShow = () => setShow(true);
   const handleClose = () => {
-    (setShow(false), setEditingItem(null));
+    setShow(false);
+    setEditingItem(null);
+    setNewItem({ type: "รูปภาพ", title: "", image: "", message: "" });
   };
 
   const filteredItems = items.filter(
@@ -171,10 +170,10 @@ const Cardmessage = () => {
 
             {/* รูป/ข้อความ */}
             <Col className="col-item">
-              {item.type === "รูปภาพ" && item.image ? (
-                <img src={item.image} alt={item.title} className="item-image" />
+              {item.type === "รูปภาพ" ? (
+                <span>🖼️ รูปภาพ</span>
               ) : (
-                <span>{item.message}</span>
+                <span>💬 ข้อความ</span>
               )}
             </Col>
 
@@ -195,11 +194,7 @@ const Cardmessage = () => {
                   id={`dropdown-${item.id}`}
                   className="p-0 m-0 item-options"
                 >
-                  <img
-                    src="/src/assets/Icon/icon-dot-h.png"
-                    alt="options"
-                    style={{ width: "20px", height: "20px", cursor: "pointer" }}
-                  />
+                  <i className="bi bi-three-dots" style={{ fontSize: "1.2rem", cursor: "pointer" }}></i>
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
@@ -220,10 +215,33 @@ const Cardmessage = () => {
                   </Dropdown.Item>
 
                   <Dropdown.Item
-                    onClick={() => {
-                      setEditingItem(item);
-                      setNewItem(item);
-                      setShow(true);
+                    onClick={async () => {
+                      try {
+                        const token = sessionStorage.getItem('token');
+                        const res = await fetch(`/api/templates/${item.id}`, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                          let content = {};
+                          try {
+                            content = typeof data.data.content === 'string' ? JSON.parse(data.data.content) : data.data.content;
+                          } catch(e){}
+                          const imageValue = content?.image || (Array.isArray(content?.images) && content.images.length > 0 ? content.images[0] : "");
+                          const editData = {
+                            id: data.data.id,
+                            type: data.data.type,
+                            title: data.data.name,
+                            image: imageValue,
+                            message: content?.message || "",
+                          };
+                          setEditingItem(editData);
+                          setNewItem(editData);
+                          setShow(true);
+                        }
+                      } catch (error) {
+                        console.error("Error fetching template for edit:", error);
+                      }
                     }}
                   >
                     แก้ไข
@@ -250,6 +268,7 @@ const Cardmessage = () => {
               <Form.Label>ชื่อไอเทม</Form.Label>
               <Form.Control
                 type="text"
+                value={newItem.title}
                 onChange={(e) =>
                   setNewItem({ ...newItem, title: e.target.value })
                 }
@@ -299,6 +318,7 @@ const Cardmessage = () => {
                 <Form.Control
                   as="textarea"
                   rows={3}
+                  value={newItem.message}
                   onChange={(e) =>
                     // เก็บค่าที่พิมพ์ลง state
                     setNewItem({ ...newItem, message: e.target.value })

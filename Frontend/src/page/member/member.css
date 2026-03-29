@@ -108,14 +108,36 @@
   padding-left: 3rem !important;
 }
 
-/* รูปโปรไฟล์สมาชิกในทีม */
+/* รูปโปรไฟล์สมาชิก */
 .member-avatar {
-  width: 56px;
-  height: 56px;
+  width: 42px;
+  height: 42px;
   object-fit: cover;
   border-radius: 50%;
-  border: 3px solid transparent;
-  transition: border-color 0.3s ease;
+  border: 2.5px solid transparent;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Avatar แบบตัวอักษร (ใช้เมื่อไม่มีรูป) */
+.member-avatar-initials {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  user-select: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.member-row:hover .member-avatar,
+.member-row:hover .member-avatar-initials {
+  box-shadow: 0 2px 8px rgba(242, 102, 35, 0.18);
 }
 
 /* =========================================================================
@@ -139,21 +161,20 @@
   border-color: #22c55e;
 }
 
-/* ขอบสีเทารอบ avatar เมื่อ user offline */
+/* ขอบสีเทาอ่อนรอบ avatar เมื่อ user offline */
 .avatar-offline {
-  border-color: #d1d5db;
+  border-color: #e5e7eb;
 }
 
-/* จุดกลมเล็กๆ มุมขวาล่างของ avatar (แสดงสถานะ online/offline) */
-/* border สีขาวทำให้จุดดูเด่นชัดบน avatar */
+/* จุดกลมเล็กๆ มุมขวาล่างของ avatar */
 .avatar-status-dot {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 14px;
-  height: 14px;
+  bottom: 0px;
+  right: 0px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  border: 2.5px solid var(--bg-main, #ffffff);
+  border: 2px solid var(--bg-main, #ffffff);
 }
 
 /* จุดสีเขียว = online พร้อม animation กระพริบ */
@@ -356,8 +377,9 @@
     margin-top: 6px;
   }
 
-  .member-avatar {
-    width: 48px;
-    height: 48px;
+  .member-avatar,
+  .member-avatar-initials {
+    width: 38px;
+    height: 38px;
   }
 }

@@ -36,8 +36,9 @@ exports.getAllTemplates = async (req, res) => {
         const templates = await Template.findAll();
         res.status(200).json({ status: 'success', data: templates });
     } catch (error) {
-        console.error('Error in getAllTemplates:', error);
-        res.status(500).json({ status: 'error', message: 'เกิดข้อผิดพลาดในการดึงข้อมูล' });
+        console.error('Error in getAllTemplates:', error.message);
+        console.error('Error details:', { code: error.code, errno: error.errno, sqlState: error.sqlState, sqlMessage: error.sqlMessage });
+        res.status(500).json({ status: 'error', message: 'เกิดข้อผิดพลาดในการดึงข้อมูล', detail: error.message });
     }
 };
 

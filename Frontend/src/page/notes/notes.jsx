@@ -138,12 +138,14 @@ function Dashboard() {
                 style={{
                   maxHeight: "150px",
                   overflowY: "auto",
-                  cursor: "pointer",
+                  cursor: note.customer_id ? "pointer" : "default",
                 }}
                 onClick={() => {
-                  navigate("/inbox", { state: { chatId: note.id } });
+                  if (note.customer_id) {
+                    navigate("/inbox", { state: { customerId: note.customer_id } });
+                  }
                 }}
-                title="คลิกเพื่อไปยังหน้าแชทของลูกค้ารายนี้"
+                title={note.customer_id ? "คลิกเพื่อไปยังหน้าแชทของลูกค้ารายนี้" : "โน้ตนี้ไม่ได้ผูกกับลูกค้า"}
               >
                 <Card.Text
                   className="fs-5"
