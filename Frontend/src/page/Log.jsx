@@ -44,7 +44,7 @@ const Log = () => {
 
     // Socket.IO: real-time updates
     useEffect(() => {
-        const socket = io("http://localhost:3000");
+        const socket = io();
 
         socket.on("new-log", (newLog) => {
             // เพิ่ม log ใหม่ไว้ด้านบนสุด

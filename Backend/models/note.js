@@ -1,6 +1,19 @@
 const pool = require('../config/db.js');
 
 const Note = {
+  // ดึงโน้ตทั้งหมด (สำหรับหน้า Notes รวม)
+  findAll: async () => {
+    const [rows] = await pool.query(
+      `SELECT n.id, n.customer_id, n.text AS content, n.author, n.created_at,
+              c.display_name AS user,
+              c.picture_url AS customer_avatar
+       FROM notes n
+       LEFT JOIN customers c ON n.customer_id = c.id
+       ORDER BY n.created_at DESC`
+    );
+    return rows;
+  },
+
   // ดึงโน้ตตาม customer_id
   findByCustomerId: async (customerId) => {
     const [rows] = await pool.query(

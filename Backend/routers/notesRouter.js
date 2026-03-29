@@ -189,14 +189,25 @@ const auth = require('../middleware/auth.js');
  *         description: Server error
  */
 
-// GET /api/notes/:customerId — ดึงโน้ตของลูกค้า
+// GET /api/notes — ดึงโน๊ตทั้งหมด (สำหรับหน้า Notes รวม)
+router.get('/', auth, async (req, res) => {
+  try {
+    const notes = await Note.findAll();
+    res.json({ status: 'success', data: notes });
+  } catch (err) {
+    console.error('Get all notes error:', err);
+    res.status(500).json({ status: 'error', message: 'เกิดข้อผิดพลาดในการดึงโน๊ต' });
+  }
+});
+
+// GET /api/notes/:customerId — ดึงโน๊ตของลูกค้า
 router.get('/:customerId', auth, async (req, res) => {
   try {
     const notes = await Note.findByCustomerId(req.params.customerId);
     res.json(notes);
   } catch (err) {
     console.error('Get notes error:', err);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงโน้ต' });
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงโน๊ต' });
   }
 });
 
@@ -205,11 +216,19 @@ router.post('/', auth, async (req, res) => {
   try {
     const { customer_id, text, author } = req.body;
 
-    if (!customer_id || !text) {
-      return res.status(400).json({ message: 'กรุณาระบุ customer_id และข้อความ' });
+    if (!text) {
+      return res.status(400).json({ message: 'กรุณาระบุข้อความ' });
     }
 
-    const newId = await Note.create({ customer_id, text, author });
+    const newId = await Note.create({ customer_id: customer_id || null, text, author });
+
+    // ส่ง real-time event ให้ Notes page อัพเดท
+    const io = req.app.get('io');
+    if (io) {
+      const [newNote] = await Note.findAll().then(rows => rows.filter(r => r.id === newId));
+      io.emit('new_note', newNote || { id: newId, customer_id, content: text, author, user: author });
+    }
+
     res.status(201).json({ message: 'สร้างโน้ตสำเร็จ', id: newId });
   } catch (err) {
     console.error('Create note error:', err);

@@ -22,7 +22,10 @@ const Cardmessage = () => {
 
   const fetchItems = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/templates");
+      const token = sessionStorage.getItem('token');
+      const response = await fetch("/api/templates", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const resData = await response.json();
       if (resData.status === "success") {
         const backendItems = resData.data.map((item) => {
@@ -74,24 +77,26 @@ const Cardmessage = () => {
       return;
     }
 
+    const currentUser = JSON.parse(sessionStorage.getItem('myAppUser') || '{}');
     const payload = {
       name: newItem.title,
       type: newItem.type,
       content: { image: newItem.image, message: newItem.message },
-      created_by: 1
+      created_by: currentUser?.emp_id || null
     };
 
     try {
+      const token = sessionStorage.getItem('token');
       if (editingItem) {
-        await fetch(`http://localhost:3000/api/templates/${editingItem.id}`, {
+        await fetch(`/api/templates/${editingItem.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       } else {
-        await fetch("http://localhost:3000/api/templates", {
+        await fetch("/api/templates", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       }
@@ -202,7 +207,8 @@ const Cardmessage = () => {
                     onClick={async () => {
                       if(window.confirm("คุณต้องการลบเทมเพลตนี้ใช่หรือไม่?")) {
                          try {
-                           await fetch(`http://localhost:3000/api/templates/${item.id}`, { method: "DELETE" });
+                           const token = sessionStorage.getItem('token');
+                           await fetch(`/api/templates/${item.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
                            fetchItems();
                          } catch (error) {
                            console.error("Error deleting template:", error);

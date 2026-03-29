@@ -35,11 +35,27 @@ function NotificationPage() {
 
   useEffect(() => {
     fetchNotifications();
+    // Auto mark all unread notifications as read when visiting page
+    markAllAsRead();
   }, []);
+
+  // Mark all unread notifications as read
+  const markAllAsRead = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      // Mark all unread notifications via API
+      await fetch("/api/notifications/mark-all-read", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {
+      // silent fail
+    }
+  };
 
   // Socket.IO: real-time notification updates
   useEffect(() => {
-    const socket = io("http://localhost:3000");
+    const socket = io();
 
     // Trigger หลัก: ใช้ new-message เพราะทำงาน real-time ได้ปกติ
     // เมื่อลูกค้าส่งข้อความ → รอให้ backend สร้าง notification แล้ว re-fetch
@@ -286,7 +302,7 @@ function NotificationPage() {
 
                   {/* Content */}
                   <div className="py-3 flex-grow-1">
-                    <div className="fw-bold">{customerName}</div>
+                    <div className="fw-bold" style={{ color: "var(--text-main)" }}>{customerName}</div>
                     <div className="notif-text">
                       {latestMsg?.content || "ส่งข้อความ"}
                       {messages.length > 1 && (
@@ -318,16 +334,17 @@ function NotificationPage() {
 
                 {/* Expanded message list */}
                 {isExpanded && messages.length > 1 && (
-                  <div className="px-3 pb-3" style={{ borderTop: "1px solid #eee" }}>
+                  <div className="px-3 pb-3" style={{ borderTop: "1px solid var(--border-light)" }}>
                     <div style={{ maxHeight: "200px", overflowY: "auto" }}>
                       {messages.slice().reverse().map((msg, idx) => (
                         <div
                           key={idx}
                           className="py-2 px-3 my-1"
                           style={{
-                            backgroundColor: "#f8f9fa",
+                            backgroundColor: "var(--bg-hover)",
                             borderRadius: "8px",
-                            fontSize: "0.9rem"
+                            fontSize: "0.9rem",
+                            color: "var(--text-main)"
                           }}
                         >
                           <div className="d-flex align-items-center gap-2">

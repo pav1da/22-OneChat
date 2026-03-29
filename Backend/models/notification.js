@@ -1,8 +1,9 @@
 const db = require('../config/db.js');
 
-// Auto-migrate: เพิ่ม column updated_at ถ้ายังไม่มี
+// Auto-migrate: เพิ่ม column updated_at ถ้ายังไม่มี และเปลี่ยน text เป็น TEXT type
 (async () => {
     try {
+        // 1. เช็ค updated_at column
         const [cols] = await db.query(
             `SHOW COLUMNS FROM notifications LIKE 'updated_at'`
         );
@@ -13,6 +14,17 @@ const db = require('../config/db.js');
             console.log('notifications: added updated_at column');
         } else {
             console.log('notifications: updated_at column already exists');
+        }
+
+        // 2. เปลี่ยน text column จาก VARCHAR เป็น TEXT (รองรับ JSON array ยาวๆ)
+        const [textCol] = await db.query(
+            `SHOW COLUMNS FROM notifications WHERE Field = 'text'`
+        );
+        if (textCol.length > 0 && textCol[0].Type.startsWith('varchar')) {
+            await db.query(
+                `ALTER TABLE notifications MODIFY COLUMN text TEXT NOT NULL`
+            );
+            console.log('notifications: changed text column to TEXT type');
         }
     } catch (err) {
         console.error('Migration error:', err.message);
@@ -68,6 +80,16 @@ const Notification = {
        SET is_read = true 
        WHERE id = ?`,
             [id]
+        );
+        return result;
+    },
+
+    markAllAsRead: async (userId) => {
+        const [result] = await db.query(
+            `UPDATE notifications 
+       SET is_read = true 
+       WHERE receiver_id = ? AND is_read = false`,
+            [userId]
         );
         return result;
     },

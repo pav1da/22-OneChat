@@ -130,7 +130,7 @@ const Inbox = ({ currentUser }) => {
   // ---------- Note handlers (API-backed) ----------
   const handleAddNote = async () => {
     if (!newNote.trim() || !selectedChatId) return;
-    const author = currentUser?.name || "Admin";
+    const author = currentUser?.username || currentUser?.name || "Admin";
 
     try {
       const res = await fetch("/api/notes", {
@@ -409,7 +409,18 @@ const Inbox = ({ currentUser }) => {
             {/* Notes */}
             <div className="detail-notes">
               <div className="detail-notes-header">
-                <span>โน๊ต</span>
+                <div className="d-flex align-items-center gap-2">
+                  <span>โน๊ต</span>
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    onClick={() => navigate("/notes")}
+                    title="ไปหน้าโน๊ตรวม"
+                    style={{ padding: "2px 6px" }}
+                  >
+                    <i className="bi bi-box-arrow-up-right" style={{ fontSize: "14px" }}></i>
+                  </button>
+                </div>
                 <button
                   type="button"
                   className="icon-btn"

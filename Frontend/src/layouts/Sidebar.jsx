@@ -53,7 +53,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
     }
 
     // Socket.IO: ใช้ new-message เป็น trigger (เพราะทำงาน real-time ได้ปกติ)
-    const socket = io("http://localhost:3000");
+    const socket = io();
     socket.on("new-message", (msg) => {
       // เฉพาะข้อความจากลูกค้า → เพิ่ม badge 1
       if (msg.sender === "customer") {

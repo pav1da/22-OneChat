@@ -413,6 +413,8 @@ router.delete('/:id', auth, authorize('admin'), usersController.deleteUser);
  *       500:
  *         description: Server error
  */
-router.get('/', auth, authorize('admin'), usersController.getAllUsers);
+router.get('/', auth, usersController.getAllUsers);
+
+router.get('/:id', auth, usersController.getUserById);
 
 module.exports = router;

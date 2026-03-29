@@ -236,16 +236,14 @@ function Account({ user }) {
     };
 
     // =============================================
-    // 5. UI CONFIG & RENDER
+    // 5. UI CONFIG
     // =============================================
-
-    // Style presets
     const cardSectionStyle = {
-        backgroundColor: "#eceef0",
+        backgroundColor: "var(--bg-hover)",
         borderRadius: "16px",
         padding: "30px",
         marginBottom: "24px",
-        border: "none"
+        border: "1px solid var(--border-light)"
     };
 
     const btnDarkStyle = {
@@ -259,9 +257,9 @@ function Account({ user }) {
     };
 
     const modalBtnCancel = {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #ddd",
+        backgroundColor: "var(--bg-hover)",
+        color: "var(--text-main)",
+        border: "1px solid var(--border-medium)",
         borderRadius: "8px",
         padding: "8px 24px",
         fontWeight: "500",
@@ -288,113 +286,107 @@ function Account({ user }) {
         width: "100%"
     };
 
-    // Select modal content based on modalType
-    const getModalContent = () => {
-        switch (modalType) {
-            case 'username':
-                return {
-                    title: 'เปลี่ยนชื่อผู้ใช้ของคุณ',
-                    subtitle: 'ป้อนชื่อผู้ใช้ใหม่และรหัสผ่านที่มีของคุณ',
-                    label1: 'ชื่อผู้ใช้',
-                    helper: 'โปรดใช้เฉพาะตัวเลข, ตัวอักษร, ขีดล่าง _ , หรือจุดเท่านั้น',
-                    label2: 'รหัสผ่านปัจจุบัน'
-                };
+// Select modal content based on modalType
+const getModalContent = () => {
+    switch (modalType) {
+        case 'username':
+            return {
+                title: 'เปลี่ยนชื่อผู้ใช้ของคุณ',
+                subtitle: 'ป้อนชื่อผู้ใช้ใหม่และรหัสผ่านที่มีของคุณ',
+                label1: 'ชื่อผู้ใช้',
+                helper: 'โปรดใช้เฉพาะตัวเลข, ตัวอักษร, ขีดล่าง _ , หรือจุดเท่านั้น',
+                label2: 'รหัสผ่านปัจจุบัน'
+            };
 
-            case 'email':
-                return {
-                    title: 'เปลี่ยนอีเมลของคุณ',
-                    subtitle: 'ป้อนอีเมลใหม่และรหัสผ่านเพื่อยืนยัน',
-                    label1: 'อีเมลใหม่',
-                    helper: '',
-                    label2: 'รหัสผ่านปัจจุบัน'
-                };
+        case 'email':
+            return {
+                title: 'เปลี่ยนอีเมลของคุณ',
+                subtitle: 'ป้อนอีเมลใหม่และรหัสผ่านเพื่อยืนยัน',
+                label1: 'อีเมลใหม่',
+                helper: '',
+                label2: 'รหัสผ่านปัจจุบัน'
+            };
 
-            case 'phone':
-                return {
-                    title: 'ใส่เบอร์โทรศัพท์',
-                    subtitle: 'คุณจะได้รับข้อความพร้อมกับรหัสยืนยัน'
-                };
+        case 'phone':
+            return {
+                title: 'ใส่เบอร์โทรศัพท์',
+                subtitle: 'คุณจะได้รับข้อความพร้อมกับรหัสยืนยัน'
+            };
 
-            case 'password':
-                return {
-                    title: 'อัปเดตรหัสผ่านของคุณ',
-                    subtitle: 'ป้อนรหัสผ่านปัจจุบันและรหัสผ่านใหม่'
-                };
+        case 'password':
+            return {
+                title: 'อัปเดตรหัสผ่านของคุณ',
+                subtitle: 'ป้อนรหัสผ่านปัจจุบันและรหัสผ่านใหม่'
+            };
 
-            default:
-                return {
-                    title: 'แก้ไขข้อมูล',
-                    subtitle: '',
-                    label1: 'ข้อมูล',
-                    label2: 'รหัสผ่าน'
-                };
-        }
-    };
+        default:
+            return {
+                title: 'แก้ไขข้อมูล',
+                subtitle: '',
+                label1: 'ข้อมูล',
+                label2: 'รหัสผ่าน'
+            };
+    }
+};
 
-    const modalContent = getModalContent();
+const modalContent = getModalContent();
 
-    // =============================================
-    // RENDER
-    // =============================================
-    return (
-        <Container fluid className="px-4 pt-5" style={{ maxWidth: '1000px' }}>
+// =============================================
+// RENDER
+// =============================================
+return (
+    <Container fluid className="px-4 pt-5" style={{ maxWidth: '1000px' }}>
 
-            <h4 className="fs-3 mb-4">แก้ไขโปรไฟล์</h4>
+        <h4 className="fs-3 mb-4">แก้ไขโปรไฟล์</h4>
 
-            {/* -----------------------------------------
-            SECTION 1: PROFILE IMAGE
-        ------------------------------------------ */}
-            <div style={cardSectionStyle}>
-                <Row className="align-items-center justify-content-between">
-                    <Col xs="auto" className="d-flex align-items-center gap-4">
+        {/* -----------------------------------------
+        SECTION 1: PROFILE IMAGE
+    ------------------------------------------ */}
+        {/* SECTION 1: PROFILE IMAGE */}
+        <div style={cardSectionStyle}>
+            <Row className="align-items-center justify-content-between">
+                <Col xs="auto" className="d-flex align-items-center gap-4">
+                    <div
+                        style={{
+                            width: "70px",
+                            height: "70px",
+                            borderRadius: "50%",
+                            overflow: "hidden",
+                            backgroundColor: "var(--bg-card)",
+                            flexShrink: 0
+                        }}
+                    >
+                        {imagePreview ? (
+                            <img
+                                src={imagePreview}
+                                alt="Profile"
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            />
+                        ) : (
+                            <div className="d-flex align-items-center justify-content-center h-100 text-muted">
+                                No IMG
+                            </div>
+                        )}
+                    </div>
+                    <span className="fs-5">{userData.username}</span>
+                </Col>
+                <Col xs="auto">
+                    <Button variant="dark" style={btnDarkStyle} onClick={handleEditClick}>
+                        เปลี่ยนรูปภาพ
+                    </Button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                        accept="image/*"
+                    />
+                </Col>
+            </Row>
+        </div>
 
-                        {/* Avatar */}
-                        <div
-                            style={{
-                                width: "70px",
-                                height: "70px",
-                                borderRadius: "50%",
-                                overflow: "hidden",
-                                backgroundColor: "#ddd",
-                                flexShrink: 0
-                            }}
-                        >
-                            {imagePreview ? (
-                                <img
-                                    src={imagePreview}
-                                    alt="Profile"
-                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                />
-                            ) : (
-                                <div className="d-flex align-items-center justify-content-center h-100 text-muted">
-                                    No IMG
-                                </div>
-                            )}
-                        </div>
-
-                        <span className=" fs-5">{userData.username}</span>
-                    </Col>
-
-                    <Col xs="auto">
-                        <Button variant="dark" style={btnDarkStyle} onClick={handleEditClick}>
-                            เปลี่ยนรูปภาพ
-                        </Button>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            style={{ display: 'none' }}
-                            accept="image/*"
-                        />
-                    </Col>
-                </Row>
-            </div>
-
-            {/* -----------------------------------------
-            SECTION 2: USER INFO
-        ------------------------------------------ */}
-            <div style={cardSectionStyle}>
-
+        {/* SECTION 2: USER INFO */}
+        <div style={cardSectionStyle}>
                 {/* Username */}
                 <Row className="align-items-center justify-content-between mb-4">
                     <Col>
@@ -427,7 +419,6 @@ function Account({ user }) {
                         <div className="fw-bold fs-6 mb-1">เบอร์โทรศัพท์</div>
                         <div style={{ fontSize: '1rem' }}>{userData.phone}</div>
                     </Col>
-
                     <Col xs="auto" className="d-flex align-items-center gap-3">
                         <span className="text-muted small" style={{ cursor: 'pointer', fontSize: '0.9rem' }}>
                             ลบ
@@ -437,7 +428,7 @@ function Account({ user }) {
                         </Button>
                     </Col>
                 </Row>
-            </div>
+        </div>
 
             <hr className="mt-3 mb-5" style={{ borderTop: '1px solid #888888ff' }} />
 
