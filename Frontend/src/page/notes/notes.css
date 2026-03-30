@@ -78,3 +78,11 @@
   color: var(--primary-color);
   border-color: var(--primary-light);
 }
+
+/* ปุ่ม Sort ที่ถูกเลือกอยู่ */
+.nav-search.active {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  font-weight: 600;
+}

@@ -20,9 +20,24 @@ const getLocalDatetime = () => {
 };
 
 // รับข้อมูลจาก Route แล้วแยกกระจายงาน
-exports.handleWebhook = (req, res) => {
+exports.handleWebhook = async (req, res) => {
   console.log("📩 รับข้อมูลจาก LINE แล้ว!");
   const io = req.app.get("io");
+
+  // ตรวจสอบ status ของ LINE channel จาก channels table
+  // ถ้ามีการตั้งค่าไว้แต่ทุก channel ถูกปิด → ตอบ 200 แต่ไม่ประมวลผล
+  try {
+    const [lineChannels] = await db.query(
+      "SELECT status FROM channels WHERE platform = 'line'"
+    );
+    if (lineChannels.length > 0 && !lineChannels.some(c => c.status === 'active')) {
+      console.log("⏸️ LINE channel ถูกปิดทั้งหมด — ไม่ประมวลผล");
+      return res.status(200).send("OK");
+    }
+  } catch (err) {
+    console.error("Channel status check error:", err.message);
+  }
+
   Promise.all(req.body.events.map((event) => handleEvent(event, io)))
     .then(() => res.status(200).send("OK"))
     .catch((err) => {

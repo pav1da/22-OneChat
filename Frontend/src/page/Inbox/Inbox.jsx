@@ -226,31 +226,28 @@ const Inbox = ({ currentUser }) => {
   };
 
   // ---------- Effects ----------
-  // Select customer from navigation state (e.g., from notification) or first chat
+  // Effect 1: กดจาก notification → เปิดแชทของลูกค้าที่ถูกต้อง
   useEffect(() => {
-    if (location.state?.customerId) {
-      // กดจาก notification → เปิดแชทของลูกค้าที่ถูกต้อง
-      setSelectedChatId(location.state.customerId);
-      // Clear state หลังใช้แล้ว
-      navigate(location.pathname, { replace: true, state: {} });
-    } else if (customer.length > 0 && selectedChatId === null) {
-      // โหลดครั้งแรก → เปิดแชทแรก
+    const cid = location.state?.customerId || location.state?.chatId;
+    if (cid) {
+      setSelectedChatId(Number(cid));
+      // ใช้ replaceState แทน navigate เพื่อไม่ให้ component remount
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [location.state?.customerId, location.state?.chatId, location.pathname]);
+
+  // Effect 2: โหลดครั้งแรก → เปิดแชทแรก (เฉพาะกรณีที่ยังไม่ได้ select และไม่ได้มาจาก notification)
+  useEffect(() => {
+    const hasNavState = !!(location.state?.customerId || location.state?.chatId);
+    if (customer.length > 0 && selectedChatId === null && !hasNavState) {
       setSelectedChatId(customer[0].id);
     }
-  }, [customer, selectedChatId, location.state, navigate, location.pathname]);
+  }, [customer.length, selectedChatId]);
 
   // Scroll to latest message
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, selectedChatId]);
-
-  // Accept chatId from navigation state
-  useEffect(() => {
-    if (location.state?.chatId) {
-      setSelectedChatId(location.state.chatId);
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
 
   // ---------- Render ----------
   return (

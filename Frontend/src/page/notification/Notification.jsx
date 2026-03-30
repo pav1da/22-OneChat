@@ -197,6 +197,7 @@ function NotificationPage() {
   };
 
   return (
+    <div style={{ height: 'calc(100vh - 70px)', overflowY: 'auto', paddingBottom: '24px' }}>
     <Container fluid className="kanit-regular px-4">
       {/* --- Header --- */}
       <div className="d-flex justify-content-end align-items-end mb-4">
@@ -375,6 +376,7 @@ function NotificationPage() {
         )}
       </div>
     </Container>
+    </div>
   );
 }
 
