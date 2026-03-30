@@ -181,4 +181,30 @@ router.put('/:id/read', auth, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/notifications/mark-all-read:
+ *   put:
+ *     summary: Mark all unread notifications as read
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Marked all as read
+ *       401:
+ *         description: ไม่พบ Token
+ *       500:
+ *         description: Server error
+ */
+router.put('/mark-all-read', auth, async (req, res) => {
+    try {
+        const userId = req.user.id || req.user.emp_id;
+        const result = await Notification.markAllAsRead(userId);
+        res.json({ message: 'Marked all as read', result });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

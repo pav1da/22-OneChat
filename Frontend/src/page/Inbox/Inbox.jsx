@@ -34,6 +34,10 @@ const Inbox = ({ currentUser }) => {
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState("");
 
+  // Members list for "ผู้รับผิดชอบ" dropdown
+  const [members, setMembers] = useState([]);
+  const [assignedMap, setAssignedMap] = useState({}); // { customerId: { emp_id, username } }
+
   // ---------- Derived state ----------
   const selectedCustomer = customer.find((c) => c.id === selectedChatId);
   const chatMessages = messages[selectedChatId] || [];
@@ -104,6 +108,43 @@ const Inbox = ({ currentUser }) => {
 
   const handleNameSave = () => setIsEditingName(false);
 
+  // ---------- Fetch members for assignment dropdown ----------
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const res = await fetch("/api/users", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setMembers(data);
+        }
+      } catch (err) {
+        console.error("Error fetching members:", err);
+      }
+    };
+    fetchMembers();
+  }, []);
+
+  // ---------- Assignment handler ----------
+  const handleAssignChange = (customerId, empId) => {
+    const member = members.find((m) => m.emp_id === Number(empId));
+    if (member) {
+      setAssignedMap((prev) => ({
+        ...prev,
+        [customerId]: { emp_id: member.emp_id, username: member.username },
+      }));
+    }
+  };
+
+  const getAssignedUser = (customerId) => {
+    if (assignedMap[customerId]) return assignedMap[customerId];
+    // Default: current user
+    if (currentUser) return { emp_id: currentUser.emp_id, username: currentUser.username || currentUser.name };
+    return null;
+  };
+
   // ---------- Helper: get auth headers ----------
   const getHeaders = () => ({
     "Content-Type": "application/json",
@@ -130,7 +171,7 @@ const Inbox = ({ currentUser }) => {
   // ---------- Note handlers (API-backed) ----------
   const handleAddNote = async () => {
     if (!newNote.trim() || !selectedChatId) return;
-    const author = currentUser?.name || "Admin";
+    const author = currentUser?.username || currentUser?.name || "Admin";
 
     try {
       const res = await fetch("/api/notes", {
@@ -185,12 +226,18 @@ const Inbox = ({ currentUser }) => {
   };
 
   // ---------- Effects ----------
-  // Select first chat on load
+  // Select customer from navigation state (e.g., from notification) or first chat
   useEffect(() => {
-    if (customer.length > 0 && selectedChatId === null) {
+    if (location.state?.customerId) {
+      // กดจาก notification → เปิดแชทของลูกค้าที่ถูกต้อง
+      setSelectedChatId(location.state.customerId);
+      // Clear state หลังใช้แล้ว
+      navigate(location.pathname, { replace: true, state: {} });
+    } else if (customer.length > 0 && selectedChatId === null) {
+      // โหลดครั้งแรก → เปิดแชทแรก
       setSelectedChatId(customer[0].id);
     }
-  }, [customer, selectedChatId]);
+  }, [customer, selectedChatId, location.state, navigate, location.pathname]);
 
   // Scroll to latest message
   useEffect(() => {
@@ -388,13 +435,17 @@ const Inbox = ({ currentUser }) => {
             <div className="detail-assigned">
               <span>ผู้รับผิดชอบ :</span>
               <div className="detail-assigned-user">
-                <img
-                  src={currentUser?.image}
-                  alt="Admin"
-                  className="rounded-circle"
-                  style={{ width: "28px", height: "28px", objectFit: "cover" }}
-                />
-                <span>{currentUser?.name}</span>
+                <select
+                  className="assign-select"
+                  value={getAssignedUser(selectedChatId)?.emp_id || ""}
+                  onChange={(e) => handleAssignChange(selectedChatId, e.target.value)}
+                >
+                  {members.map((m) => (
+                    <option key={m.emp_id} value={m.emp_id}>
+                      {m.username} ({m.role})
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -403,7 +454,18 @@ const Inbox = ({ currentUser }) => {
             {/* Notes */}
             <div className="detail-notes">
               <div className="detail-notes-header">
-                <span>โน๊ต</span>
+                <div className="d-flex align-items-center gap-2">
+                  <span>โน๊ต</span>
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    onClick={() => navigate("/notes")}
+                    title="ไปหน้าโน๊ตรวม"
+                    style={{ padding: "2px 6px" }}
+                  >
+                    <i className="bi bi-box-arrow-up-right" style={{ fontSize: "14px" }}></i>
+                  </button>
+                </div>
                 <button
                   type="button"
                   className="icon-btn"

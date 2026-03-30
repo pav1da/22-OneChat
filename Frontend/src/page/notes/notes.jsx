@@ -23,7 +23,10 @@ function Dashboard() {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/notes");
+        const token = sessionStorage.getItem("token");
+        const res = await fetch("/api/notes", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         if (data.status === "success") {
           setNotes(data.data);
@@ -35,7 +38,7 @@ function Dashboard() {
 
     fetchNotes();
 
-    const socket = io("http://localhost:3000");
+    const socket = io();
 
     socket.on("new_note", (note) => {
       setNotes((prev) => [note, ...prev]);
@@ -75,19 +78,20 @@ function Dashboard() {
   const handleSaveNote = async () => {
     if (newNote.user && newNote.content) {
       try {
+        const token = sessionStorage.getItem("token");
         if (editingId) {
           // โหมดแก้ไข
-          await fetch(`http://localhost:3000/api/notes/${editingId}`, {
+          await fetch(`/api/notes/${editingId}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user: newNote.user, content: newNote.content, admin_name: "Admin" })
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ text: newNote.content })
           });
         } else {
           // สร้างใหม่
-          await fetch("http://localhost:3000/api/notes", {
+          await fetch("/api/notes", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user: newNote.user, content: newNote.content, admin_name: "Admin", created_by: 1 })
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ customer_id: null, text: newNote.content, author: newNote.user })
           });
         }
         handleClose();
@@ -101,7 +105,11 @@ function Dashboard() {
   const handleDeleteNote = async (id) => {
     if (window.confirm("ยืนยันการลบโน้ต?")) {
       try {
-        await fetch(`http://localhost:3000/api/notes/${id}`, { method: "DELETE" });
+        const token = sessionStorage.getItem("token");
+        await fetch(`/api/notes/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
       } catch (error) {
         console.error("Error deleting note:", error);
       }
@@ -130,12 +138,14 @@ function Dashboard() {
                 style={{
                   maxHeight: "150px",
                   overflowY: "auto",
-                  cursor: "pointer",
+                  cursor: note.customer_id ? "pointer" : "default",
                 }}
                 onClick={() => {
-                  navigate("/inbox", { state: { chatId: note.id } });
+                  if (note.customer_id) {
+                    navigate("/inbox", { state: { customerId: note.customer_id } });
+                  }
                 }}
-                title="คลิกเพื่อไปยังหน้าแชทของลูกค้ารายนี้"
+                title={note.customer_id ? "คลิกเพื่อไปยังหน้าแชทของลูกค้ารายนี้" : "โน้ตนี้ไม่ได้ผูกกับลูกค้า"}
               >
                 <Card.Text
                   className="fs-5"
@@ -151,21 +161,58 @@ function Dashboard() {
 
               <hr className="my-0" style={{ opacity: 0.1 }} />
 
-              {/* รายชื่อผู้เขียน + เมนูแก้ไข/ลบ */}
+              {/* Footer: customer avatar + name | author + menu */}
               <div className="d-flex justify-content-between align-items-center pt-3">
-                <span className="fs-6" style={{ fontSize: "0.95rem" }}>
-                  {note.user}
-                </span>
+                {/* ซ้าย: รูปลูกค้า + ชื่อลูกค้า */}
+                <div className="d-flex align-items-center gap-2">
+                  {note.customer_avatar ? (
+                    <img
+                      src={note.customer_avatar}
+                      alt={note.user}
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        flexShrink: 0,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        background: "var(--bg-hover)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "0.75rem",
+                        fontWeight: "600",
+                        color: "var(--text-secondary)",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {note.user ? note.user.charAt(0).toUpperCase() : "?"}
+                    </div>
+                  )}
+                  <div style={{ lineHeight: 1.2 }}>
+                    <div style={{ fontSize: "0.85rem", fontWeight: "600" }}>
+                      {note.user || "ไม่ระบุ"}
+                    </div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+                      สร้างโดย: {note.author || "-"}
+                    </div>
+                  </div>
+                </div>
 
+                {/* ขวา: เมนู */}
                 <Dropdown align="end">
                   <Dropdown.Toggle
                     as="div"
                     className="p-0 text-dark border-0 no-caret-toggle"
                     id={`dropdown-${note.id}`}
-                    style={{
-                      boxShadow: "none",
-                      cursor: "pointer",
-                    }}
+                    style={{ boxShadow: "none", cursor: "pointer" }}
                   >
                     <i className="bi bi-three-dots-vertical fs-5"></i>
                   </Dropdown.Toggle>
@@ -174,9 +221,7 @@ function Dashboard() {
                     <Dropdown.Item onClick={() => handleEditNote(note)}>
                       <i className="bi bi-pencil me-2"></i> แก้ไข
                     </Dropdown.Item>
-
                     <Dropdown.Divider />
-
                     <Dropdown.Item
                       onClick={() => handleDeleteNote(note.id)}
                       className="text-danger"

@@ -1,7 +1,7 @@
 import { useState } from "react";
-// 2. Import Form (สำหรับปุ่มอัปโหลด)
 import { Container, Row, Col, Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import AccountModal from "../components/AccountModal";
 
 const orangeButtonStyle = {
   backgroundColor: "#F26623",
@@ -14,6 +14,7 @@ const orangeTextColor = {
 
 const Home = () => {
   const [backgroundImage, setBackgroundImage] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -113,15 +114,20 @@ const Home = () => {
                 supporting a customer or collaborating with your team, we bring
                 everything together in a single, secure platform.
               </p>
-              <Link to="/dashboard" className="mt-4 d-inline-block">
-                <Button style={orangeButtonStyle} size="lg">
-                  Get Start
-                </Button>
-              </Link>
+              <Button 
+                style={orangeButtonStyle} 
+                size="lg" 
+                className="mt-4"
+                onClick={() => setShowModal(true)}
+              >
+                Get Started
+              </Button>
             </Col>
           </Row>
         </Container>
       </main>
+
+      <AccountModal show={showModal} onHide={() => setShowModal(false)} />
     </Container>
   );
 };

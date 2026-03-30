@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { Container, Form, Spinner } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { io } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 import "./notification.css";
 
 function NotificationPage() {
@@ -9,6 +11,8 @@ function NotificationPage() {
   const [error, setError] = useState(null);
   const [filterUser, setFilterUser] = useState("");
   const [filterAction, setFilterAction] = useState("");
+  const [expandedNotifs, setExpandedNotifs] = useState(new Set());
+  const navigate = useNavigate();
 
   // ดึง notifications จาก API
   const fetchNotifications = async () => {
@@ -31,6 +35,58 @@ function NotificationPage() {
 
   useEffect(() => {
     fetchNotifications();
+    // Auto mark all unread notifications as read when visiting page
+    markAllAsRead();
+  }, []);
+
+  // Mark all unread notifications as read
+  const markAllAsRead = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      // Mark all unread notifications via API
+      await fetch("/api/notifications/mark-all-read", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {
+      // silent fail
+    }
+  };
+
+  // Socket.IO: real-time notification updates
+  useEffect(() => {
+    const socket = io();
+
+    // Trigger หลัก: ใช้ new-message เพราะทำงาน real-time ได้ปกติ
+    // เมื่อลูกค้าส่งข้อความ → รอให้ backend สร้าง notification แล้ว re-fetch
+    socket.on("new-message", (msg) => {
+      if (msg.sender === "customer") {
+        setTimeout(() => fetchNotifications(), 1000);
+      }
+    });
+
+    // Backup: ฟัง notification events ด้วย
+    socket.on("new-notifications", (newNotifs) => {
+      const userId = JSON.parse(sessionStorage.getItem("user"))?.emp_id;
+      const myNotifs = newNotifs.filter(n => String(n.receiver_id) === String(userId));
+      if (myNotifs.length > 0) {
+        setNotifications((prev) => [...myNotifs, ...prev]);
+      }
+    });
+
+    socket.on("update-notifications", (updatedNotifs) => {
+      const userId = JSON.parse(sessionStorage.getItem("user"))?.emp_id;
+      const myNotifs = updatedNotifs.filter(n => String(n.receiver_id) === String(userId));
+      
+      setNotifications((prev) =>
+        prev.map((n) => {
+          const updated = myNotifs.find(un => un.id === n.id);
+          return updated || n;
+        })
+      );
+    });
+
+    return () => socket.disconnect();
   }, []);
 
   // Mark as read
@@ -49,6 +105,47 @@ function NotificationPage() {
     }
   };
 
+  // Handle notification click
+  const handleNotificationClick = async (notif) => {
+    // Mark as read
+    if (!notif.is_read) {
+      await handleMarkAsRead(notif.id);
+    }
+
+    // Navigate to customer chat if it's a customer message
+    if (notif.type === "customer_message" && notif.ref_id) {
+      navigate("/inbox", { state: { customerId: notif.ref_id } });
+    }
+  };
+
+  // Toggle expand/collapse
+  const toggleExpand = (notifId, e) => {
+    e.stopPropagation();
+    const newExpanded = new Set(expandedNotifs);
+    if (newExpanded.has(notifId)) {
+      newExpanded.delete(notifId);
+    } else {
+      newExpanded.add(notifId);
+    }
+    setExpandedNotifs(newExpanded);
+  };
+
+  // Parse messages array from notification
+  const getMessages = (notif) => {
+    try {
+      const parsed = JSON.parse(notif.text);
+      return Array.isArray(parsed) ? parsed : [{ type: "text", content: notif.text }];
+    } catch {
+      return [{ type: "text", content: notif.text }];
+    }
+  };
+
+  // Get customer name from ref_id
+  const getCustomerName = (notif) => {
+    // Try to get from notification or fallback to "ลูกค้า"
+    return notif.customer_name || notif.sender_name || "ลูกค้า";
+  };
+
   // สร้าง unique lists สำหรับ filter dropdowns
   const uniqueSenders = useMemo(
     () => [...new Set(notifications.map((n) => n.sender_name).filter(Boolean))],
@@ -64,6 +161,7 @@ function NotificationPage() {
     const map = {
       access: "เข้าถึงข้อความ",
       new_msg: "ข้อความใหม่",
+      customer_message: "ข้อความจากลูกค้า",
       system: "ระบบ",
     };
     return map[type] || type;
@@ -161,43 +259,111 @@ function NotificationPage() {
             <p>{error}</p>
           </div>
         ) : filtered.length > 0 ? (
-          filtered.map((item) => (
-            <div
-              key={item.id}
-              className={`d-flex align-items-center p-3 notification-card ${!item.is_read ? "unread" : ""}`}
-              onClick={() => !item.is_read && handleMarkAsRead(item.id)}
-            >
-              {/* Avatar */}
+          filtered.map((item) => {
+            const messages = getMessages(item);
+            const isExpanded = expandedNotifs.has(item.id);
+            const customerName = getCustomerName(item);
+            const latestMsg = messages[messages.length - 1];
+            
+            return (
               <div
-                className="px-2"
-                style={{ flexShrink: 0, marginRight: "15px" }}
+                key={item.id}
+                className={`notification-card ${!item.is_read ? "unread" : ""}`}
+                style={{ cursor: "pointer" }}
               >
-                {item.sender_avatar ? (
-                  <img
-                    src={item.sender_avatar}
-                    alt="avatar"
-                    className="notif-avatar"
-                  />
-                ) : (
-                  <div className="notif-avatar-placeholder">
-                    {(item.sender_name || "?").charAt(0).toUpperCase()}
+                {/* Main notification row */}
+                <div
+                  className="d-flex align-items-center p-3"
+                  onClick={() => handleNotificationClick(item)}
+                >
+                  {/* Avatar */}
+                  <div
+                    className="px-2"
+                    style={{ flexShrink: 0, marginRight: "15px" }}
+                  >
+                    {item.customer_avatar ? (
+                      <img
+                        src={item.customer_avatar}
+                        alt={customerName}
+                        className="notif-avatar"
+                        style={{
+                          width: "48px",
+                          height: "48px",
+                          borderRadius: "50%",
+                          objectFit: "cover"
+                        }}
+                      />
+                    ) : (
+                      <div className="notif-avatar-placeholder">
+                        {customerName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="py-3 flex-grow-1">
+                    <div className="fw-bold" style={{ color: "var(--text-main)" }}>{customerName}</div>
+                    <div className="notif-text">
+                      {latestMsg?.content || "ส่งข้อความ"}
+                      {messages.length > 1 && (
+                        <span className="text-muted ms-2">
+                          ({messages.length} ข้อความ)
+                        </span>
+                      )}
+                    </div>
+                    <div className="notif-date">
+                      {formatDate(item.updated_at || item.created_at)} เวลา{" "}
+                      {formatTime(item.updated_at || item.created_at)}
+                    </div>
+                  </div>
+
+                  {/* Expand button */}
+                  {messages.length > 1 && (
+                    <button
+                      className="btn btn-sm btn-link text-muted p-0 me-2"
+                      onClick={(e) => toggleExpand(item.id, e)}
+                      style={{ fontSize: "1.2rem" }}
+                    >
+                      <i className={`bi bi-chevron-${isExpanded ? "up" : "down"}`}></i>
+                    </button>
+                  )}
+
+                  {/* Unread dot */}
+                  {!item.is_read && <div className="notif-unread-dot"></div>}
+                </div>
+
+                {/* Expanded message list */}
+                {isExpanded && messages.length > 1 && (
+                  <div className="px-3 pb-3" style={{ borderTop: "1px solid var(--border-light)" }}>
+                    <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                      {messages.slice().reverse().map((msg, idx) => (
+                        <div
+                          key={idx}
+                          className="py-2 px-3 my-1"
+                          style={{
+                            backgroundColor: "var(--bg-hover)",
+                            borderRadius: "8px",
+                            fontSize: "0.9rem",
+                            color: "var(--text-main)"
+                          }}
+                        >
+                          <div className="d-flex align-items-center gap-2">
+                            {msg.type === "image" && (
+                              <i className="bi bi-image text-primary"></i>
+                            )}
+                            {msg.type === "sticker" && (
+                              <i className="bi bi-emoji-smile text-warning"></i>
+                            )}
+                            <span>{msg.content}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
-
-              {/* Content */}
-              <div className="py-3 flex-grow-1">
-                <div className="notif-text">{item.text}</div>
-                <div className="notif-date">
-                  วันที่ {formatDate(item.created_at)} เวลา{" "}
-                  {formatTime(item.created_at)}
-                </div>
-              </div>
-
-              {/* Unread dot */}
-              {!item.is_read && <div className="notif-unread-dot"></div>}
-            </div>
-          ))
+            );
+          })
         ) : (
           <div
             className="text-center py-5"

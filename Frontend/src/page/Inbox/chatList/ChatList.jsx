@@ -1,5 +1,5 @@
 import "./chatList.css";
-import { Card, Badge, Dropdown } from "react-bootstrap";
+import { Card } from "react-bootstrap";
 import React, { useState } from "react";
 
 const STATUS = {
@@ -63,12 +63,19 @@ const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
                     {cus.name}
                   </span>
 
-                  <Badge
-                    bg={getStatusVariant(cus.status)}
+                  <span
                     className="custom-badge"
+                    style={{
+                      backgroundColor:
+                        cus.status === STATUS.DONE ? '#16a34a'
+                        : cus.status === STATUS.IN_PROGRESS ? '#d97706'
+                        : '#6b7280',
+                      color: '#ffffff',
+                      borderRadius: '12px',
+                    }}
                   >
                     {cus.status}
-                  </Badge>
+                  </span>
                 </div>
                 <p
                   className="custom-text text-truncate mb-0"

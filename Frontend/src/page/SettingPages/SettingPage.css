@@ -112,12 +112,9 @@
 /* --- สไตล์ตอน Active (หน้าที่เลือกอยู่) --- */
 /* ใช้ !important เพื่อให้มั่นใจว่าทับของเก่าแน่นอน */
 .settings-nav .nav-link.active {
-    background-color: #fff5f0 !important;
-    /* พื้นหลังสีส้มจางๆ */
+    background-color: rgba(253, 126, 20, 0.15) !important;
     color: #fd7e14 !important;
-    /* ตัวหนังสือสีส้ม */
-    border: 1px solid #fd7e14 !important;
-    /* เส้นขอบสีส้ม */
+    border: 1px solid rgba(253, 126, 20, 0.5) !important;
     font-weight: 600;
 }
 
@@ -298,7 +295,7 @@
 .about-page {
     font-size: 0.95rem;
     line-height: 1.6;
-    color: #212529;
+    color: var(--text-main);
 }
 
 .about-page h2 {

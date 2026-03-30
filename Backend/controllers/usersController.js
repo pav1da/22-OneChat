@@ -315,7 +315,7 @@ exports.deleteUser = async (req, res) => {
 };
 
 // =============================================
-// 10. GET /api/users — ดึงรายชื่อผู้ใช้ทั้งหมด (admin only)
+// 10. GET /api/users — ดึงรายชื่อผู้ใช้ทั้งหมด
 // =============================================
 exports.getAllUsers = async (req, res) => {
     try {
@@ -323,6 +323,23 @@ exports.getAllUsers = async (req, res) => {
         res.json(users);
     } catch (err) {
         console.error('GetAllUsers error:', err);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+    }
+};
+
+// =============================================
+// 11. GET /api/users/:id — ดึงข้อมูลผู้ใช้ตาม ID
+// =============================================
+exports.getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
+        }
+        res.json(user);
+    } catch (err) {
+        console.error('GetUserById error:', err);
         res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
     }
 };

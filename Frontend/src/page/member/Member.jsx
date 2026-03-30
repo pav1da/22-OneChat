@@ -10,6 +10,19 @@ const Member = () => {
   const [allMembers, setAllMembers] = useState([]);
   const [teams, setTeams] = useState([]);
 
+  // ===== Avatar Helpers =====
+  const avatarColors = [
+    '#F26623', '#E8913A', '#D4614B', '#C7956D',
+    '#5B8C5A', '#3A7CA5', '#6C5B7B', '#C06C84',
+    '#355C7D', '#F67280', '#2A9D8F', '#264653',
+  ];
+  const getAvatarColor = (name) => {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return avatarColors[Math.abs(hash) % avatarColors.length];
+  };
+  const getInitial = (name) => (name ? name.charAt(0).toUpperCase() : '?');
+
   // Search & Sort (Member Section)
   const [searchTerm, setSearchTerm] = useState("");
   const [isSorted, setIsSorted] = useState(false);
@@ -200,14 +213,21 @@ const Member = () => {
               <div className="col-name">
                 {/* avatar-wrapper: ครอบ avatar + จุดสถานะ (position: relative) */}
                 <div className="avatar-wrapper">
-                  <img
-                    src={member.image || "/img/default.png"}
-                    alt={member.name}
-                    // avatar-online = ขอบเขียว, avatar-offline = ขอบเทา
-                    className={`member-avatar ${online ? "avatar-online" : "avatar-offline"}`}
-                  />
+                  {member.image ? (
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className={`member-avatar ${online ? "avatar-online" : "avatar-offline"}`}
+                    />
+                  ) : (
+                    <div
+                      className={`member-avatar-initials ${online ? "avatar-online" : "avatar-offline"}`}
+                      style={{ backgroundColor: getAvatarColor(member.name) }}
+                    >
+                      {getInitial(member.name)}
+                    </div>
+                  )}
                   {/* จุดสถานะมุมขวาล่างของ avatar */}
-                  {/* dot-online = สีเขียว + กะพริบ (pulse), dot-offline = สีเทา */}
                   <span className={`avatar-status-dot ${online ? "dot-online" : "dot-offline"}`}></span>
                 </div>
                 <span>{member.name}</span>
