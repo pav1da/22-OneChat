@@ -90,7 +90,7 @@ function Dashboard() {
           await fetch(`/api/notes/${editingId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ content: newNote.content })
+            body: JSON.stringify({ text: newNote.content })
           });
         } else {
           // สร้างใหม่

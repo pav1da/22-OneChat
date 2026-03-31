@@ -289,7 +289,7 @@ router.post('/', auth, async (req, res) => {
     const io = req.app.get('io');
     if (io) {
       const senderSocketId = req.body.socket_id;
-      const msgPayload = { id: newId, customer_id, sender: sender || 'own', message_type: message_type || 'text', text: (message_type || 'text') === 'text' ? message_text : null, image: (message_type === 'image') ? `/uploads/chat-images/${message_text}` : null };
+      const msgPayload = { id: newId, customer_id, sender: sender || 'own', message_type: message_type || 'text', text: (message_type || 'text') === 'text' ? message_text : null, image: (message_type === 'image') ? message_text : null, created_at: getLocalDatetime() };
       if (senderSocketId) {
         // ส่งให้ทุกคนยกเว้นคนส่ง (เพราะคนส่งทำ optimistic update ไปแล้ว)
         io.except(senderSocketId).emit('new-message', msgPayload);

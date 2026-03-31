@@ -78,24 +78,145 @@
   color: var(--text-muted);
 }
 
-/* ===== ส่วนการ์ดผู้ใช้งาน (User Card) ใน Grid ลูกค้า ===== */
-/* กำหนดพื้นหลังหลักให้กับการ์ดผู้เล่น/ลูกค้ารายคนใน Grid */
+/* ===== Toolbar ===== */
+.allchat-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ===== ส่วนการ์ดผู้ใช้งาน (User Card) ===== */
 .user-card {
   background-color: var(--bg-main);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 12px 8px 12px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  min-height: 80px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.user-card:hover {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
 
-/* สีเฉพาะสำหรับข้อความอธิบายย่อยหรือข้อความล่าสุดในการ์ด (รูปด้านขวาการ์ด) */
-.custom-text {
-  font-size: 14px;
-  color: var(--text-secondary);
-}
-
-/* กำหนดรูปทรงและขนาดคงที่สำหรับรูป Avatar ของลูกค้าในการ์ดหลัก */
-.custom-img {
-  width: 60px;
-  height: 60px;
+.user-card-avatar {
+  width: 52px;
+  height: 52px;
   object-fit: cover;
   flex-shrink: 0;
+}
+
+.user-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.user-card-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.user-card-status {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.user-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.user-card-last {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.user-card-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ===== Empty state ===== */
+.allchat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+  gap: 12px;
+}
+.allchat-empty i {
+  font-size: 3rem;
+  opacity: 0.4;
+}
+.allchat-empty p {
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* ===== Unread badge ===== */
+.allchat-unread-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.4);
+  border: 2px solid var(--bg-main, #fff);
+  z-index: 1;
 }
 
 /* ===== แผง Mini Chat Panel (หน้าต่างแชทขนาดย่อมที่ขยายลงมาใต้การ์ด) ===== */
@@ -332,31 +453,51 @@
   box-shadow: 0 2px 12px rgba(244, 164, 96, 0.15) !important;
 }
 
-/* ===== กลุ่มปุ่มตัวกรอง หรือ Filter Navigations ด้านบน (เช่น ทัั้งหมด, สถานะเสร็จสิ้น) ===== */
-
-/* สไตล์หลักปุ่ม Filter Navigation */
+/* ===== กลุ่มปุ่มตัวกรอง (Filter Tabs) ===== */
 .nav-search {
-  height: 30px;
   background-color: var(--bg-main);
   border: 1px solid var(--border-light);
   border-radius: 10px;
-  padding: 5px 15px;
-  font-size: 14px;
+  padding: 6px 16px;
+  font-size: 13px;
   color: var(--text-secondary);
   transition: all 0.2s ease;
-}
-
-/* เปลี่ยนสีพื้นหลังละสีข้อความเมื่อเอาเมาส์วางชี้บนปุ่ม Filter */
-.nav-search:hover {
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.nav-search:hover {
   background-color: var(--primary-light);
   color: var(--primary-color);
   border-color: var(--primary-light);
 }
 
-/* สไตล์ให้คลิกลงบนปุ่ม Filter เพื่อให้เหมือนถูกกด (Active state) */
-.nav-search:active {
-  background-color: var(--primary-light);
-  color: var(--primary-color);
-  border-color: var(--primary-light);
+.nav-search-active {
+  background-color: var(--primary-color, #f26623) !important;
+  color: #fff !important;
+  border-color: var(--primary-color, #f26623) !important;
+}
+
+.tab-count {
+  font-size: 11px;
+  background: rgba(255,255,255,0.25);
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.nav-search-active .tab-count {
+  background: rgba(255,255,255,0.3);
+}
+
+/* ===== Mini message timestamp ===== */
+.mini-msg-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  align-self: flex-end;
+  flex-shrink: 0;
+  opacity: 0.7;
 }
