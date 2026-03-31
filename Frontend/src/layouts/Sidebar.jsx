@@ -47,9 +47,12 @@ const Sidebar = ({ onLogout, currentUser }) => {
 
     // Fetch initial count
     if (token) {
-      axios.get("/api/notifications/unread-count", {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(res => setUnreadCount(res.data?.count || 0)).catch(() => {});
+      axios
+        .get("/api/notifications/unread-count", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => setUnreadCount(res.data?.count || 0))
+        .catch(() => {});
     }
 
     // Socket.IO: ใช้ new-message เป็น trigger (เพราะทำงาน real-time ได้ปกติ)
@@ -57,7 +60,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
     socket.on("new-message", (msg) => {
       // เฉพาะข้อความจากลูกค้า → เพิ่ม badge 1
       if (msg.sender === "customer") {
-        setUnreadCount(prev => prev + 1);
+        setUnreadCount((prev) => prev + 1);
       }
     });
 
