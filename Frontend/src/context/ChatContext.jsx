@@ -167,19 +167,37 @@ export const ChatProvider = ({ children }) => {
   }, []);
 
   // ---------- ส่งรูปภาพ ----------
-  const sendImageMessage = useCallback(async (customerId, imageUrl) => {
-    const newMsg = {
-      id: Date.now(),
-      sender: "own",
-      image: imageUrl,
-    };
-
+  const sendImageMessage = useCallback(async (customerId, file) => {
+    // Optimistic update ด้วย blob URL ก่อน
+    const blobUrl = URL.createObjectURL(file);
+    const tempId = Date.now();
     setMessages((prev) => ({
       ...prev,
-      [customerId]: [...(prev[customerId] || []), newMsg],
+      [customerId]: [...(prev[customerId] || []), { id: tempId, sender: "own", image: blobUrl }],
     }));
 
     try {
+      // 1. อัปโหลดไฟล์ไปยัง server
+      const formData = new FormData();
+      formData.append("image", file);
+      const uploadRes = await fetch("/api/messages/upload-image", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: formData,
+      });
+      if (!uploadRes.ok) throw new Error("Upload failed");
+      const { filename, url: serverUrl } = await uploadRes.json();
+
+      // 2. แทนที่ blob URL ด้วย server URL ใน state
+      setMessages((prev) => ({
+        ...prev,
+        [customerId]: (prev[customerId] || []).map((m) =>
+          m.id === tempId ? { ...m, image: serverUrl } : m
+        ),
+      }));
+      URL.revokeObjectURL(blobUrl);
+
+      // 3. บันทึกข้อความลง DB + ส่งไปยัง LINE
       await fetch("/api/messages", {
         method: "POST",
         headers: getHeaders(),
@@ -187,12 +205,13 @@ export const ChatProvider = ({ children }) => {
           customer_id: customerId,
           sender: "own",
           message_type: "image",
-          message_text: imageUrl,
+          message_text: filename,
           socket_id: socketRef.current?.id || null,
         }),
       });
     } catch (err) {
       console.error("Send image error:", err);
+      URL.revokeObjectURL(blobUrl);
     }
   }, []);
 

@@ -1,10 +1,35 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const Message = require('../models/message.js');
 const Customer = require('../models/customer.js');
 const Log = require('../models/log.js');
 const { lineClient } = require('../controllers/lineController.js');
 const auth = require('../middleware/auth.js');
+
+// Multer config for admin-uploaded chat images
+const chatImageStorage = multer.diskStorage({
+  destination: path.join(__dirname, '..', 'uploads', 'chat-images'),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `admin-${Date.now()}${ext}`);
+  },
+});
+const uploadChatImage = multer({
+  storage: chatImageStorage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    cb(null, allowed.includes(file.mimetype));
+  },
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
+
+// POST /api/messages/upload-image — อัปโหลดรูปภาพ แล้วคืน filename
+router.post('/upload-image', auth, uploadChatImage.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'ไม่พบไฟล์รูปภาพ' });
+  res.json({ filename: req.file.filename, url: `/uploads/chat-images/${req.file.filename}` });
+});
 
 // Helper: สร้างวันที่เวลาแบบ MySQL format
 const getLocalDatetime = () => {
@@ -224,10 +249,12 @@ router.post('/', auth, async (req, res) => {
           if ((message_type || 'text') === 'text') {
             lineMessages.push({ type: 'text', text: message_text });
           } else if (message_type === 'image') {
+            const backendUrl = (process.env.BACKEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+            const imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
             lineMessages.push({
               type: 'image',
-              originalContentUrl: message_text,
-              previewImageUrl: message_text,
+              originalContentUrl: imageAbsUrl,
+              previewImageUrl: imageAbsUrl,
             });
           }
           if (lineMessages.length > 0) {
@@ -247,7 +274,7 @@ router.post('/', auth, async (req, res) => {
     const io = req.app.get('io');
     if (io) {
       const senderSocketId = req.body.socket_id;
-      const msgPayload = { id: newId, customer_id, sender: sender || 'own', message_type: message_type || 'text', text: (message_type || 'text') === 'text' ? message_text : null, image: (message_type === 'image') ? message_text : null };
+      const msgPayload = { id: newId, customer_id, sender: sender || 'own', message_type: message_type || 'text', text: (message_type || 'text') === 'text' ? message_text : null, image: (message_type === 'image') ? `/uploads/chat-images/${message_text}` : null };
       if (senderSocketId) {
         // ส่งให้ทุกคนยกเว้นคนส่ง (เพราะคนส่งทำ optimistic update ไปแล้ว)
         io.except(senderSocketId).emit('new-message', msgPayload);

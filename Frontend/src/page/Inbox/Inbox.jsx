@@ -27,6 +27,10 @@ const Inbox = ({ currentUser }) => {
   const [sortBy, setSortBy] = useState("latest");
   const [newMessage, setNewMessage] = useState("");
 
+  // Image picker panel state
+  const [showImagePanel, setShowImagePanel] = useState(false);
+  const [panelFiles, setPanelFiles] = useState([]); // [{ file, url, selected }]
+
   // Notes state
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
@@ -87,11 +91,40 @@ const Inbox = ({ currentUser }) => {
   };
 
   const handleUploadImage = (e) => {
-    const file = e.target.files[0];
-    if (!file || !selectedCustomer) return;
-    const url = URL.createObjectURL(file);
-    sendImageMessage(selectedChatId, url);
+    const files = Array.from(e.target.files);
+    if (!files.length || !selectedCustomer) return;
+    const newEntries = files.map((file) => ({ file, url: URL.createObjectURL(file), selected: true }));
+    setPanelFiles((prev) => [...prev, ...newEntries]);
+    setShowImagePanel(true);
+    e.target.value = "";
+  };
+
+  const handleTogglePanelFile = (idx) => {
+    setPanelFiles((prev) => prev.map((f, i) => i === idx ? { ...f, selected: !f.selected } : f));
+  };
+
+  const handleRemovePanelFile = (idx) => {
+    setPanelFiles((prev) => {
+      URL.revokeObjectURL(prev[idx].url);
+      const next = prev.filter((_, i) => i !== idx);
+      if (!next.length) setShowImagePanel(false);
+      return next;
+    });
+  };
+
+  const handleSendPanelImages = () => {
+    const toSend = panelFiles.filter((f) => f.selected);
+    toSend.forEach((f) => sendImageMessage(selectedChatId, f.file));
+    panelFiles.filter((f) => !f.selected).forEach((f) => URL.revokeObjectURL(f.url));
+    setPanelFiles([]);
+    setShowImagePanel(false);
     endRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleCloseImagePanel = () => {
+    panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
+    setPanelFiles([]);
+    setShowImagePanel(false);
   };
 
   // ---------- Chat select ----------
@@ -334,7 +367,8 @@ const Inbox = ({ currentUser }) => {
                   <img
                     src={msg.image}
                     alt="upload"
-                    style={{ maxWidth: "220px", maxHeight: "300px", borderRadius: "12px", objectFit: "cover" }}
+                    style={{ maxWidth: "320px", maxHeight: "420px", borderRadius: "12px", objectFit: "cover", cursor: "pointer" }}
+                    onClick={() => window.open(msg.image, "_blank")}
                   />
                 </div>
               ) : (
@@ -349,6 +383,61 @@ const Inbox = ({ currentUser }) => {
           ))}
           <div ref={endRef}></div>
         </div>
+
+        {/* Image picker panel */}
+        {showImagePanel && (
+          <div className="image-picker-panel">
+            <div className="image-picker-header">
+              <span>{panelFiles.filter(f => f.selected).length} รูปที่เลือก</span>
+              <div className="d-flex gap-2">
+                <button
+                  className="icon-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="เพิ่มรูป"
+                >
+                  <i className="bi bi-plus-lg"></i>
+                </button>
+                <button className="icon-btn" onClick={handleCloseImagePanel} title="ปิด">
+                  <i className="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <div className="image-picker-grid">
+              {panelFiles.map((f, idx) => (
+                <div
+                  key={idx}
+                  className={`image-picker-thumb${f.selected ? " selected" : ""}`}
+                  onClick={() => handleTogglePanelFile(idx)}
+                >
+                  <img src={f.url} alt={f.file.name} />
+                  {f.selected && (
+                    <div className="image-picker-check">
+                      <i className="bi bi-check-lg"></i>
+                    </div>
+                  )}
+                  <button
+                    className="image-picker-remove"
+                    onClick={(e) => { e.stopPropagation(); handleRemovePanelFile(idx); }}
+                  >
+                    <i className="bi bi-x"></i>
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="image-picker-footer">
+              <button
+                className="image-picker-send-btn"
+                disabled={!panelFiles.some(f => f.selected)}
+                onClick={handleSendPanelImages}
+              >
+                <i className="bi bi-send-fill me-2"></i>
+                ส่ง {panelFiles.filter(f => f.selected).length} รูป
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Input bar */}
         <div className="flex-shrink-0 pt-3">
@@ -377,10 +466,15 @@ const Inbox = ({ currentUser }) => {
                 <button type="button" className="icon-btn" aria-label="mic">
                   <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
-               <button type="button" className="icon-btn" aria-label="image" onClick={() => fileInputRef.current?.click()}>
+                <button
+                  type="button"
+                  className={`icon-btn${showImagePanel ? " active" : ""}`}
+                  aria-label="image"
+                  onClick={() => showImagePanel ? handleCloseImagePanel() : fileInputRef.current?.click()}
+                >
                   <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
-                <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleUploadImage} />
+                <input type="file" accept="image/*" multiple hidden ref={fileInputRef} onChange={handleUploadImage} />
                 <button type="submit" className="icon-btn send-btn" aria-label="send">
                   <i className="bi bi-send-fill fs-5" style={{ lineHeight: 1 }}></i>
                 </button>
