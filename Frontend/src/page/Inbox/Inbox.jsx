@@ -11,6 +11,8 @@ const Inbox = ({ currentUser }) => {
   const msgRef = useRef(null);
   const endRef = useRef(null);
   const fileInputRef = useRef(null);
+  const chatAreaRef = useRef(null);
+  const MSG_LIMIT = 50;
 
 
   // Shared context
@@ -51,16 +53,23 @@ const Inbox = ({ currentUser }) => {
   const [assignedMap, setAssignedMap] = useState({}); // { customerId: { emp_id, username } }
 
 
+  // Pagination
+  const [visibleCount, setVisibleCount] = useState(50);
+
+
   // ---------- Derived state ----------
   const selectedCustomer = customer.find((c) => c.id === selectedChatId);
-  const chatMessages = messages[selectedChatId] || [];
+  const allMessages = messages[selectedChatId] || [];
+  const chatMessages = allMessages.slice(-visibleCount);
+  const hasMore = allMessages.length > visibleCount;
 
 
-  // Clear image panel when switching chats
+  // Clear image panel + reset pagination when switching chats
   useEffect(() => {
     panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
     setPanelFiles([]);
     setShowImagePanel(false);
+    setVisibleCount(MSG_LIMIT);
   }, [selectedChatId]);
 
 
@@ -405,17 +414,50 @@ const Inbox = ({ currentUser }) => {
 
 
         {/* Messages */}
-        <div className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2 chat-messages-area">
+        <div
+          ref={chatAreaRef}
+          className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2 chat-messages-area"
+          onScroll={(e) => {
+            if (e.currentTarget.scrollTop === 0 && hasMore) {
+              const prev = e.currentTarget.scrollHeight;
+              setVisibleCount((c) => c + MSG_LIMIT);
+              requestAnimationFrame(() => {
+                const next = chatAreaRef.current?.scrollHeight || 0;
+                chatAreaRef.current?.scrollBy({ top: next - prev });
+              });
+            }
+          }}
+        >
+          {hasMore && (
+            <div className="text-center py-2">
+              <button
+                className="icon-btn px-3"
+                style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}
+                onClick={() => {
+                  const prev = chatAreaRef.current?.scrollHeight || 0;
+                  setVisibleCount((c) => c + MSG_LIMIT);
+                  requestAnimationFrame(() => {
+                    const next = chatAreaRef.current?.scrollHeight || 0;
+                    chatAreaRef.current?.scrollBy({ top: next - prev });
+                  });
+                }}
+              >
+                โหลดข้อความเก่า
+              </button>
+            </div>
+          )}
           {chatMessages.map((msg) => (
             <div key={msg.id} className={`message ${msg.sender === "own" ? "own" : ""}`}>
               {msg.sender === "customer" && (
-                <img src={selectedCustomer?.img} alt="Customer" />
+                <img src={selectedCustomer?.img} alt="Customer" loading="lazy" decoding="async" />
               )}
               {msg.message_type === "sticker" ? (
                 <div className="sticker">
                   <img
                     src={msg.image}
                     alt="sticker"
+                    loading="lazy"
+                    decoding="async"
                     style={{ width: "120px", height: "120px", objectFit: "contain" }}
                   />
                 </div>
@@ -424,6 +466,8 @@ const Inbox = ({ currentUser }) => {
                   <img
                     src={msg.image}
                     alt="upload"
+                    loading="lazy"
+                    decoding="async"
                     style={{ maxWidth: "320px", maxHeight: "420px", borderRadius: "12px", objectFit: "cover", cursor: "pointer" }}
                     onClick={() => window.open(msg.image, "_blank")}
                   />
@@ -434,7 +478,7 @@ const Inbox = ({ currentUser }) => {
                 </div>
               )}
               {msg.sender === "own" && (
-                <img src={currentUser?.image} alt="Admin" />
+                <img src={currentUser?.image} alt="Admin" loading="lazy" decoding="async" />
               )}
             </div>
           ))}
