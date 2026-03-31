@@ -19,6 +19,8 @@ const Inbox = ({ currentUser }) => {
     sendImageMessage,
     updateCustomerStatus,
     updateCustomerName,
+    unreadCounts,
+    markAsRead,
     STATUS,
   } = useChat();
 
@@ -44,7 +46,7 @@ const Inbox = ({ currentUser }) => {
 
   // ---------- Sort logic ----------
   const sortedCustomers = [...customer].sort((a, b) => {
-    if (sortBy === "latest") return a.id - b.id;
+    if (sortBy === "latest") return 0; // คงลำดับจาก ChatContext (เรียงตามข้อความล่าสุดแล้ว)
     if (sortBy === "name_asc") return a.name.localeCompare(b.name);
     if (sortBy === "name_desc") return b.name.localeCompare(a.name);
     return 0;
@@ -98,6 +100,7 @@ const Inbox = ({ currentUser }) => {
   const handleChatSelect = (id) => {
     setSelectedChatId(id);
     setIsEditingName(false);
+    markAsRead(id);
   };
 
   // ---------- Name editing ----------
@@ -267,6 +270,7 @@ const Inbox = ({ currentUser }) => {
             customers={sortedCustomers}
             selectedChatId={selectedChatId}
             onChatSelect={handleChatSelect}
+            unreadCounts={unreadCounts}
           />
         </div>
       </div>

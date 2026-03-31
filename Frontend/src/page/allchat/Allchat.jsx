@@ -1,25 +1,44 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Badge, Container } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../../context/ChatContext";
 import "./allChat.css";
 
-// === Mini Chat Panel (แยกออกนอก AllChat เพื่อไม่ให้ re-mount ทุกครั้ง) ===
-const MiniChatPanel = ({
-  customer,
-  chatMessages,
-  onOpenFull,
-  onClose,
-  onSend,
-}) => {
+// === Helper: แปลงเวลา ===
+const formatTime = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+  const time = d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  if (isToday) return time;
+  return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" }) + " " + time;
+};
+
+// === Filter tabs config ===
+const FILTER_TABS = [
+  { key: "all", label: "ทั้งหมด" },
+  { key: "not_started", label: "ยังไม่เริ่ม" },
+  { key: "in_progress", label: "กำลังดำเนินการ" },
+  { key: "done", label: "เสร็จสิ้น" },
+];
+
+// === Status badge config (fixed colors) ===
+const STATUS_STYLE = {
+  "ยังไม่เริ่ม": { bg: "#6b7280", color: "#fff" },
+  "กำลังดำเนินการ": { bg: "#d97706", color: "#fff" },
+  "เสร็จสิ้น": { bg: "#16a34a", color: "#fff" },
+};
+
+// === Mini Chat Panel ===
+const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) => {
   const [replyText, setReplyText] = useState("");
   const messagesContainerRef = useRef(null);
 
-  // Scroll ภายใน container ข้อความเท่านั้น
   useEffect(() => {
     if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop =
-        messagesContainerRef.current.scrollHeight;
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
   }, [chatMessages]);
 
@@ -40,22 +59,10 @@ const MiniChatPanel = ({
           <span>{customer.name}</span>
         </div>
         <div className="header-actions">
-          <button
-            title="เปิดแชทเต็ม"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenFull(customer.id);
-            }}
-          >
+          <button title="เปิดแชทเต็ม" onClick={(e) => { e.stopPropagation(); onOpenFull(customer.id); }}>
             <i className="bi bi-box-arrow-up-right"></i>
           </button>
-          <button
-            title="ปิด"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-          >
+          <button title="ปิด" onClick={(e) => { e.stopPropagation(); onClose(); }}>
             <i className="bi bi-x-lg"></i>
           </button>
         </div>
@@ -64,10 +71,7 @@ const MiniChatPanel = ({
       {/* Messages */}
       <div className="mini-chat-messages" ref={messagesContainerRef}>
         {chatMessages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`mini-msg ${msg.sender === "own" ? "own" : "customer"}`}
-          >
+          <div key={msg.id} className={`mini-msg ${msg.sender === "own" ? "own" : "customer"}`}>
             {msg.sender === "customer" && (
               <img src={customer.img} alt="" className="mini-avatar" />
             )}
@@ -83,6 +87,9 @@ const MiniChatPanel = ({
                   msg.text
                 )}
               </div>
+            )}
+            {msg.created_at && (
+              <span className="mini-msg-time">{formatTime(msg.created_at)}</span>
             )}
           </div>
         ))}
@@ -104,12 +111,15 @@ const MiniChatPanel = ({
   );
 };
 
+// === Main Component ===
 const AllChat = () => {
   const navigate = useNavigate();
-  const { messages, customers, sendMessage } = useChat();
+  const { messages, customers, sendMessage, unreadCounts, markAsRead, STATUS } = useChat();
 
   const [expandedChatIds, setExpandedChatIds] = useState([]);
   const [cols, setCols] = useState(4);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     const handleResize = () => {
@@ -124,17 +134,39 @@ const AllChat = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // === Filter logic ===
+  const filteredCustomers = customers.filter((c) => {
+    // Filter by status tab
+    if (activeFilter === "not_started" && c.status !== STATUS.NOT_STARTED) return false;
+    if (activeFilter === "in_progress" && c.status !== STATUS.IN_PROGRESS) return false;
+    if (activeFilter === "done" && c.status !== STATUS.DONE) return false;
+
+    // Filter by search text
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      return c.name.toLowerCase().includes(q) || (c.last && c.last.toLowerCase().includes(q));
+    }
+    return true;
+  });
+
+  // === Count per status (for tab badges) ===
+  const statusCounts = {
+    all: customers.length,
+    not_started: customers.filter((c) => c.status === STATUS.NOT_STARTED).length,
+    in_progress: customers.filter((c) => c.status === STATUS.IN_PROGRESS).length,
+    done: customers.filter((c) => c.status === STATUS.DONE).length,
+  };
+
   const handleCardClick = useCallback((customerId) => {
     setExpandedChatIds((prev) =>
-      prev.includes(customerId)
-        ? prev.filter((id) => id !== customerId)
-        : [...prev, customerId],
+      prev.includes(customerId) ? prev.filter((id) => id !== customerId) : [...prev, customerId],
     );
-  }, []);
+    markAsRead(customerId);
+  }, [markAsRead]);
 
   const handleOpenFullChat = useCallback(
     (customerId) => {
-      navigate("/inbox", { state: { chatId: customerId } });
+      navigate("/inbox", { state: { customerId: customerId } });
     },
     [navigate],
   );
@@ -150,147 +182,124 @@ const AllChat = () => {
     [sendMessage],
   );
 
+  // === Get last message time for a customer ===
+  const getLastMsgTime = (customerId) => {
+    const msgs = messages[customerId];
+    if (!msgs || msgs.length === 0) return null;
+    return msgs[msgs.length - 1].created_at || null;
+  };
+
   const renderUserCard = (customer, isActive) => {
-    let statusBadge = null;
-    if (customer.inprocess === true) {
-      statusBadge = (
-        <Badge
-          bg="warning"
-          text="white"
-          className="px-3 py-2 rounded-3"
-          style={{
-            fontSize: "0.8rem",
-            whiteSpace: "nowrap",
-            fontWeight: "500",
-          }}
-        >
-          กำลังดำเนินการ
-        </Badge>
-      );
-    } else if (customer.inprocess === false) {
-      statusBadge = (
-        <Badge
-          bg="success"
-          className="px-3 py-2 rounded-3"
-          style={{
-            fontSize: "0.8rem",
-            whiteSpace: "nowrap",
-            fontWeight: "500",
-          }}
-        >
-          เสร็จสิ้น
-        </Badge>
-      );
-    }
+    const style = STATUS_STYLE[customer.status] || STATUS_STYLE["ยังไม่เริ่ม"];
+    const lastTime = getLastMsgTime(customer.id);
 
     return (
       <div
-        className={`border rounded-4 p-1 d-flex align-items-center justify-content-between shadow-sm user-card ${isActive ? "active-card" : ""}`}
-        style={{ minHeight: "100px", cursor: "pointer" }}
+        className={`user-card ${isActive ? "active-card" : ""}`}
         onClick={() => handleCardClick(customer.id)}
       >
-        <img
-          src={customer.img}
-          className="rounded-circle custom-img mx-3"
-          style={{
-            width: "60px",
-            height: "60px",
-            objectFit: "cover",
-            flexShrink: 0,
-          }}
-          alt={customer.name}
-        />
-        <div
-          className="d-flex flex-column gap-2 flex-grow-1"
-          style={{ height: "70px" }}
-        >
-          <div
-            className="pe-3"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto",
-              alignItems: "baseline",
-              gap: "10px",
-            }}
-          >
-            <span className="text-truncate username-text">{customer.name}</span>
-            {statusBadge}
+        <div className="position-relative" style={{ flexShrink: 0 }}>
+          <img
+            src={customer.img}
+            className="rounded-circle user-card-avatar"
+            alt={customer.name}
+          />
+          {(unreadCounts[customer.id] || 0) > 0 && (
+            <span className="allchat-unread-badge">
+              {unreadCounts[customer.id] > 99 ? "99+" : unreadCounts[customer.id]}
+            </span>
+          )}
+        </div>
+        <div className="user-card-info">
+          <div className="user-card-top">
+            <span className="user-card-name">{customer.name}</span>
+            <span
+              className="user-card-status"
+              style={{ backgroundColor: style.bg, color: style.color }}
+            >
+              {customer.status}
+            </span>
           </div>
-          <p
-            className="custom-text text-truncate mb-0 pe-3"
-            style={{ width: "200px" }}
-          >
-            {customer.last}
-          </p>
+          <div className="user-card-bottom">
+            <p className="user-card-last">{customer.last}</p>
+            {lastTime && <span className="user-card-time">{formatTime(lastTime)}</span>}
+          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="kanit-regular d-flex flex-column allChat ">
+    <div className="kanit-regular d-flex flex-column allChat">
       {/* Header Section */}
-      <div className="d-flex justify-content-between align-items-center mb-3" style={{ padding: "0 12px" }}>
-        <div className="d-flex gap-2">
-          <button className="nav-search">ทั้งหมด</button>
-          <button className="nav-search">ยังไม่ได้อ่าน</button>
-          <button className="nav-search">กำลังดำเนินการ</button>
-          <button className="nav-search">เสร็จสิ้น</button>
+      <div className="allchat-toolbar">
+        <div className="filter-tabs">
+          {FILTER_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              className={`nav-search ${activeFilter === tab.key ? "nav-search-active" : ""}`}
+              onClick={() => setActiveFilter(tab.key)}
+            >
+              {tab.label}
+              {statusCounts[tab.key] > 0 && (
+                <span className="tab-count">{statusCounts[tab.key]}</span>
+              )}
+            </button>
+          ))}
         </div>
-        <div>
-          <div className="sidebar-search">
-            <i className="bi bi-search"></i>
-            <input type="text" placeholder="ค้นหา" />
-          </div>
+        <div className="sidebar-search">
+          <i className="bi bi-search"></i>
+          <input
+            type="text"
+            placeholder="ค้นหา"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
         </div>
       </div>
 
       {/* Scrollable Area */}
       <div className="flex-grow-1 overflow-auto">
         <Container fluid>
-          <div className="d-flex w-100" style={{ gap: "1.5rem" }}>
-            {Array.from({ length: cols }).map((_, colIndex) => {
-              const colItems = [];
-              for (let i = 0; i < customers.length; i++) {
-                if (i % cols === colIndex) {
-                  const customer = customers[i];
-                  const isExpanded = expandedChatIds.includes(customer.id);
-                  colItems.push(
-                    <div key={customer.id} className="w-100 mb-4">
-                      {renderUserCard(customer, isExpanded)}
-                      {isExpanded && (
-                        <div
-                          className="mt-2"
-                          style={{
-                            width: "100%",
-                            animation: "slideDown 0.25s ease-out",
-                          }}
-                        >
-                          <MiniChatPanel
-                            customer={customer}
-                            chatMessages={messages[customer.id] || []}
-                            onOpenFull={handleOpenFullChat}
-                            onClose={() => handleCloseMiniChat(customer.id)}
-                            onSend={handleSendQuickReply}
-                          />
-                        </div>
-                      )}
-                    </div>,
-                  );
+          {filteredCustomers.length === 0 ? (
+            <div className="allchat-empty">
+              <i className="bi bi-chat-square-dots"></i>
+              <p>ไม่พบแชทที่ตรงกับตัวกรอง</p>
+            </div>
+          ) : (
+            <div className="d-flex w-100" style={{ gap: "1.5rem" }}>
+              {Array.from({ length: cols }).map((_, colIndex) => {
+                const colItems = [];
+                for (let i = 0; i < filteredCustomers.length; i++) {
+                  if (i % cols === colIndex) {
+                    const customer = filteredCustomers[i];
+                    const isExpanded = expandedChatIds.includes(customer.id);
+                    colItems.push(
+                      <div key={customer.id} className="w-100 mb-4">
+                        {renderUserCard(customer, isExpanded)}
+                        {isExpanded && (
+                          <div className="mt-2" style={{ width: "100%", animation: "slideDown 0.25s ease-out" }}>
+                            <MiniChatPanel
+                              customer={customer}
+                              chatMessages={messages[customer.id] || []}
+                              onOpenFull={handleOpenFullChat}
+                              onClose={() => handleCloseMiniChat(customer.id)}
+                              onSend={handleSendQuickReply}
+                            />
+                          </div>
+                        )}
+                      </div>,
+                    );
+                  }
                 }
-              }
-
-              return (
-                <div
-                  key={`col-${colIndex}`}
-                  className="d-flex flex-column"
-                  style={{ flex: 1, minWidth: 0 }}
-                >
-                  {colItems}
-                </div>
-              );
-            })}
-          </div>
+                return (
+                  <div key={`col-${colIndex}`} className="d-flex flex-column" style={{ flex: 1, minWidth: 0 }}>
+                    {colItems}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Container>
       </div>
     </div>
