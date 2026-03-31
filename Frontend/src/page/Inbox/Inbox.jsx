@@ -4,12 +4,14 @@ import { useChat } from "../../context/ChatContext";
 import ChatList from "./chatList/ChatList";
 import "./inbox.css";
 
+
 const Inbox = ({ currentUser }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const msgRef = useRef(null);
   const endRef = useRef(null);
   const fileInputRef = useRef(null);
+
 
   // Shared context
   const {
@@ -22,10 +24,17 @@ const Inbox = ({ currentUser }) => {
     STATUS,
   } = useChat();
 
+
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [sortBy, setSortBy] = useState("latest");
   const [newMessage, setNewMessage] = useState("");
+
+
+  // Image picker panel state
+  const [showImagePanel, setShowImagePanel] = useState(false);
+  const [panelFiles, setPanelFiles] = useState([]); // [{ file, url, selected }]
+
 
   // Notes state
   const [notes, setNotes] = useState([]);
@@ -34,13 +43,16 @@ const Inbox = ({ currentUser }) => {
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState("");
 
+
   // Members list for "ผู้รับผิดชอบ" dropdown
   const [members, setMembers] = useState([]);
   const [assignedMap, setAssignedMap] = useState({}); // { customerId: { emp_id, username } }
 
+
   // ---------- Derived state ----------
   const selectedCustomer = customer.find((c) => c.id === selectedChatId);
   const chatMessages = messages[selectedChatId] || [];
+
 
   // ---------- Sort logic ----------
   const sortedCustomers = [...customer].sort((a, b) => {
@@ -50,6 +62,7 @@ const Inbox = ({ currentUser }) => {
     return 0;
   });
 
+
   const handleSortToggle = () => {
     setSortBy((prev) => {
       if (prev === "latest") return "name_asc";
@@ -57,6 +70,7 @@ const Inbox = ({ currentUser }) => {
       return "latest";
     });
   };
+
 
   // ---------- Status helpers ----------
   const getStatusVariant = (status) => {
@@ -68,11 +82,13 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   // ---------- Message handlers ----------
   const handleSendMessage = (e) => {
     e.preventDefault();
     const trimmed = newMessage.trim();
     if (!trimmed || !selectedCustomer) return;
+
 
     sendMessage(selectedChatId, trimmed);
     setNewMessage("");
@@ -80,19 +96,55 @@ const Inbox = ({ currentUser }) => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+
   const autoResize = (e) => {
     const el = e.target;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
   };
 
+
   const handleUploadImage = (e) => {
-    const file = e.target.files[0];
-    if (!file || !selectedCustomer) return;
-    const url = URL.createObjectURL(file);
-    sendImageMessage(selectedChatId, url);
+    const files = Array.from(e.target.files);
+    if (!files.length || !selectedCustomer) return;
+    const newEntries = files.map((file) => ({ file, url: URL.createObjectURL(file), selected: true }));
+    setPanelFiles((prev) => [...prev, ...newEntries]);
+    setShowImagePanel(true);
+    e.target.value = "";
+  };
+
+
+  const handleTogglePanelFile = (idx) => {
+    setPanelFiles((prev) => prev.map((f, i) => i === idx ? { ...f, selected: !f.selected } : f));
+  };
+
+
+  const handleRemovePanelFile = (idx) => {
+    setPanelFiles((prev) => {
+      URL.revokeObjectURL(prev[idx].url);
+      const next = prev.filter((_, i) => i !== idx);
+      if (!next.length) setShowImagePanel(false);
+      return next;
+    });
+  };
+
+
+  const handleSendPanelImages = () => {
+    const toSend = panelFiles.filter((f) => f.selected);
+    toSend.forEach((f) => sendImageMessage(selectedChatId, f.file));
+    panelFiles.filter((f) => !f.selected).forEach((f) => URL.revokeObjectURL(f.url));
+    setPanelFiles([]);
+    setShowImagePanel(false);
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+
+  const handleCloseImagePanel = () => {
+    panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
+    setPanelFiles([]);
+    setShowImagePanel(false);
+  };
+
 
   // ---------- Chat select ----------
   const handleChatSelect = (id) => {
@@ -100,13 +152,16 @@ const Inbox = ({ currentUser }) => {
     setIsEditingName(false);
   };
 
+
   // ---------- Name editing ----------
   const handleNameChange = (e) => {
     if (!selectedCustomer) return;
     updateCustomerName(selectedCustomer.id, e.target.value);
   };
 
+
   const handleNameSave = () => setIsEditingName(false);
+
 
   // ---------- Fetch members for assignment dropdown ----------
   useEffect(() => {
@@ -127,6 +182,7 @@ const Inbox = ({ currentUser }) => {
     fetchMembers();
   }, []);
 
+
   // ---------- Assignment handler ----------
   const handleAssignChange = (customerId, empId) => {
     const member = members.find((m) => m.emp_id === Number(empId));
@@ -138,6 +194,7 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   const getAssignedUser = (customerId) => {
     if (assignedMap[customerId]) return assignedMap[customerId];
     // Default: current user
@@ -145,11 +202,13 @@ const Inbox = ({ currentUser }) => {
     return null;
   };
 
+
   // ---------- Helper: get auth headers ----------
   const getHeaders = () => ({
     "Content-Type": "application/json",
     Authorization: `Bearer ${sessionStorage.getItem("token")}`,
   });
+
 
   // ---------- Load notes from API ----------
   useEffect(() => {
@@ -168,10 +227,12 @@ const Inbox = ({ currentUser }) => {
     fetchNotes();
   }, [selectedChatId]);
 
+
   // ---------- Note handlers (API-backed) ----------
   const handleAddNote = async () => {
     if (!newNote.trim() || !selectedChatId) return;
     const author = currentUser?.username || currentUser?.name || "Admin";
+
 
     try {
       const res = await fetch("/api/notes", {
@@ -190,6 +251,7 @@ const Inbox = ({ currentUser }) => {
     setIsAddingNote(false);
   };
 
+
   const handleDeleteNote = async (id) => {
     setNotes(notes.filter((n) => n.id !== id));
     try {
@@ -199,10 +261,12 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   const handleEditNote = (note) => {
     setEditingNoteId(note.id);
     setEditingText(note.text);
   };
+
 
   const handleSaveEdit = async (id) => {
     if (!editingText.trim()) return;
@@ -220,10 +284,12 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   const handleCancelEdit = () => {
     setEditingNoteId(null);
     setEditingText("");
   };
+
 
   // ---------- Effects ----------
   // Effect 1: กดจาก notification → เปิดแชทของลูกค้าที่ถูกต้อง
@@ -236,6 +302,7 @@ const Inbox = ({ currentUser }) => {
     }
   }, [location.state?.customerId, location.state?.chatId, location.pathname]);
 
+
   // Effect 2: โหลดครั้งแรก → เปิดแชทแรก (เฉพาะกรณีที่ยังไม่ได้ select และไม่ได้มาจาก notification)
   useEffect(() => {
     const hasNavState = !!(location.state?.customerId || location.state?.chatId);
@@ -244,14 +311,17 @@ const Inbox = ({ currentUser }) => {
     }
   }, [customer.length, selectedChatId]);
 
+
   // Scroll to latest message
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, selectedChatId]);
 
+
   // ---------- Render ----------
   return (
     <div className="kanit-regular inbox-container px-3">
+
 
       {/* ========== LEFT — Chat List ========== */}
       <div className="customer-list">
@@ -262,6 +332,7 @@ const Inbox = ({ currentUser }) => {
           </div>
         </div>
 
+
         <div className="list">
           <ChatList
             customers={sortedCustomers}
@@ -270,6 +341,7 @@ const Inbox = ({ currentUser }) => {
           />
         </div>
       </div>
+
 
       {/* ========== CENTER — Chat Area ========== */}
       <div className="chat-section">
@@ -296,6 +368,7 @@ const Inbox = ({ currentUser }) => {
             )}
           </div>
 
+
           {selectedCustomer && (
             <div className="d-flex gap-3 align-items-center">
               <select
@@ -313,6 +386,7 @@ const Inbox = ({ currentUser }) => {
             </div>
           )}
         </div>
+
 
         {/* Messages */}
         <div className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2 chat-messages-area">
@@ -334,7 +408,8 @@ const Inbox = ({ currentUser }) => {
                   <img
                     src={msg.image}
                     alt="upload"
-                    style={{ maxWidth: "220px", maxHeight: "300px", borderRadius: "12px", objectFit: "cover" }}
+                    style={{ maxWidth: "320px", maxHeight: "420px", borderRadius: "12px", objectFit: "cover", cursor: "pointer" }}
+                    onClick={() => window.open(msg.image, "_blank")}
                   />
                 </div>
               ) : (
@@ -350,6 +425,65 @@ const Inbox = ({ currentUser }) => {
           <div ref={endRef}></div>
         </div>
 
+
+        {/* Image picker panel */}
+        {showImagePanel && (
+          <div className="image-picker-panel">
+            <div className="image-picker-header">
+              <span>{panelFiles.filter(f => f.selected).length} รูปที่เลือก</span>
+              <div className="d-flex gap-2">
+                <button
+                  className="icon-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="เพิ่มรูป"
+                >
+                  <i className="bi bi-plus-lg"></i>
+                </button>
+                <button className="icon-btn" onClick={handleCloseImagePanel} title="ปิด">
+                  <i className="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+
+
+            <div className="image-picker-grid">
+              {panelFiles.map((f, idx) => (
+                <div
+                  key={idx}
+                  className={`image-picker-thumb${f.selected ? " selected" : ""}`}
+                  onClick={() => handleTogglePanelFile(idx)}
+                >
+                  <img src={f.url} alt={f.file.name} />
+                  {f.selected && (
+                    <div className="image-picker-check">
+                      <i className="bi bi-check-lg"></i>
+                    </div>
+                  )}
+                  <button
+                    className="image-picker-remove"
+                    onClick={(e) => { e.stopPropagation(); handleRemovePanelFile(idx); }}
+                  >
+                    <i className="bi bi-x"></i>
+                  </button>
+                </div>
+              ))}
+            </div>
+
+
+            <div className="image-picker-footer">
+              <button
+                className="image-picker-send-btn"
+                disabled={!panelFiles.some(f => f.selected)}
+                onClick={handleSendPanelImages}
+              >
+                <i className="bi bi-send-fill me-2"></i>
+                ส่ง {panelFiles.filter(f => f.selected).length} รูป
+              </button>
+            </div>
+          </div>
+        )}
+
+
         {/* Input bar */}
         <div className="flex-shrink-0 pt-3">
           <form onSubmit={handleSendMessage}>
@@ -359,6 +493,7 @@ const Inbox = ({ currentUser }) => {
                   <i className="bi bi-emoji-smile fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
               </div>
+
 
               <textarea
                 rows={1}
@@ -373,14 +508,20 @@ const Inbox = ({ currentUser }) => {
                 style={{ overflow: "hidden", resize: "none", minHeight: "40px", maxHeight: "120px" }}
               />
 
+
               <div className="d-flex ps-2 gap-1">
                 <button type="button" className="icon-btn" aria-label="mic">
                   <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
-               <button type="button" className="icon-btn" aria-label="image" onClick={() => fileInputRef.current?.click()}>
+                <button
+                  type="button"
+                  className={`icon-btn${showImagePanel ? " active" : ""}`}
+                  aria-label="image"
+                  onClick={() => showImagePanel ? handleCloseImagePanel() : fileInputRef.current?.click()}
+                >
                   <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
-                <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleUploadImage} />
+                <input type="file" accept="image/*" multiple hidden ref={fileInputRef} onChange={handleUploadImage} />
                 <button type="submit" className="icon-btn send-btn" aria-label="send">
                   <i className="bi bi-send-fill fs-5" style={{ lineHeight: 1 }}></i>
                 </button>
@@ -389,6 +530,7 @@ const Inbox = ({ currentUser }) => {
           </form>
         </div>
       </div>
+
 
       {/* ========== RIGHT — Detail Panel ========== */}
       <div className="detail-panel">
@@ -402,6 +544,7 @@ const Inbox = ({ currentUser }) => {
                 alt={selectedCustomer.name}
               />
             </div>
+
 
             {/* Name (editable) */}
             <div className="detail-name-section">
@@ -422,11 +565,13 @@ const Inbox = ({ currentUser }) => {
                 </p>
               )}
 
+
               {selectedCustomer.originalName &&
                 selectedCustomer.originalName !== selectedCustomer.name && (
                   <p className="detail-original-name">{selectedCustomer.originalName}</p>
                 )}
             </div>
+
 
             {/* Assigned to */}
             <div className="detail-assigned">
@@ -446,7 +591,9 @@ const Inbox = ({ currentUser }) => {
               </div>
             </div>
 
+
             <hr className="detail-divider" />
+
 
             {/* Notes */}
             <div className="detail-notes">
@@ -472,6 +619,7 @@ const Inbox = ({ currentUser }) => {
                 </button>
               </div>
 
+
               {isAddingNote && (
                 <div className="note-form">
                   <textarea
@@ -487,6 +635,7 @@ const Inbox = ({ currentUser }) => {
                   </div>
                 </div>
               )}
+
 
               <div className="notes-list">
                 {notes.map((note) => (
@@ -538,4 +687,8 @@ const Inbox = ({ currentUser }) => {
   );
 };
 
+
 export default Inbox;
+
+
+

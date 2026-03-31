@@ -1,5 +1,158 @@
 /* Inbox styles (plain CSS) */
 
+
+/* ==================== Image Picker Panel ==================== */
+.image-picker-panel {
+  flex-shrink: 0;
+  background: var(--bg-card, #1e1e1e);
+  border-top: 1px solid var(--border-medium);
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  animation: slideUp 0.2s ease;
+}
+
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+
+.image-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-medium);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+
+.image-picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+
+.image-picker-thumb {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: border-color 0.15s;
+  flex-shrink: 0;
+}
+
+
+.image-picker-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+
+.image-picker-thumb.selected {
+  border-color: #4CAF50;
+}
+
+
+.image-picker-thumb.selected img {
+  opacity: 0.85;
+}
+
+
+.image-picker-check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #4CAF50;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+
+.image-picker-remove {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+
+.image-picker-thumb:hover .image-picker-remove {
+  opacity: 1;
+}
+
+
+.image-picker-footer {
+  padding: 8px 12px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-medium);
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+.image-picker-send-btn {
+  padding: 7px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #4CAF50;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+
+.image-picker-send-btn:disabled {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+
+.image-picker-send-btn:not(:disabled):hover {
+  background: #43a047;
+}
+
+
+.icon-btn.active i {
+  color: #4CAF50;
+}
+
+
 /* Custom scrollbar */
 .inbox-container::-webkit-scrollbar,
 .list::-webkit-scrollbar,
@@ -30,6 +183,7 @@
   background-clip: padding-box;
 }
 
+
 /* ==================== Layout ==================== */
 .inbox-container {
   height: 100vh;
@@ -39,6 +193,7 @@
   overflow: hidden;
 }
 
+
 .customer-list {
   flex: 0 0 320px;
   display: flex;
@@ -46,14 +201,17 @@
   overflow: hidden;
 }
 
+
 .chat-section {
   flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
   min-width: 0;
   border-right: 1px solid var(--border-medium);
   border-left: 1px solid var(--border-medium);
 }
+
 
 .detail-panel {
   flex: 0 0 320px;
@@ -64,12 +222,14 @@
   padding: 24px 20px;
 }
 
+
 /* ==================== Search & Sort ==================== */
 .search-sort-row {
   display: flex;
   gap: 8px;
   padding: 12px;
 }
+
 
 .custom-search-input {
   flex: 1;
@@ -85,6 +245,7 @@
   outline: none !important;
   border-color: #f26623 !important;
 }
+
 
 .custom-icon-sort {
   background-color: var(--bg-card);
@@ -102,10 +263,12 @@
   color: var(--primary-color) !important;
 }
 
+
 .list {
   flex: 1;
   overflow-y: auto;
 }
+
 
 /* ==================== Chat Top Bar ==================== */
 .custom-top-chat {
@@ -115,6 +278,7 @@
   padding: 12px 16px;
   flex-shrink: 0;
 }
+
 
 /* ==================== Icon Button ==================== */
 .icon-btn {
@@ -131,12 +295,14 @@
   background: var(--bg-hover);
 }
 
+
 .send-btn {
   color: var(--primary-color);
 }
 .send-btn:hover {
   color: #e65c00;
 }
+
 
 /* ==================== Status Select ==================== */
 .status-select {
@@ -162,10 +328,12 @@
   color: #4b5563;
 }
 
+
 /* ==================== Messages ==================== */
 .chat-messages-area {
   padding: 16px;
 }
+
 
 .message {
   width: fit-content;
@@ -175,17 +343,20 @@
   padding-top: 16px;
 }
 
+
 .message.own {
   align-self: flex-end;
 }
 
-.message img {
+
+.message > img {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 }
+
 
 .message .texts {
   flex: 1;
@@ -194,12 +365,14 @@
   gap: 8px;
 }
 
+
 .message .texts img {
   width: 100%;
   max-height: 300px;
   border-radius: 10px;
   object-fit: cover;
 }
+
 
 /* Received bubble */
 .message .texts p {
@@ -211,12 +384,14 @@
   line-height: 1.5;
 }
 
+
 /* Sent bubble */
 .message .texts p.own {
   background-color: var(--bg-bubble-admin);
   color: var(--text-bubble-admin);
   border-radius: 16px 16px 4px 16px;
 }
+
 
 /* Image (no bubble background) */
 .message .chat-image {
@@ -225,6 +400,19 @@
   line-height: 0;
 }
 
+
+.message .chat-image img {
+  display: block;
+  max-width: 320px;
+  max-height: 420px;
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+
 /* Sticker (no bubble background) */
 .message .sticker {
   background: transparent;
@@ -232,12 +420,14 @@
   line-height: 0;
 }
 
+
 /* ==================== Input Bar ==================== */
 .custom-bottom-chat {
   background-color: var(--bg-input);
   border: 1px solid var(--border-medium);
   border-radius: 25px;
 }
+
 
 .custom-text-input {
   border: none;
@@ -250,6 +440,7 @@
   background-color: transparent;
 }
 
+
 .message-input {
   padding: 10px;
   border-radius: 18px;
@@ -258,11 +449,13 @@
   color: var(--text-main);
 }
 
+
 /* ==================== Detail Panel ==================== */
 .detail-avatar-wrapper {
   margin-top: 24px;
   margin-bottom: 16px;
 }
+
 
 .detail-avatar {
   width: 120px;
@@ -272,11 +465,13 @@
   border: 3px solid var(--border-light);
 }
 
+
 .detail-name-section {
   text-align: center;
   margin-bottom: 20px;
   width: 100%;
 }
+
 
 .detail-name {
   font-size: 18px;
@@ -285,6 +480,7 @@
   color: var(--text-main);
   cursor: pointer;
 }
+
 
 .detail-name-input {
   font-size: 18px;
@@ -301,6 +497,7 @@
   border-color: var(--primary-color);
 }
 
+
 .detail-original-name {
   font-size: 14px;
   color: var(--text-muted);
@@ -308,12 +505,14 @@
   margin-bottom: 0;
 }
 
+
 .detail-assigned {
   width: 100%;
   padding: 0 8px;
   font-size: 14px;
   color: var(--text-secondary);
 }
+
 
 .detail-assigned-user {
   display: flex;
@@ -323,6 +522,7 @@
   color: var(--text-main);
   font-weight: 500;
 }
+
 
 .assign-select {
   width: 100%;
@@ -341,17 +541,20 @@
   border-color: var(--primary-color, #f26623);
 }
 
+
 .detail-divider {
   width: 100%;
   border-color: var(--border-medium);
   margin: 16px 0;
 }
 
+
 /* ==================== Notes ==================== */
 .detail-notes {
   width: 100%;
   padding: 0 8px;
 }
+
 
 .detail-notes-header {
   display: flex;
@@ -362,9 +565,11 @@
   color: var(--text-main);
 }
 
+
 .note-form {
   margin-bottom: 12px;
 }
+
 
 .note-textarea {
   width: 100%;
@@ -381,11 +586,13 @@
   border-color: var(--primary-color);
 }
 
+
 .note-form-actions {
   display: flex;
   gap: 8px;
   margin-top: 8px;
 }
+
 
 .note-btn {
   padding: 6px 16px;
@@ -396,6 +603,7 @@
   font-weight: 500;
 }
 
+
 .note-btn-save {
   background-color: var(--primary-color, #f26623);
   color: #fff;
@@ -403,6 +611,7 @@
 .note-btn-save:hover {
   opacity: 0.9;
 }
+
 
 .note-btn-cancel {
   background-color: var(--bg-hover);
@@ -412,11 +621,13 @@
   opacity: 0.8;
 }
 
+
 .notes-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+
 
 .note-card {
   border: 1px solid var(--border-light);
@@ -425,6 +636,7 @@
   background: var(--bg-card);
 }
 
+
 .note-text {
   margin-bottom: 8px;
   white-space: pre-wrap;
@@ -432,21 +644,25 @@
   color: var(--text-main);
 }
 
+
 .note-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+
 .note-date {
   font-size: 12px;
   color: var(--text-muted);
 }
 
+
 .note-actions {
   display: flex;
   gap: 4px;
 }
+
 
 .detail-empty {
   display: flex;
@@ -456,12 +672,14 @@
   color: var(--text-muted);
 }
 
+
 /* ==================== Responsive ==================== */
 @media (max-width: 1024px) {
   .detail-panel {
     display: none;
   }
 }
+
 
 @media (max-width: 768px) {
   .inbox-container {
@@ -477,3 +695,6 @@
     border-right: none;
   }
 }
+
+
+
