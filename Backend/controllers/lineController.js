@@ -84,6 +84,7 @@ async function handleEvent(event, io) {
           picture_url: pictureUrl,
           platform: "line",
           platform_id: userId,
+          first_message: event.type === "message" && event.message.type === "text" ? event.message.text : "",
         });
       }
     } else {
@@ -121,6 +122,7 @@ async function handleEvent(event, io) {
             sender: "customer",
             text: text,
             image: null,
+            created_at: getLocalDatetime(),
           });
         }
 
@@ -167,6 +169,7 @@ async function handleEvent(event, io) {
             sender: "customer",
             text: null,
             image: `/uploads/chat-images/${filename}`,
+            created_at: getLocalDatetime(),
           });
         }
 
@@ -200,6 +203,7 @@ async function handleEvent(event, io) {
             message_type: "sticker",
             text: null,
             image: stickerUrl,
+            created_at: getLocalDatetime(),
           });
         }
 

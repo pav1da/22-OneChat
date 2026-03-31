@@ -4,12 +4,14 @@ import { useChat } from "../../context/ChatContext";
 import ChatList from "./chatList/ChatList";
 import "./inbox.css";
 
+
 const Inbox = ({ currentUser }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const msgRef = useRef(null);
   const endRef = useRef(null);
   const fileInputRef = useRef(null);
+
 
   // Shared context
   const {
@@ -19,17 +21,22 @@ const Inbox = ({ currentUser }) => {
     sendImageMessage,
     updateCustomerStatus,
     updateCustomerName,
+    unreadCounts,
+    markAsRead,
     STATUS,
   } = useChat();
+
 
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [sortBy, setSortBy] = useState("latest");
   const [newMessage, setNewMessage] = useState("");
 
+
   // Image picker panel state
   const [showImagePanel, setShowImagePanel] = useState(false);
   const [panelFiles, setPanelFiles] = useState([]); // [{ file, url, selected }]
+
 
   // Notes state
   const [notes, setNotes] = useState([]);
@@ -38,21 +45,25 @@ const Inbox = ({ currentUser }) => {
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState("");
 
+
   // Members list for "ผู้รับผิดชอบ" dropdown
   const [members, setMembers] = useState([]);
   const [assignedMap, setAssignedMap] = useState({}); // { customerId: { emp_id, username } }
+
 
   // ---------- Derived state ----------
   const selectedCustomer = customer.find((c) => c.id === selectedChatId);
   const chatMessages = messages[selectedChatId] || [];
 
+
   // ---------- Sort logic ----------
   const sortedCustomers = [...customer].sort((a, b) => {
-    if (sortBy === "latest") return a.id - b.id;
+    if (sortBy === "latest") return 0; // คงลำดับจาก ChatContext (เรียงตามข้อความล่าสุดแล้ว)
     if (sortBy === "name_asc") return a.name.localeCompare(b.name);
     if (sortBy === "name_desc") return b.name.localeCompare(a.name);
     return 0;
   });
+
 
   const handleSortToggle = () => {
     setSortBy((prev) => {
@@ -61,6 +72,7 @@ const Inbox = ({ currentUser }) => {
       return "latest";
     });
   };
+
 
   // ---------- Status helpers ----------
   const getStatusVariant = (status) => {
@@ -72,11 +84,13 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   // ---------- Message handlers ----------
   const handleSendMessage = (e) => {
     e.preventDefault();
     const trimmed = newMessage.trim();
     if (!trimmed || !selectedCustomer) return;
+
 
     sendMessage(selectedChatId, trimmed);
     setNewMessage("");
@@ -84,11 +98,13 @@ const Inbox = ({ currentUser }) => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+
   const autoResize = (e) => {
     const el = e.target;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
   };
+
 
   const handleUploadImage = (e) => {
     const files = Array.from(e.target.files);
@@ -99,9 +115,11 @@ const Inbox = ({ currentUser }) => {
     e.target.value = "";
   };
 
+
   const handleTogglePanelFile = (idx) => {
     setPanelFiles((prev) => prev.map((f, i) => i === idx ? { ...f, selected: !f.selected } : f));
   };
+
 
   const handleRemovePanelFile = (idx) => {
     setPanelFiles((prev) => {
@@ -112,6 +130,7 @@ const Inbox = ({ currentUser }) => {
     });
   };
 
+
   const handleSendPanelImages = () => {
     const toSend = panelFiles.filter((f) => f.selected);
     toSend.forEach((f) => sendImageMessage(selectedChatId, f.file));
@@ -121,17 +140,21 @@ const Inbox = ({ currentUser }) => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+
   const handleCloseImagePanel = () => {
     panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
     setPanelFiles([]);
     setShowImagePanel(false);
   };
 
+
   // ---------- Chat select ----------
   const handleChatSelect = (id) => {
     setSelectedChatId(id);
     setIsEditingName(false);
+    markAsRead(id);
   };
+
 
   // ---------- Name editing ----------
   const handleNameChange = (e) => {
@@ -139,7 +162,9 @@ const Inbox = ({ currentUser }) => {
     updateCustomerName(selectedCustomer.id, e.target.value);
   };
 
+
   const handleNameSave = () => setIsEditingName(false);
+
 
   // ---------- Fetch members for assignment dropdown ----------
   useEffect(() => {
@@ -160,6 +185,7 @@ const Inbox = ({ currentUser }) => {
     fetchMembers();
   }, []);
 
+
   // ---------- Assignment handler ----------
   const handleAssignChange = (customerId, empId) => {
     const member = members.find((m) => m.emp_id === Number(empId));
@@ -171,6 +197,7 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   const getAssignedUser = (customerId) => {
     if (assignedMap[customerId]) return assignedMap[customerId];
     // Default: current user
@@ -178,11 +205,13 @@ const Inbox = ({ currentUser }) => {
     return null;
   };
 
+
   // ---------- Helper: get auth headers ----------
   const getHeaders = () => ({
     "Content-Type": "application/json",
     Authorization: `Bearer ${sessionStorage.getItem("token")}`,
   });
+
 
   // ---------- Load notes from API ----------
   useEffect(() => {
@@ -201,10 +230,12 @@ const Inbox = ({ currentUser }) => {
     fetchNotes();
   }, [selectedChatId]);
 
+
   // ---------- Note handlers (API-backed) ----------
   const handleAddNote = async () => {
     if (!newNote.trim() || !selectedChatId) return;
     const author = currentUser?.username || currentUser?.name || "Admin";
+
 
     try {
       const res = await fetch("/api/notes", {
@@ -223,6 +254,7 @@ const Inbox = ({ currentUser }) => {
     setIsAddingNote(false);
   };
 
+
   const handleDeleteNote = async (id) => {
     setNotes(notes.filter((n) => n.id !== id));
     try {
@@ -232,10 +264,12 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   const handleEditNote = (note) => {
     setEditingNoteId(note.id);
     setEditingText(note.text);
   };
+
 
   const handleSaveEdit = async (id) => {
     if (!editingText.trim()) return;
@@ -253,10 +287,12 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   const handleCancelEdit = () => {
     setEditingNoteId(null);
     setEditingText("");
   };
+
 
   // ---------- Effects ----------
   // Effect 1: กดจาก notification → เปิดแชทของลูกค้าที่ถูกต้อง
@@ -269,6 +305,7 @@ const Inbox = ({ currentUser }) => {
     }
   }, [location.state?.customerId, location.state?.chatId, location.pathname]);
 
+
   // Effect 2: โหลดครั้งแรก → เปิดแชทแรก (เฉพาะกรณีที่ยังไม่ได้ select และไม่ได้มาจาก notification)
   useEffect(() => {
     const hasNavState = !!(location.state?.customerId || location.state?.chatId);
@@ -277,14 +314,17 @@ const Inbox = ({ currentUser }) => {
     }
   }, [customer.length, selectedChatId]);
 
+
   // Scroll to latest message
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, selectedChatId]);
 
+
   // ---------- Render ----------
   return (
     <div className="kanit-regular inbox-container px-3">
+
 
       {/* ========== LEFT — Chat List ========== */}
       <div className="customer-list">
@@ -295,14 +335,17 @@ const Inbox = ({ currentUser }) => {
           </div>
         </div>
 
+
         <div className="list">
           <ChatList
             customers={sortedCustomers}
             selectedChatId={selectedChatId}
             onChatSelect={handleChatSelect}
+            unreadCounts={unreadCounts}
           />
         </div>
       </div>
+
 
       {/* ========== CENTER — Chat Area ========== */}
       <div className="chat-section">
@@ -329,6 +372,7 @@ const Inbox = ({ currentUser }) => {
             )}
           </div>
 
+
           {selectedCustomer && (
             <div className="d-flex gap-3 align-items-center">
               <select
@@ -346,6 +390,7 @@ const Inbox = ({ currentUser }) => {
             </div>
           )}
         </div>
+
 
         {/* Messages */}
         <div className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2 chat-messages-area">
@@ -384,6 +429,7 @@ const Inbox = ({ currentUser }) => {
           <div ref={endRef}></div>
         </div>
 
+
         {/* Image picker panel */}
         {showImagePanel && (
           <div className="image-picker-panel">
@@ -402,6 +448,7 @@ const Inbox = ({ currentUser }) => {
                 </button>
               </div>
             </div>
+
 
             <div className="image-picker-grid">
               {panelFiles.map((f, idx) => (
@@ -426,6 +473,7 @@ const Inbox = ({ currentUser }) => {
               ))}
             </div>
 
+
             <div className="image-picker-footer">
               <button
                 className="image-picker-send-btn"
@@ -439,6 +487,7 @@ const Inbox = ({ currentUser }) => {
           </div>
         )}
 
+
         {/* Input bar */}
         <div className="flex-shrink-0 pt-3">
           <form onSubmit={handleSendMessage}>
@@ -448,6 +497,7 @@ const Inbox = ({ currentUser }) => {
                   <i className="bi bi-emoji-smile fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
               </div>
+
 
               <textarea
                 rows={1}
@@ -461,6 +511,7 @@ const Inbox = ({ currentUser }) => {
                 className="w-100 pt-2 custom-text-input message-input"
                 style={{ overflow: "hidden", resize: "none", minHeight: "40px", maxHeight: "120px" }}
               />
+
 
               <div className="d-flex ps-2 gap-1">
                 <button type="button" className="icon-btn" aria-label="mic">
@@ -484,6 +535,7 @@ const Inbox = ({ currentUser }) => {
         </div>
       </div>
 
+
       {/* ========== RIGHT — Detail Panel ========== */}
       <div className="detail-panel">
         {selectedCustomer ? (
@@ -496,6 +548,7 @@ const Inbox = ({ currentUser }) => {
                 alt={selectedCustomer.name}
               />
             </div>
+
 
             {/* Name (editable) */}
             <div className="detail-name-section">
@@ -516,11 +569,13 @@ const Inbox = ({ currentUser }) => {
                 </p>
               )}
 
+
               {selectedCustomer.originalName &&
                 selectedCustomer.originalName !== selectedCustomer.name && (
                   <p className="detail-original-name">{selectedCustomer.originalName}</p>
                 )}
             </div>
+
 
             {/* Assigned to */}
             <div className="detail-assigned">
@@ -540,7 +595,9 @@ const Inbox = ({ currentUser }) => {
               </div>
             </div>
 
+
             <hr className="detail-divider" />
+
 
             {/* Notes */}
             <div className="detail-notes">
@@ -566,6 +623,7 @@ const Inbox = ({ currentUser }) => {
                 </button>
               </div>
 
+
               {isAddingNote && (
                 <div className="note-form">
                   <textarea
@@ -581,6 +639,7 @@ const Inbox = ({ currentUser }) => {
                   </div>
                 </div>
               )}
+
 
               <div className="notes-list">
                 {notes.map((note) => (
@@ -632,4 +691,8 @@ const Inbox = ({ currentUser }) => {
   );
 };
 
+
 export default Inbox;
+
+
+
