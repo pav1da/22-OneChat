@@ -79,14 +79,10 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
               <div style={{ background: "transparent", padding: 0 }}>
                 <img src={msg.image} alt="sticker" style={{ width: "80px", height: "80px", objectFit: "contain" }} />
               </div>
+            ) : msg.image ? (
+              <img src={msg.image} alt="upload" style={{ maxWidth: "180px", maxHeight: "180px", borderRadius: "8px", display: "block" }} />
             ) : (
-              <div className="bubble">
-                {msg.image ? (
-                  <img src={msg.image} alt="upload" style={{ maxWidth: "100px", maxHeight: "100px", borderRadius: "6px" }} />
-                ) : (
-                  msg.text
-                )}
-              </div>
+              <div className="bubble">{msg.text}</div>
             )}
             {msg.created_at && (
               <span className="mini-msg-time">{formatTime(msg.created_at)}</span>

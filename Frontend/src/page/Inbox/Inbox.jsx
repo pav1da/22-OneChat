@@ -56,6 +56,14 @@ const Inbox = ({ currentUser }) => {
   const chatMessages = messages[selectedChatId] || [];
 
 
+  // Clear image panel when switching chats
+  useEffect(() => {
+    panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
+    setPanelFiles([]);
+    setShowImagePanel(false);
+  }, [selectedChatId]);
+
+
   // ---------- Sort logic ----------
   const sortedCustomers = [...customer].sort((a, b) => {
     if (sortBy === "latest") return 0; // คงลำดับจาก ChatContext (เรียงตามข้อความล่าสุดแล้ว)
@@ -88,6 +96,10 @@ const Inbox = ({ currentUser }) => {
   // ---------- Message handlers ----------
   const handleSendMessage = (e) => {
     e.preventDefault();
+    if (showImagePanel && panelFiles.some(f => f.selected)) {
+      handleSendPanelImages();
+      return;
+    }
     const trimmed = newMessage.trim();
     if (!trimmed || !selectedCustomer) return;
 
@@ -474,16 +486,6 @@ const Inbox = ({ currentUser }) => {
             </div>
 
 
-            <div className="image-picker-footer">
-              <button
-                className="image-picker-send-btn"
-                disabled={!panelFiles.some(f => f.selected)}
-                onClick={handleSendPanelImages}
-              >
-                <i className="bi bi-send-fill me-2"></i>
-                ส่ง {panelFiles.filter(f => f.selected).length} รูป
-              </button>
-            </div>
           </div>
         )}
 
