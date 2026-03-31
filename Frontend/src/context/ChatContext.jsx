@@ -127,6 +127,17 @@ export const ChatProvider = ({ children }) => {
             }
         });
 
+        // อัปเดตโปรไฟล์ลูกค้า real-time (หลัง refresh ทุก 24 ชม.)
+        socket.on("update-customer", (cust) => {
+            setCustomers((prev) =>
+                prev.map((c) =>
+                    c.id === cust.id
+                        ? { ...c, name: cust.display_name || c.name, originalName: cust.display_name || c.originalName, img: cust.picture_url || c.img }
+                        : c
+                )
+            );
+        });
+
         // รับลูกค้าใหม่แบบ real-time (ไม่ต้องรีเฟรช)
         socket.on("new-customer", (cust) => {
             setCustomers((prev) => {

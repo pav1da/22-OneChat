@@ -27,7 +27,46 @@ const uploadChatImage = multer({
 });
 
 
-// POST /api/messages/upload-image — อัปโหลดรูปภาพ แล้วคืน filename
+/**
+ * @swagger
+ * /api/messages/upload-image:
+ *   post:
+ *     summary: อัปโหลดรูปภาพสำหรับแชท
+ *     description: อัปโหลดไฟล์รูปภาพ (JPEG, PNG, GIF, WebP) ขนาดไม่เกิน 10MB — คืน filename และ URL สำหรับใช้ใน POST /api/messages
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [image]
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: ไฟล์รูปภาพ (JPEG, PNG, GIF, WebP, ขนาดไม่เกิน 10MB)
+ *     responses:
+ *       200:
+ *         description: อัปโหลดสำเร็จ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 filename:
+ *                   type: string
+ *                   example: "admin-1711234567890.jpg"
+ *                 url:
+ *                   type: string
+ *                   example: "/uploads/chat-images/admin-1711234567890.jpg"
+ *       400:
+ *         description: ไม่พบไฟล์รูปภาพ
+ *       401:
+ *         description: Unauthorized
+ */
 router.post('/upload-image', auth, uploadChatImage.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'ไม่พบไฟล์รูปภาพ' });
   res.json({ filename: req.file.filename, url: `/uploads/chat-images/${req.file.filename}` });

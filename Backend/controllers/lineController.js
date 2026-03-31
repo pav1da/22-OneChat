@@ -100,6 +100,9 @@ async function handleEvent(event, io) {
         refreshCustomerProfile(customerId, userId, io).then(({ name, pic }) => {
           displayName = name;
           pictureUrl = pic;
+          if (io) {
+            io.emit("update-customer", { id: customerId, display_name: name, picture_url: pic });
+          }
         }).catch(() => {});
       }
     }
@@ -223,7 +226,7 @@ async function handleEvent(event, io) {
 }
 
 // Helper: อัพเดทโปรไฟล์ลูกค้าจาก LINE API (ทุก 24 ชม.)
-async function refreshCustomerProfile(customerId, lineUserId, io) {
+async function refreshCustomerProfile(customerId, lineUserId) {
   const profile = await client.getProfile(lineUserId);
   const name = profile.displayName;
   const pic = profile.pictureUrl || "";
