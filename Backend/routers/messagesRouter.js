@@ -315,7 +315,7 @@ router.post('/', auth, async (req, res) => {
               to: customer.platform_id,
               messages: lineMessages,
             });
-            console.log(`📤 ส่งข้อความไปยัง LINE (${customer.display_name}) สำเร็จ`);
+            console.log(`📤 ส่งข้อความไปยัง LINE (${customer.cus_name}) สำเร็จ`);
           }
         }
       } catch (lineErr) {
@@ -342,7 +342,7 @@ router.post('/', auth, async (req, res) => {
     if ((sender || 'own') === 'own') {
       try {
         const customer = await Customer.findById(customer_id);
-        const customerName = customer?.display_name || `Customer #${customer_id}`;
+        const customerName = customer?.cus_name || `Customer #${customer_id}`;
         const adminName = req.user?.username || 'unknown';
         const msgPreview = (message_type || 'text') === 'text'
           ? (message_text.length > 50 ? message_text.substring(0, 50) + '...' : message_text)

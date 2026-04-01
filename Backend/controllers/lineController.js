@@ -54,7 +54,7 @@ async function handleEvent(event, io) {
   try {
     // ตรวจสอบว่าลูกค้าเคยมีอยู่แล้วหรือยัง (ใช้ cache จาก DB เพื่อลด API call)
     const [existingRows] = await db.query(
-      "SELECT cus_id AS id, cus_name AS display_name, cus_picture AS picture_url, updated_at FROM customers WHERE platform = 'line' AND platform_id = ?",
+      "SELECT cus_id, cus_name, cus_picture, updated_at FROM customers WHERE platform = 'line' AND platform_id = ?",
       [userId],
     );
     const isNewCustomer = existingRows.length === 0;
@@ -78,16 +78,16 @@ async function handleEvent(event, io) {
         [userId, displayName, pictureUrl, channelId]
       );
       const [rows] = await db.query(
-        "SELECT cus_id AS id FROM customers WHERE platform = 'line' AND platform_id = ?",
+        "SELECT cus_id FROM customers WHERE platform = 'line' AND platform_id = ?",
         [userId],
       );
-      customerId = rows[0].id;
+      customerId = rows[0].cus_id;
 
       if (io) {
         io.emit("new-customer", {
-          id: customerId,
-          display_name: displayName,
-          picture_url: pictureUrl,
+          cus_id: customerId,
+          cus_name: displayName,
+          cus_picture: pictureUrl,
           platform: "line",
           platform_id: userId,
           first_message: event.type === "message" && event.message.type === "text" ? event.message.text : "",
@@ -95,9 +95,9 @@ async function handleEvent(event, io) {
       }
     } else {
       // ลูกค้าเก่า → ใช้ข้อมูลจาก DB (ไม่ต้องเรียก LINE API)
-      customerId = existingRows[0].id;
-      displayName = existingRows[0].display_name;
-      pictureUrl = existingRows[0].picture_url || "";
+      customerId = existingRows[0].cus_id;
+      displayName = existingRows[0].cus_name;
+      pictureUrl = existingRows[0].cus_picture || "";
 
       // อัพเดทโปรไฟล์ทุก 24 ชม. (fire-and-forget ไม่ block)
       const lastUpdate = new Date(existingRows[0].updated_at);
@@ -107,7 +107,7 @@ async function handleEvent(event, io) {
           displayName = name;
           pictureUrl = pic;
           if (io) {
-            io.emit("update-customer", { id: customerId, display_name: name, picture_url: pic });
+            io.emit("update-customer", { cus_id: customerId, cus_name: name, cus_picture: pic });
           }
         }).catch(() => {});
       }

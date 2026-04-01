@@ -50,10 +50,10 @@ export const ChatProvider = ({ children }) => {
                     const custData = await custRes.json();
                     // แปลงข้อมูลให้ตรงกับ format เดิมที่ frontend ใช้
                     const mapped = custData.map((c) => ({
-                        id: c.id,
-                        name: c.display_name || `Customer #${c.id}`,
-                        originalName: c.display_name || `Customer #${c.id}`,
-                        img: c.picture_url || "",
+                        id: c.cus_id,
+                        name: c.cus_name || `Customer #${c.cus_id}`,
+                        originalName: c.cus_name || `Customer #${c.cus_id}`,
+                        img: c.cus_picture || "",
                         app: c.platform ? `${c.platform === "line" ? "Line" : "Facebook"}` : "",
                         platform: c.platform,
                         platform_id: c.platform_id,
@@ -131,8 +131,8 @@ export const ChatProvider = ({ children }) => {
         socket.on("update-customer", (cust) => {
             setCustomers((prev) =>
                 prev.map((c) =>
-                    c.id === cust.id
-                        ? { ...c, name: cust.display_name || c.name, originalName: cust.display_name || c.originalName, img: cust.picture_url || c.img }
+                    c.id === cust.cus_id
+                        ? { ...c, name: cust.cus_name || c.name, originalName: cust.cus_name || c.originalName, img: cust.cus_picture || c.img }
                         : c
                 )
             );
@@ -142,13 +142,13 @@ export const ChatProvider = ({ children }) => {
         socket.on("new-customer", (cust) => {
             setCustomers((prev) => {
                 // ตรวจสอบว่ามีอยู่แล้วหรือยัง
-                if (prev.some((c) => c.id === cust.id)) return prev;
+                if (prev.some((c) => c.id === cust.cus_id)) return prev;
                 return [
                     {
-                        id: cust.id,
-                        name: cust.display_name || `Customer #${cust.id}`,
-                        originalName: cust.display_name || `Customer #${cust.id}`,
-                        img: cust.picture_url || "",
+                        id: cust.cus_id,
+                        name: cust.cus_name || `Customer #${cust.cus_id}`,
+                        originalName: cust.cus_name || `Customer #${cust.cus_id}`,
+                        img: cust.cus_picture || "",
                         app: cust.platform === "line" ? "Line" : "Facebook",
                         platform: cust.platform,
                         platform_id: cust.platform_id,

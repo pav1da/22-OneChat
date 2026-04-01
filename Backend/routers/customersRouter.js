@@ -17,19 +17,26 @@ const auth = require('../middleware/auth.js');
  *     Customer:
  *       type: object
  *       properties:
- *         id:
+ *         cus_id:
  *           type: integer
  *           example: 1
+ *         cus_name:
+ *           type: string
+ *           example: "Pheemwit"
  *         platform:
  *           type: string
  *           example: "line"
  *         platform_id:
  *           type: string
  *           example: "U1234567890abcdef"
- *         display_name:
+ *         channel_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         displayname:
  *           type: string
- *           example: "Pheemwit"
- *         picture_url:
+ *           nullable: true
+ *         cus_picture:
  *           type: string
  *           nullable: true
  *           example: "https://profile.line-scdn.net/..."
