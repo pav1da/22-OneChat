@@ -4,7 +4,7 @@ const Customer = {
   // ดึงลูกค้าทั้งหมด
   findAll: async () => {
     const [rows] = await pool.query(
-      'SELECT id, platform, platform_id, display_name, picture_url, updated_at FROM customers ORDER BY updated_at DESC'
+      'SELECT id, platform, platform_id, channel_id, display_name, picture_url, updated_at FROM customers ORDER BY updated_at DESC'
     );
     return rows;
   },
@@ -12,7 +12,7 @@ const Customer = {
   // ดึงลูกค้าจาก ID
   findById: async (id) => {
     const [rows] = await pool.query(
-      'SELECT id, platform, platform_id, display_name, picture_url, updated_at FROM customers WHERE id = ?',
+      'SELECT id, platform, platform_id, channel_id, display_name, picture_url, updated_at FROM customers WHERE id = ?',
       [id]
     );
     return rows[0] || null;

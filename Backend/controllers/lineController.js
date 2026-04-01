@@ -67,9 +67,15 @@ async function handleEvent(event, io) {
       displayName = profile.displayName;
       pictureUrl = profile.pictureUrl || "";
 
+      // ค้นหา channel_id ของ LINE ที่ active อยู่
+      const [lineChannels] = await db.query(
+        "SELECT id FROM channels WHERE platform = 'line' AND status = 'active' LIMIT 1"
+      );
+      const channelId = lineChannels.length > 0 ? lineChannels[0].id : null;
+
       await db.query(
-        `INSERT INTO customers (platform, platform_id, display_name, picture_url) VALUES ('line', ?, ?, ?)`,
-        [userId, displayName, pictureUrl]
+        `INSERT INTO customers (platform, platform_id, display_name, picture_url, channel_id) VALUES ('line', ?, ?, ?, ?)`,
+        [userId, displayName, pictureUrl, channelId]
       );
       const [rows] = await db.query(
         "SELECT id FROM customers WHERE platform = 'line' AND platform_id = ?",
