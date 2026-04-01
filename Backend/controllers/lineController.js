@@ -54,7 +54,7 @@ async function handleEvent(event, io) {
   try {
     // ตรวจสอบว่าลูกค้าเคยมีอยู่แล้วหรือยัง (ใช้ cache จาก DB เพื่อลด API call)
     const [existingRows] = await db.query(
-      "SELECT id, display_name, picture_url, updated_at FROM customers WHERE platform = 'line' AND platform_id = ?",
+      "SELECT cus_id AS id, cus_name AS display_name, cus_picture AS picture_url, updated_at FROM customers WHERE platform = 'line' AND platform_id = ?",
       [userId],
     );
     const isNewCustomer = existingRows.length === 0;
@@ -74,11 +74,11 @@ async function handleEvent(event, io) {
       const channelId = lineChannels.length > 0 ? lineChannels[0].id : null;
 
       await db.query(
-        `INSERT INTO customers (platform, platform_id, display_name, picture_url, channel_id) VALUES ('line', ?, ?, ?, ?)`,
+        `INSERT INTO customers (platform, platform_id, cus_name, cus_picture, channel_id) VALUES ('line', ?, ?, ?, ?)`,
         [userId, displayName, pictureUrl, channelId]
       );
       const [rows] = await db.query(
-        "SELECT id FROM customers WHERE platform = 'line' AND platform_id = ?",
+        "SELECT cus_id AS id FROM customers WHERE platform = 'line' AND platform_id = ?",
         [userId],
       );
       customerId = rows[0].id;
@@ -237,7 +237,7 @@ async function refreshCustomerProfile(customerId, lineUserId) {
   const name = profile.displayName;
   const pic = profile.pictureUrl || "";
   await db.query(
-    "UPDATE customers SET display_name = ?, picture_url = ?, updated_at = NOW() WHERE id = ?",
+    "UPDATE customers SET cus_name = ?, cus_picture = ?, updated_at = NOW() WHERE cus_id = ?",
     [name, pic, customerId]
   );
   console.log(`Profile refreshed: ${name}`);

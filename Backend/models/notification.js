@@ -48,11 +48,11 @@ const Notification = {
                 `SELECT n.*, 
                         e.name AS sender_name, 
                         e.username AS sender_username,
-                        c.display_name AS customer_name,
-                        c.picture_url AS customer_avatar
+                        c.cus_name AS customer_name,
+                        c.cus_picture AS customer_avatar
                  FROM notifications n
                  LEFT JOIN EMP e ON n.sender_id = e.emp_id
-                 LEFT JOIN customers c ON n.ref_id = c.id AND n.ref_type = 'customer_message'
+                 LEFT JOIN customers c ON n.ref_id = c.cus_id AND n.ref_type = 'customer_message'
                  WHERE n.receiver_id = ? 
                  ORDER BY COALESCE(n.updated_at, n.created_at) DESC`,
                 [userId]

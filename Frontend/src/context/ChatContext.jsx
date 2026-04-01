@@ -209,19 +209,33 @@ export const ChatProvider = ({ children }) => {
     }, []);
 
     // ---------- ส่งรูปภาพ ----------
-    const sendImageMessage = useCallback(async (customerId, imageUrl) => {
-        const newMsg = {
-            id: Date.now(),
-            sender: "own",
-            image: imageUrl,
-        };
-
-        setMessages((prev) => ({
-            ...prev,
-            [customerId]: [...(prev[customerId] || []), newMsg],
-        }));
-
+    const sendImageMessage = useCallback(async (customerId, imageFile) => {
         try {
+            // ขั้นตอนที่ 1: อัปโหลดไฟล์รูปภาพไปยัง Backend ก่อน
+            const formData = new FormData();
+            formData.append("image", imageFile);
+
+            const uploadRes = await fetch("/api/messages/upload-image", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${getToken()}` },
+                body: formData,
+            });
+
+            if (!uploadRes.ok) throw new Error("Upload failed");
+            const { filename, url } = await uploadRes.json();
+
+            // ขั้นตอนที่ 2: แสดงรูปใน UI ทันที (optimistic)
+            const newMsg = {
+                id: Date.now(),
+                sender: "own",
+                image: url,
+            };
+            setMessages((prev) => ({
+                ...prev,
+                [customerId]: [...(prev[customerId] || []), newMsg],
+            }));
+
+            // ขั้นตอนที่ 3: บันทึกข้อความลง DB + ส่งไป LINE
             await fetch("/api/messages", {
                 method: "POST",
                 headers: getHeaders(),
@@ -229,7 +243,7 @@ export const ChatProvider = ({ children }) => {
                     customer_id: customerId,
                     sender: "own",
                     message_type: "image",
-                    message_text: imageUrl,
+                    message_text: filename,
                     socket_id: socketRef.current?.id || null,
                 }),
             });
