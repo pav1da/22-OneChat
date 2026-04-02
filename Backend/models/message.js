@@ -4,7 +4,7 @@ const Message = {
   // ดึงข้อความทั้งหมดของลูกค้า
   findByCustomerId: async (customerId) => {
     const [rows] = await pool.query(
-      'SELECT id, customer_id, sender, message_type, message_text, created_at FROM chat_messages WHERE customer_id = ? ORDER BY created_at ASC',
+      'SELECT message_id, customer_id, sender, message_type, message_text, created_at FROM chat_messages WHERE customer_id = ? ORDER BY created_at ASC',
       [customerId]
     );
     return rows;
@@ -13,7 +13,7 @@ const Message = {
   // ดึงข้อความทั้งหมดจัดกลุ่มตาม customer_id
   findAllGrouped: async () => {
     const [rows] = await pool.query(
-      'SELECT id, customer_id, sender, message_type, message_text, created_at FROM chat_messages ORDER BY created_at ASC'
+      'SELECT message_id, customer_id, sender, message_type, message_text, created_at FROM chat_messages ORDER BY created_at ASC'
     );
 
     // จัดกลุ่มข้อความตาม customer_id
