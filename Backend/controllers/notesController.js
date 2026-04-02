@@ -7,13 +7,13 @@ const getAdminName = (req) => req.user?.username || req.body.admin_name || 'Admi
 // 1. สร้าง Note ใหม่
 exports.createNote = async (req, res) => {
     try {
-        const { user, content, created_by } = req.body;
+        const { customer_id, text, author } = req.body;
 
-        if (!user || !content) {
-            return res.status(400).json({ status: 'error', message: 'กรุณากรอกข้อมูล เขียนถึง(user) และ รายละเอียด(content) ให้ครบถ้วน' });
+        if (!text) {
+            return res.status(400).json({ status: 'error', message: 'กรุณากรอกรายละเอียด(text) ให้ครบถ้วน' });
         }
 
-        const insertId = await Note.create({ user, content, created_by });
+        const insertId = await Note.create({ customer_id: customer_id || null, text, author });
         
         // บันทึก Log
         await Log.create({
@@ -21,7 +21,7 @@ exports.createNote = async (req, res) => {
             avatar: '',
             action: 'Create Note',
             target: 'Notes Management',
-            details: `Created a note for user: ${user}`
+            details: `Created a note by: ${author || 'unknown'}`
         });
 
         // ดึงข้อมูล Note รูปแบบเต็มกลับมาเพื่อใช้ Broadcast
@@ -71,13 +71,13 @@ exports.getNoteById = async (req, res) => {
 exports.updateNote = async (req, res) => {
     try {
         const { id } = req.params;
-        const { user, content } = req.body;
+        const { content } = req.body;
 
-        if (!user || !content) {
-            return res.status(400).json({ status: 'error', message: 'กรุณากรอกข้อมูล เขียนถึง(user) และ รายละเอียด(content) ให้ครบถ้วน' });
+        if (!content) {
+            return res.status(400).json({ status: 'error', message: 'กรุณากรอกข้อมูล รายละเอียด(content) ให้ครบถ้วน' });
         }
 
-        const success = await Note.update(id, { user, content });
+        const success = await Note.update(id, content);
 
         if (!success) {
             return res.status(404).json({ status: 'error', message: 'ไม่พบโน้ตที่ต้องการแก้ไข' });

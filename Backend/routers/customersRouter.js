@@ -17,19 +17,30 @@ const auth = require('../middleware/auth.js');
  *     Customer:
  *       type: object
  *       properties:
- *         id:
+ *         cus_id:
  *           type: integer
  *           example: 1
+ *         cus_name:
+ *           type: string
+ *           nullable: true
+ *           example: "ชื่อที่ตั้งเอง"
+ *         display_name:
+ *           type: string
+ *           example: "Pheemwit"
  *         platform:
  *           type: string
  *           example: "line"
  *         platform_id:
  *           type: string
  *           example: "U1234567890abcdef"
- *         display_name:
+ *         channel_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         displayname:
  *           type: string
- *           example: "Pheemwit"
- *         picture_url:
+ *           nullable: true
+ *         cus_picture:
  *           type: string
  *           nullable: true
  *           example: "https://profile.line-scdn.net/..."
@@ -161,9 +172,8 @@ router.get('/:id', auth, async (req, res) => {
 router.put('/:id/name', auth, async (req, res) => {
   try {
     const { name } = req.body;
-    if (!name) return res.status(400).json({ message: 'กรุณาระบุชื่อ' });
-
-    const success = await Customer.updateName(req.params.id, name);
+    // name เป็น null = ล้าง displayname → fallback ไปใช้ cus_name
+    const success = await Customer.updateName(req.params.id, name || null);
     if (!success) return res.status(404).json({ message: 'ไม่พบลูกค้า' });
 
     res.json({ message: 'อัปเดตชื่อสำเร็จ' });

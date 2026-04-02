@@ -5,10 +5,10 @@ const Note = {
   findAll: async () => {
     const [rows] = await pool.query(
       `SELECT n.id, n.customer_id, n.text AS content, n.author, n.created_at,
-              c.display_name AS user,
-              c.picture_url AS customer_avatar
+              COALESCE(c.displayname, c.cus_name) AS user,
+              c.cus_picture AS customer_avatar
        FROM notes n
-       LEFT JOIN customers c ON n.customer_id = c.id
+       LEFT JOIN customers c ON n.customer_id = c.cus_id
        ORDER BY n.created_at DESC`
     );
     return rows;
@@ -32,6 +32,20 @@ const Note = {
     return result.insertId;
   },
 
+  // ดึงโน้ตตาม ID (ใช้หลัง create/update เพื่อ emit socket)
+  findById: async (id) => {
+    const [rows] = await pool.query(
+      `SELECT n.id, n.customer_id, n.text AS content, n.author, n.created_at,
+              COALESCE(c.displayname, c.cus_name) AS user,
+              c.cus_picture AS customer_avatar
+       FROM notes n
+       LEFT JOIN customers c ON n.customer_id = c.cus_id
+       WHERE n.id = ?`,
+      [id]
+    );
+    return rows[0] || null;
+  },
+
   // แก้ไขโน้ต
   update: async (id, text) => {
     const [result] = await pool.query(
@@ -42,6 +56,14 @@ const Note = {
   },
 
   // ลบโน้ต
+  deleteById: async (id) => {
+    const [result] = await pool.query(
+      'DELETE FROM notes WHERE id = ?',
+      [id]
+    );
+    return result.affectedRows > 0;
+  },
+
   delete: async (id) => {
     const [result] = await pool.query(
       'DELETE FROM notes WHERE id = ?',

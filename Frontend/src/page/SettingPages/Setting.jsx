@@ -88,14 +88,13 @@ function Setting({ user }) {
                                 <Person size={20} /> บัญชีของฉัน
                             </Nav.Link>
 
-                            {/* ========== แก้ไขตรงนี้ ========== */}
-                            {/* ใช้ allow([]) เพื่อให้เห็นแค่ IT เท่านั้น (User/Admin จะไม่เห็น) */}
+                            {/* ========== ========== */}
+                            {/* allow([]) IT (User/Admin ) */}
                             {allow([]) && (
                             <Nav.Link eventKey="connect">
-                                <Link45deg size={20} /> เชื่อมต่อบัญชีใหม่
+                                <Link45deg size={20} /> เชื่อมต่อช่องทาง
                             </Nav.Link>
                             )}
-                            {/* =============================== */}
 
 
                             {/* --- กลุ่ม 2: ทั่วไป --- */}
@@ -118,7 +117,7 @@ function Setting({ user }) {
                             </Nav.Link>
 
 
-                            {/* --- กลุ่ม 3: ข้อมูลเกี่ยวกับแอป --- */}
+                            {/* --- 3: --- */}
                             <div className="nav-heading mt-4">ข้อมูลเกี่ยวกับแอป</div>
 
                             <Nav.Link eventKey="policy">
@@ -135,7 +134,7 @@ function Setting({ user }) {
                         </Nav>
                     </Col>
 
-                    {/* ===== คอลัมน์ขวา: เนื้อหา (Content) ===== */}
+                    {/* ===== : (Content) ===== */}
                     <Col md={9} lg={9} className="ps-md-5 py-4 scrollable-col bg-transparent">
                         {/* background content kept empty because settings will show as centered modal overlay */}
                     </Col>
@@ -168,7 +167,7 @@ function Setting({ user }) {
                                     </Nav.Link>
                                     {allow([]) && (
                                     <Nav.Link eventKey="connect">
-                                        <Link45deg size={18} /> เชื่อมต่อบัญชีใหม่
+                                        <Link45deg size={18} /> เชื่อมต่อช่องทาง
                                     </Nav.Link>
                                     )}
 

@@ -1,6 +1,6 @@
 import "./chatList.css";
 import { Card } from "react-bootstrap";
-import React, { useState } from "react";
+import React from "react";
 
 const STATUS = {
   NOT_STARTED: "ยังไม่เริ่ม",
@@ -8,61 +8,35 @@ const STATUS = {
   DONE: "เสร็จสิ้น",
 };
 
-const getStatusVariant = (status) => {
-  switch (status) {
-    case STATUS.NOT_STARTED:
-      return "secondary";
-    case STATUS.IN_PROGRESS:
-      return "warning";
-    case STATUS.DONE:
-      return "success";
-    default:
-      return "secondary";
-  }
-};
-
-const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
+const ChatList = ({ customers, selectedChatId, onChatSelect, unreadCounts = {} }) => {
   return (
     <div className="overflow-y-auto flex-grow-1 pt-3">
       <Card className="custom-card-chat">
-        {customers.map((cus) => { // ใช้ customers ที่ถูกเรียงแล้ว
+        {customers.map((cus) => {
           const isSelected = cus.id === selectedChatId;
+          const unread = unreadCounts[cus.id] || 0;
 
           return (
             <Card.Body
               onClick={() => onChatSelect(cus.id)}
-              className={`d-flex align-items-center ${
-                isSelected ? "selected-chat-item" : ""
-              }`}
+              className={`d-flex align-items-center ${isSelected ? "selected-chat-item" : ""}`}
               key={cus.id}
             >
-              {/* Profile Picture */}
-              <img
-                src={cus.img}
-                className="rounded-circle custom-img me-3"
-                style={{
-                  width: "60px",
-                  height: "60px",
-                  objectFit: "cover",
-                  flexShrink: 0,
-                }}
-              />
+              {/* Profile Picture with unread badge */}
+              <div className="position-relative me-3" style={{ flexShrink: 0 }}>
+                <img
+                  src={cus.img}
+                  className="rounded-circle custom-img"
+                  style={{ width: "60px", height: "60px", objectFit: "cover" }}
+                />
+                {unread > 0 && (
+                  <span className="unread-badge">{unread > 99 ? "99+" : unread}</span>
+                )}
+              </div>
 
-              <div
-                className="d-flex flex-column gap-2 flex-grow-1 chat-text-container"
-                style={{ height: "60px" }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr auto",
-                    alignItems: "baseline",
-                  }}
-                >
-                  <span className="text-truncate username-text">
-                    {cus.name}
-                  </span>
-
+              <div className="d-flex flex-column gap-2 flex-grow-1 chat-text-container" style={{ minWidth: 0 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "baseline", gap: "6px" }}>
+                  <span className="text-truncate username-text">{cus.name}</span>
                   <span
                     className="custom-badge"
                     style={{
@@ -77,10 +51,7 @@ const ChatList = ({ customers, selectedChatId, onChatSelect }) => {
                     {cus.status}
                   </span>
                 </div>
-                <p
-                  className="custom-text text-truncate mb-0"
-                  style={{ width: "200px" }}
-                >
+                <p className="custom-text text-truncate mb-0">
                   {cus.last}
                 </p>
               </div>

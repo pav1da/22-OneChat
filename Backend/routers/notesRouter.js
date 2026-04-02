@@ -245,7 +245,17 @@ router.put('/:id', auth, async (req, res) => {
     const success = await Note.update(req.params.id, text);
     if (!success) return res.status(404).json({ message: 'ไม่พบโน้ต' });
 
-    res.json({ message: 'แก้ไขโน้ตสำเร็จ' });
+    // ดึงข้อมูลโน้ตที่อัปเดตแล้ว (พร้อม customer info) เพื่อ broadcast
+    const allNotes = await Note.findAll();
+    const updatedNote = allNotes.find(n => n.id === parseInt(req.params.id));
+
+    // Broadcast real-time update
+    const io = req.app.get('io');
+    if (io && updatedNote) {
+      io.emit('updated_note', updatedNote);
+    }
+
+    res.json({ message: 'แก้ไขโน้ตสำเร็จ', data: updatedNote });
   } catch (err) {
     console.error('Update note error:', err);
     res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
@@ -255,8 +265,15 @@ router.put('/:id', auth, async (req, res) => {
 // DELETE /api/notes/:id — ลบโน้ต
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const success = await Note.delete(req.params.id);
+    const noteId = parseInt(req.params.id);
+    const success = await Note.delete(noteId);
     if (!success) return res.status(404).json({ message: 'ไม่พบโน้ต' });
+
+    // Broadcast real-time delete
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('deleted_note', { id: noteId });
+    }
 
     res.json({ message: 'ลบโน้ตสำเร็จ' });
   } catch (err) {

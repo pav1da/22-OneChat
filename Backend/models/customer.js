@@ -4,7 +4,7 @@ const Customer = {
   // ดึงลูกค้าทั้งหมด
   findAll: async () => {
     const [rows] = await pool.query(
-      'SELECT id, platform, platform_id, display_name, picture_url, updated_at FROM customers ORDER BY updated_at DESC'
+      'SELECT cus_id, cus_name, displayname AS display_name, platform, platform_id, channel_id, cus_picture, updated_at FROM customers ORDER BY updated_at DESC'
     );
     return rows;
   },
@@ -12,7 +12,7 @@ const Customer = {
   // ดึงลูกค้าจาก ID
   findById: async (id) => {
     const [rows] = await pool.query(
-      'SELECT id, platform, platform_id, display_name, picture_url, updated_at FROM customers WHERE id = ?',
+      'SELECT cus_id, cus_name, displayname AS display_name, platform, platform_id, channel_id, cus_picture, updated_at FROM customers WHERE cus_id = ?',
       [id]
     );
     return rows[0] || null;
@@ -21,7 +21,7 @@ const Customer = {
   // อัปเดตชื่อลูกค้า
   updateName: async (id, name) => {
     const [result] = await pool.query(
-      'UPDATE customers SET display_name = ? WHERE id = ?',
+      'UPDATE customers SET displayname = ? WHERE cus_id = ?',
       [name, id]
     );
     return result.affectedRows > 0;

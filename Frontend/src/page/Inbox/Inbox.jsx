@@ -4,12 +4,16 @@ import { useChat } from "../../context/ChatContext";
 import ChatList from "./chatList/ChatList";
 import "./inbox.css";
 
+
 const Inbox = ({ currentUser }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const msgRef = useRef(null);
   const endRef = useRef(null);
   const fileInputRef = useRef(null);
+  const chatAreaRef = useRef(null);
+  const MSG_LIMIT = 50;
+
 
   // Shared context
   const {
@@ -19,13 +23,22 @@ const Inbox = ({ currentUser }) => {
     sendImageMessage,
     updateCustomerStatus,
     updateCustomerName,
+    unreadCounts,
+    markAsRead,
     STATUS,
   } = useChat();
+
 
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [sortBy, setSortBy] = useState("latest");
   const [newMessage, setNewMessage] = useState("");
+
+
+  // Image picker panel state
+  const [showImagePanel, setShowImagePanel] = useState(false);
+  const [panelFiles, setPanelFiles] = useState([]); // [{ file, url, selected }]
+
 
   // Notes state
   const [notes, setNotes] = useState([]);
@@ -34,21 +47,40 @@ const Inbox = ({ currentUser }) => {
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState("");
 
+
   // Members list for "ผู้รับผิดชอบ" dropdown
   const [members, setMembers] = useState([]);
   const [assignedMap, setAssignedMap] = useState({}); // { customerId: { emp_id, username } }
 
+
+  // Pagination
+  const [visibleCount, setVisibleCount] = useState(50);
+
+
   // ---------- Derived state ----------
   const selectedCustomer = customer.find((c) => c.id === selectedChatId);
-  const chatMessages = messages[selectedChatId] || [];
+  const allMessages = messages[selectedChatId] || [];
+  const chatMessages = allMessages.slice(-visibleCount);
+  const hasMore = allMessages.length > visibleCount;
+
+
+  // Clear image panel + reset pagination when switching chats
+  useEffect(() => {
+    panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
+    setPanelFiles([]);
+    setShowImagePanel(false);
+    setVisibleCount(MSG_LIMIT);
+  }, [selectedChatId]);
+
 
   // ---------- Sort logic ----------
   const sortedCustomers = [...customer].sort((a, b) => {
-    if (sortBy === "latest") return a.id - b.id;
+    if (sortBy === "latest") return 0; // คงลำดับจาก ChatContext (เรียงตามข้อความล่าสุดแล้ว)
     if (sortBy === "name_asc") return a.name.localeCompare(b.name);
     if (sortBy === "name_desc") return b.name.localeCompare(a.name);
     return 0;
   });
+
 
   const handleSortToggle = () => {
     setSortBy((prev) => {
@@ -57,6 +89,7 @@ const Inbox = ({ currentUser }) => {
       return "latest";
     });
   };
+
 
   // ---------- Status helpers ----------
   const getStatusVariant = (status) => {
@@ -68,11 +101,17 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   // ---------- Message handlers ----------
   const handleSendMessage = (e) => {
     e.preventDefault();
+    if (showImagePanel && panelFiles.some(f => f.selected)) {
+      handleSendPanelImages();
+      return;
+    }
     const trimmed = newMessage.trim();
     if (!trimmed || !selectedCustomer) return;
+
 
     sendMessage(selectedChatId, trimmed);
     setNewMessage("");
@@ -80,33 +119,91 @@ const Inbox = ({ currentUser }) => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+
   const autoResize = (e) => {
     const el = e.target;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
   };
 
+
   const handleUploadImage = (e) => {
-    const file = e.target.files[0];
-    if (!file || !selectedCustomer) return;
-    const url = URL.createObjectURL(file);
-    sendImageMessage(selectedChatId, url);
+    const files = Array.from(e.target.files);
+    if (!files.length || !selectedCustomer) return;
+    const newEntries = files.map((file) => ({ file, url: URL.createObjectURL(file), selected: true }));
+    setPanelFiles((prev) => [...prev, ...newEntries]);
+    setShowImagePanel(true);
+    e.target.value = "";
+  };
+
+
+  const handleTogglePanelFile = (idx) => {
+    setPanelFiles((prev) => prev.map((f, i) => i === idx ? { ...f, selected: !f.selected } : f));
+  };
+
+
+  const handleRemovePanelFile = (idx) => {
+    setPanelFiles((prev) => {
+      URL.revokeObjectURL(prev[idx].url);
+      const next = prev.filter((_, i) => i !== idx);
+      if (!next.length) setShowImagePanel(false);
+      return next;
+    });
+  };
+
+
+  const handleSendPanelImages = () => {
+    const toSend = panelFiles.filter((f) => f.selected);
+    toSend.forEach((f) => sendImageMessage(selectedChatId, f.file));
+    panelFiles.filter((f) => !f.selected).forEach((f) => URL.revokeObjectURL(f.url));
+    setPanelFiles([]);
+    setShowImagePanel(false);
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+
+  const handleCloseImagePanel = () => {
+    panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
+    setPanelFiles([]);
+    setShowImagePanel(false);
+  };
+
 
   // ---------- Chat select ----------
   const handleChatSelect = (id) => {
     setSelectedChatId(id);
     setIsEditingName(false);
+    markAsRead(id);
   };
+
 
   // ---------- Name editing ----------
-  const handleNameChange = (e) => {
-    if (!selectedCustomer) return;
-    updateCustomerName(selectedCustomer.id, e.target.value);
+  const [editName, setEditName] = useState("");
+
+  const handleStartEditName = () => {
+    if (selectedCustomer) {
+      setEditName(selectedCustomer.name);
+      setIsEditingName(true);
+    }
   };
 
-  const handleNameSave = () => setIsEditingName(false);
+  const handleNameChange = (e) => {
+    setEditName(e.target.value);
+  };
+
+  const handleNameSave = () => {
+    if (!selectedCustomer) return;
+    const trimmed = editName.trim();
+    if (trimmed) {
+      // มีชื่อใหม่ → บันทึก
+      updateCustomerName(selectedCustomer.id, trimmed);
+    } else {
+      // ลบชื่อจนว่าง → กลับไปใช้ cus_name (originalName)
+      updateCustomerName(selectedCustomer.id, null);
+    }
+    setIsEditingName(false);
+  };
+
 
   // ---------- Fetch members for assignment dropdown ----------
   useEffect(() => {
@@ -127,6 +224,7 @@ const Inbox = ({ currentUser }) => {
     fetchMembers();
   }, []);
 
+
   // ---------- Assignment handler ----------
   const handleAssignChange = (customerId, empId) => {
     const member = members.find((m) => m.emp_id === Number(empId));
@@ -138,6 +236,7 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   const getAssignedUser = (customerId) => {
     if (assignedMap[customerId]) return assignedMap[customerId];
     // Default: current user
@@ -145,11 +244,13 @@ const Inbox = ({ currentUser }) => {
     return null;
   };
 
+
   // ---------- Helper: get auth headers ----------
   const getHeaders = () => ({
     "Content-Type": "application/json",
     Authorization: `Bearer ${sessionStorage.getItem("token")}`,
   });
+
 
   // ---------- Load notes from API ----------
   useEffect(() => {
@@ -168,10 +269,12 @@ const Inbox = ({ currentUser }) => {
     fetchNotes();
   }, [selectedChatId]);
 
+
   // ---------- Note handlers (API-backed) ----------
   const handleAddNote = async () => {
     if (!newNote.trim() || !selectedChatId) return;
     const author = currentUser?.username || currentUser?.name || "Admin";
+
 
     try {
       const res = await fetch("/api/notes", {
@@ -190,6 +293,7 @@ const Inbox = ({ currentUser }) => {
     setIsAddingNote(false);
   };
 
+
   const handleDeleteNote = async (id) => {
     setNotes(notes.filter((n) => n.id !== id));
     try {
@@ -199,10 +303,12 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   const handleEditNote = (note) => {
     setEditingNoteId(note.id);
     setEditingText(note.text);
   };
+
 
   const handleSaveEdit = async (id) => {
     if (!editingText.trim()) return;
@@ -220,41 +326,44 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
+
   const handleCancelEdit = () => {
     setEditingNoteId(null);
     setEditingText("");
   };
 
+
   // ---------- Effects ----------
-  // Select customer from navigation state (e.g., from notification) or first chat
+  // Effect 1: กดจาก notification → เปิดแชทของลูกค้าที่ถูกต้อง
   useEffect(() => {
-    if (location.state?.customerId) {
-      // กดจาก notification → เปิดแชทของลูกค้าที่ถูกต้อง
-      setSelectedChatId(location.state.customerId);
-      // Clear state หลังใช้แล้ว
-      navigate(location.pathname, { replace: true, state: {} });
-    } else if (customer.length > 0 && selectedChatId === null) {
-      // โหลดครั้งแรก → เปิดแชทแรก
+    const cid = location.state?.customerId || location.state?.chatId;
+    if (cid) {
+      setSelectedChatId(Number(cid));
+      // ใช้ replaceState แทน navigate เพื่อไม่ให้ component remount
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [location.state?.customerId, location.state?.chatId, location.pathname]);
+
+
+  // Effect 2: โหลดครั้งแรก → เปิดแชทแรก (เฉพาะกรณีที่ยังไม่ได้ select และไม่ได้มาจาก notification)
+  useEffect(() => {
+    const hasNavState = !!(location.state?.customerId || location.state?.chatId);
+    if (customer.length > 0 && selectedChatId === null && !hasNavState) {
       setSelectedChatId(customer[0].id);
     }
-  }, [customer, selectedChatId, location.state, navigate, location.pathname]);
+  }, [customer.length, selectedChatId]);
+
 
   // Scroll to latest message
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, selectedChatId]);
 
-  // Accept chatId from navigation state
-  useEffect(() => {
-    if (location.state?.chatId) {
-      setSelectedChatId(location.state.chatId);
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
 
   // ---------- Render ----------
   return (
     <div className="kanit-regular inbox-container px-3">
+
 
       {/* ========== LEFT — Chat List ========== */}
       <div className="customer-list">
@@ -265,14 +374,17 @@ const Inbox = ({ currentUser }) => {
           </div>
         </div>
 
+
         <div className="list">
           <ChatList
             customers={sortedCustomers}
             selectedChatId={selectedChatId}
             onChatSelect={handleChatSelect}
+            unreadCounts={unreadCounts}
           />
         </div>
       </div>
+
 
       {/* ========== CENTER — Chat Area ========== */}
       <div className="chat-section">
@@ -299,6 +411,7 @@ const Inbox = ({ currentUser }) => {
             )}
           </div>
 
+
           {selectedCustomer && (
             <div className="d-flex gap-3 align-items-center">
               <select
@@ -317,18 +430,52 @@ const Inbox = ({ currentUser }) => {
           )}
         </div>
 
+
         {/* Messages */}
-        <div className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2 chat-messages-area">
+        <div
+          ref={chatAreaRef}
+          className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2 chat-messages-area"
+          onScroll={(e) => {
+            if (e.currentTarget.scrollTop === 0 && hasMore) {
+              const prev = e.currentTarget.scrollHeight;
+              setVisibleCount((c) => c + MSG_LIMIT);
+              requestAnimationFrame(() => {
+                const next = chatAreaRef.current?.scrollHeight || 0;
+                chatAreaRef.current?.scrollBy({ top: next - prev });
+              });
+            }
+          }}
+        >
+          {hasMore && (
+            <div className="text-center py-2">
+              <button
+                className="icon-btn px-3"
+                style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}
+                onClick={() => {
+                  const prev = chatAreaRef.current?.scrollHeight || 0;
+                  setVisibleCount((c) => c + MSG_LIMIT);
+                  requestAnimationFrame(() => {
+                    const next = chatAreaRef.current?.scrollHeight || 0;
+                    chatAreaRef.current?.scrollBy({ top: next - prev });
+                  });
+                }}
+              >
+                โหลดข้อความเก่า
+              </button>
+            </div>
+          )}
           {chatMessages.map((msg) => (
             <div key={msg.id} className={`message ${msg.sender === "own" ? "own" : ""}`}>
               {msg.sender === "customer" && (
-                <img src={selectedCustomer?.img} alt="Customer" />
+                <img src={selectedCustomer?.img} alt="Customer" loading="lazy" decoding="async" />
               )}
               {msg.message_type === "sticker" ? (
                 <div className="sticker">
                   <img
                     src={msg.image}
                     alt="sticker"
+                    loading="lazy"
+                    decoding="async"
                     style={{ width: "120px", height: "120px", objectFit: "contain" }}
                   />
                 </div>
@@ -337,7 +484,10 @@ const Inbox = ({ currentUser }) => {
                   <img
                     src={msg.image}
                     alt="upload"
-                    style={{ maxWidth: "220px", maxHeight: "300px", borderRadius: "12px", objectFit: "cover" }}
+                    loading="lazy"
+                    decoding="async"
+                    style={{ maxWidth: "320px", maxHeight: "420px", borderRadius: "12px", objectFit: "cover", cursor: "pointer" }}
+                    onClick={() => window.open(msg.image, "_blank")}
                   />
                 </div>
               ) : (
@@ -346,12 +496,61 @@ const Inbox = ({ currentUser }) => {
                 </div>
               )}
               {msg.sender === "own" && (
-                <img src={currentUser?.image} alt="Admin" />
+                <img src={currentUser?.image} alt="Admin" loading="lazy" decoding="async" />
               )}
             </div>
           ))}
           <div ref={endRef}></div>
         </div>
+
+
+        {/* Image picker panel */}
+        {showImagePanel && (
+          <div className="image-picker-panel">
+            <div className="image-picker-header">
+              <span>{panelFiles.filter(f => f.selected).length} รูปที่เลือก</span>
+              <div className="d-flex gap-2">
+                <button
+                  className="icon-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="เพิ่มรูป"
+                >
+                  <i className="bi bi-plus-lg"></i>
+                </button>
+                <button className="icon-btn" onClick={handleCloseImagePanel} title="ปิด">
+                  <i className="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+
+
+            <div className="image-picker-grid">
+              {panelFiles.map((f, idx) => (
+                <div
+                  key={idx}
+                  className={`image-picker-thumb${f.selected ? " selected" : ""}`}
+                  onClick={() => handleTogglePanelFile(idx)}
+                >
+                  <img src={f.url} alt={f.file.name} />
+                  {f.selected && (
+                    <div className="image-picker-check">
+                      <i className="bi bi-check-lg"></i>
+                    </div>
+                  )}
+                  <button
+                    className="image-picker-remove"
+                    onClick={(e) => { e.stopPropagation(); handleRemovePanelFile(idx); }}
+                  >
+                    <i className="bi bi-x"></i>
+                  </button>
+                </div>
+              ))}
+            </div>
+
+
+          </div>
+        )}
+
 
         {/* Input bar */}
         <div className="flex-shrink-0 pt-3">
@@ -362,6 +561,7 @@ const Inbox = ({ currentUser }) => {
                   <i className="bi bi-emoji-smile fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
               </div>
+
 
               <textarea
                 rows={1}
@@ -376,14 +576,20 @@ const Inbox = ({ currentUser }) => {
                 style={{ overflow: "hidden", resize: "none", minHeight: "40px", maxHeight: "120px" }}
               />
 
+
               <div className="d-flex ps-2 gap-1">
                 <button type="button" className="icon-btn" aria-label="mic">
                   <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
-               <button type="button" className="icon-btn" aria-label="image" onClick={() => fileInputRef.current?.click()}>
+                <button
+                  type="button"
+                  className={`icon-btn${showImagePanel ? " active" : ""}`}
+                  aria-label="image"
+                  onClick={() => showImagePanel ? handleCloseImagePanel() : fileInputRef.current?.click()}
+                >
                   <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
-                <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleUploadImage} />
+                <input type="file" accept="image/*" multiple hidden ref={fileInputRef} onChange={handleUploadImage} />
                 <button type="submit" className="icon-btn send-btn" aria-label="send">
                   <i className="bi bi-send-fill fs-5" style={{ lineHeight: 1 }}></i>
                 </button>
@@ -392,6 +598,7 @@ const Inbox = ({ currentUser }) => {
           </form>
         </div>
       </div>
+
 
       {/* ========== RIGHT — Detail Panel ========== */}
       <div className="detail-panel">
@@ -406,12 +613,13 @@ const Inbox = ({ currentUser }) => {
               />
             </div>
 
+
             {/* Name (editable) */}
             <div className="detail-name-section">
               {isEditingName ? (
                 <input
                   type="text"
-                  value={selectedCustomer.name}
+                  value={editName}
                   onChange={handleNameChange}
                   onBlur={handleNameSave}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleNameSave(); } }}
@@ -419,17 +627,19 @@ const Inbox = ({ currentUser }) => {
                   autoFocus
                 />
               ) : (
-                <p className="detail-name" onClick={() => setIsEditingName(true)}>
+                <p className="detail-name" onClick={handleStartEditName}>
                   {selectedCustomer.name}
                   <i className="bi bi-pencil ms-2" style={{ cursor: "pointer", fontSize: "14px" }}></i>
                 </p>
               )}
+
 
               {selectedCustomer.originalName &&
                 selectedCustomer.originalName !== selectedCustomer.name && (
                   <p className="detail-original-name">{selectedCustomer.originalName}</p>
                 )}
             </div>
+
 
             {/* Assigned to */}
             <div className="detail-assigned">
@@ -449,7 +659,9 @@ const Inbox = ({ currentUser }) => {
               </div>
             </div>
 
+
             <hr className="detail-divider" />
+
 
             {/* Notes */}
             <div className="detail-notes">
@@ -475,6 +687,7 @@ const Inbox = ({ currentUser }) => {
                 </button>
               </div>
 
+
               {isAddingNote && (
                 <div className="note-form">
                   <textarea
@@ -490,6 +703,7 @@ const Inbox = ({ currentUser }) => {
                   </div>
                 </div>
               )}
+
 
               <div className="notes-list">
                 {notes.map((note) => (
@@ -541,4 +755,8 @@ const Inbox = ({ currentUser }) => {
   );
 };
 
+
 export default Inbox;
+
+
+

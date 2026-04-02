@@ -13,6 +13,12 @@ function Dashboard() {
   // เก็บรายการโน้ตทั้งหมด
   const [notes, setNotes] = useState([]);
 
+  // การเรียงลำดับ: 'newest' = ใหม่ไปเก่า, 'oldest' = เก่าไปใหม่
+  const [sortOrder, setSortOrder] = useState('newest');
+
+  // คำค้นหา
+  const [searchText, setSearchText] = useState('');
+
   // state สำหรับ Form ตอนสร้างหรือแก้ไขโน้ต
   const [newNote, setNewNote] = useState({ user: "", content: "" });
 
@@ -116,12 +122,30 @@ function Dashboard() {
     }
   };
 
+  // จัดรูปแบบวันที่-เวลา
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr.replace(' ', 'T'));
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+      + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // กรองและเรียงลำดับโน้ต
+  const filteredNotes = notes
+    .filter(n => !searchText || (n.content || '').toLowerCase().includes(searchText.toLowerCase()) || (n.author || '').toLowerCase().includes(searchText.toLowerCase()))
+    .sort((a, b) => {
+      const da = new Date(a.created_at || 0);
+      const db = new Date(b.created_at || 0);
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+
   // จำนวนช่องใน Grid ทั้งหมด (มีทั้งโน้ตจริงและช่องว่าง)
-  const totalCells = 20;
+  const totalCells = Math.max(20, filteredNotes.length + (4 - (filteredNotes.length % 4 || 4)));
 
   // เตรียมช่อง Grid แต่ละช่อง (ถ้า index มีโน้ต จะโชว์โน้ต ถ้าไม่มีก็ว่าง)
   const cells = Array.from({ length: totalCells }, (_, index) => {
-    const note = notes[index];
+    const note = filteredNotes[index];
 
     return (
       <Col key={index}>
@@ -203,6 +227,11 @@ function Dashboard() {
                     <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
                       สร้างโดย: {note.author || "-"}
                     </div>
+                    {note.created_at && (
+                      <div style={{ fontSize: "0.68rem", color: "var(--text-secondary)", marginTop: "2px" }}>
+                        <i className="bi bi-clock me-1"></i>{formatDateTime(note.created_at)}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -270,9 +299,10 @@ function Dashboard() {
               <Form.Control
                 type="text"
                 placeholder="ระบุชื่อผู้ใช้"
-                autoFocus
+                autoFocus={!editingId}
                 className="rounded-3 bg-light border-0 px-3 py-2"
                 value={newNote.user}
+                disabled={!!editingId}
                 onChange={(e) =>
                   setNewNote({ ...newNote, user: e.target.value })
                 }
@@ -319,14 +349,29 @@ function Dashboard() {
       {/* Top controls: left = filter pills, right = compact search */}
       <div className="dashboard-top d-flex align-items-center justify-content-between mb-3 px-1">
         <div className="d-flex gap-2 align-items-center">
-          <button className="nav-search">ล่าสุด</button>
-          <button className="nav-search">เก่าสุด</button>
+          <button
+            className={`nav-search${sortOrder === 'newest' ? ' active' : ''}`}
+            onClick={() => setSortOrder('newest')}
+          >
+            ล่าสุด
+          </button>
+          <button
+            className={`nav-search${sortOrder === 'oldest' ? ' active' : ''}`}
+            onClick={() => setSortOrder('oldest')}
+          >
+            เก่าสุด
+          </button>
         </div>
 
         <div>
           <div className="sidebar-search">
             <i className="bi bi-search"></i>
-            <input type="text" placeholder="ค้นหา" />
+            <input
+              type="text"
+              placeholder="ค้นหา"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
           </div>
         </div>
       </div>

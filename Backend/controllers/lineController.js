@@ -20,9 +20,24 @@ const getLocalDatetime = () => {
 };
 
 // รับข้อมูลจาก Route แล้วแยกกระจายงาน
-exports.handleWebhook = (req, res) => {
+exports.handleWebhook = async (req, res) => {
   console.log("📩 รับข้อมูลจาก LINE แล้ว!");
   const io = req.app.get("io");
+
+  // ตรวจสอบ status ของ LINE channel จาก channels table
+  // ถ้ามีการตั้งค่าไว้แต่ทุก channel ถูกปิด → ตอบ 200 แต่ไม่ประมวลผล
+  try {
+    const [lineChannels] = await db.query(
+      "SELECT status FROM channels WHERE platform = 'line'"
+    );
+    if (lineChannels.length > 0 && !lineChannels.some(c => c.status === 'active')) {
+      console.log("⏸️ LINE channel ถูกปิดทั้งหมด — ไม่ประมวลผล");
+      return res.status(200).send("OK");
+    }
+  } catch (err) {
+    console.error("Channel status check error:", err.message);
+  }
+
   Promise.all(req.body.events.map((event) => handleEvent(event, io)))
     .then(() => res.status(200).send("OK"))
     .catch((err) => {
@@ -39,7 +54,7 @@ async function handleEvent(event, io) {
   try {
     // ตรวจสอบว่าลูกค้าเคยมีอยู่แล้วหรือยัง (ใช้ cache จาก DB เพื่อลด API call)
     const [existingRows] = await db.query(
-      "SELECT id, display_name, picture_url, updated_at FROM customers WHERE platform = 'line' AND platform_id = ?",
+      "SELECT cus_id, cus_name, displayname, cus_picture, updated_at FROM customers WHERE platform = 'line' AND platform_id = ?",
       [userId],
     );
     const isNewCustomer = existingRows.length === 0;
@@ -52,30 +67,39 @@ async function handleEvent(event, io) {
       displayName = profile.displayName;
       pictureUrl = profile.pictureUrl || "";
 
+      // ค้นหา channel_id ของ LINE ที่ active อยู่
+      const [lineChannels] = await db.query(
+        "SELECT id FROM channels WHERE platform = 'line' AND status = 'active' LIMIT 1"
+      );
+      const channelId = lineChannels.length > 0 ? lineChannels[0].id : null;
+
       await db.query(
-        `INSERT INTO customers (platform, platform_id, display_name, picture_url) VALUES ('line', ?, ?, ?)`,
-        [userId, displayName, pictureUrl]
+        `INSERT INTO customers (platform, platform_id, cus_name, cus_picture, channel_id) VALUES ('line', ?, ?, ?, ?)`,
+        [userId, displayName, pictureUrl, channelId]
       );
       const [rows] = await db.query(
-        "SELECT id FROM customers WHERE platform = 'line' AND platform_id = ?",
+        "SELECT cus_id FROM customers WHERE platform = 'line' AND platform_id = ?",
         [userId],
       );
-      customerId = rows[0].id;
+      customerId = rows[0].cus_id;
 
       if (io) {
         io.emit("new-customer", {
-          id: customerId,
-          display_name: displayName,
-          picture_url: pictureUrl,
+          cus_id: customerId,
+          cus_name: displayName,
+          display_name: null,
+          displayname: null,
+          cus_picture: pictureUrl,
           platform: "line",
           platform_id: userId,
+          first_message: event.type === "message" && event.message.type === "text" ? event.message.text : "",
         });
       }
     } else {
       // ลูกค้าเก่า → ใช้ข้อมูลจาก DB (ไม่ต้องเรียก LINE API)
-      customerId = existingRows[0].id;
-      displayName = existingRows[0].display_name;
-      pictureUrl = existingRows[0].picture_url || "";
+      customerId = existingRows[0].cus_id;
+      displayName = existingRows[0].displayname || existingRows[0].cus_name;
+      pictureUrl = existingRows[0].cus_picture || "";
 
       // อัพเดทโปรไฟล์ทุก 24 ชม. (fire-and-forget ไม่ block)
       const lastUpdate = new Date(existingRows[0].updated_at);
@@ -84,6 +108,9 @@ async function handleEvent(event, io) {
         refreshCustomerProfile(customerId, userId, io).then(({ name, pic }) => {
           displayName = name;
           pictureUrl = pic;
+          if (io) {
+            io.emit("update-customer", { cus_id: customerId, cus_name: name, cus_picture: pic });
+          }
         }).catch(() => {});
       }
     }
@@ -106,6 +133,7 @@ async function handleEvent(event, io) {
             sender: "customer",
             text: text,
             image: null,
+            created_at: getLocalDatetime(),
           });
         }
 
@@ -152,6 +180,7 @@ async function handleEvent(event, io) {
             sender: "customer",
             text: null,
             image: `/uploads/chat-images/${filename}`,
+            created_at: getLocalDatetime(),
           });
         }
 
@@ -185,6 +214,7 @@ async function handleEvent(event, io) {
             message_type: "sticker",
             text: null,
             image: stickerUrl,
+            created_at: getLocalDatetime(),
           });
         }
 
@@ -204,12 +234,12 @@ async function handleEvent(event, io) {
 }
 
 // Helper: อัพเดทโปรไฟล์ลูกค้าจาก LINE API (ทุก 24 ชม.)
-async function refreshCustomerProfile(customerId, lineUserId, io) {
+async function refreshCustomerProfile(customerId, lineUserId) {
   const profile = await client.getProfile(lineUserId);
   const name = profile.displayName;
   const pic = profile.pictureUrl || "";
   await db.query(
-    "UPDATE customers SET display_name = ?, picture_url = ?, updated_at = NOW() WHERE id = ?",
+    "UPDATE customers SET cus_name = ?, cus_picture = ?, updated_at = NOW() WHERE cus_id = ?",
     [name, pic, customerId]
   );
   console.log(`Profile refreshed: ${name}`);
