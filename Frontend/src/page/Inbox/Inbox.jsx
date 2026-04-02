@@ -178,13 +178,31 @@ const Inbox = ({ currentUser }) => {
 
 
   // ---------- Name editing ----------
-  const handleNameChange = (e) => {
-    if (!selectedCustomer) return;
-    updateCustomerName(selectedCustomer.id, e.target.value);
+  const [editName, setEditName] = useState("");
+
+  const handleStartEditName = () => {
+    if (selectedCustomer) {
+      setEditName(selectedCustomer.name);
+      setIsEditingName(true);
+    }
   };
 
+  const handleNameChange = (e) => {
+    setEditName(e.target.value);
+  };
 
-  const handleNameSave = () => setIsEditingName(false);
+  const handleNameSave = () => {
+    if (!selectedCustomer) return;
+    const trimmed = editName.trim();
+    if (trimmed) {
+      // มีชื่อใหม่ → บันทึก
+      updateCustomerName(selectedCustomer.id, trimmed);
+    } else {
+      // ลบชื่อจนว่าง → กลับไปใช้ cus_name (originalName)
+      updateCustomerName(selectedCustomer.id, null);
+    }
+    setIsEditingName(false);
+  };
 
 
   // ---------- Fetch members for assignment dropdown ----------
@@ -601,7 +619,7 @@ const Inbox = ({ currentUser }) => {
               {isEditingName ? (
                 <input
                   type="text"
-                  value={selectedCustomer.name}
+                  value={editName}
                   onChange={handleNameChange}
                   onBlur={handleNameSave}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleNameSave(); } }}
@@ -609,7 +627,7 @@ const Inbox = ({ currentUser }) => {
                   autoFocus
                 />
               ) : (
-                <p className="detail-name" onClick={() => setIsEditingName(true)}>
+                <p className="detail-name" onClick={handleStartEditName}>
                   {selectedCustomer.name}
                   <i className="bi bi-pencil ms-2" style={{ cursor: "pointer", fontSize: "14px" }}></i>
                 </p>

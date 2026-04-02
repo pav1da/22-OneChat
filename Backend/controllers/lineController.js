@@ -54,7 +54,7 @@ async function handleEvent(event, io) {
   try {
     // ตรวจสอบว่าลูกค้าเคยมีอยู่แล้วหรือยัง (ใช้ cache จาก DB เพื่อลด API call)
     const [existingRows] = await db.query(
-      "SELECT cus_id, cus_name, cus_picture, updated_at FROM customers WHERE platform = 'line' AND platform_id = ?",
+      "SELECT cus_id, cus_name, displayname, cus_picture, updated_at FROM customers WHERE platform = 'line' AND platform_id = ?",
       [userId],
     );
     const isNewCustomer = existingRows.length === 0;
@@ -87,6 +87,8 @@ async function handleEvent(event, io) {
         io.emit("new-customer", {
           cus_id: customerId,
           cus_name: displayName,
+          display_name: null,
+          displayname: null,
           cus_picture: pictureUrl,
           platform: "line",
           platform_id: userId,
@@ -96,7 +98,7 @@ async function handleEvent(event, io) {
     } else {
       // ลูกค้าเก่า → ใช้ข้อมูลจาก DB (ไม่ต้องเรียก LINE API)
       customerId = existingRows[0].cus_id;
-      displayName = existingRows[0].cus_name;
+      displayName = existingRows[0].displayname || existingRows[0].cus_name;
       pictureUrl = existingRows[0].cus_picture || "";
 
       // อัพเดทโปรไฟล์ทุก 24 ชม. (fire-and-forget ไม่ block)

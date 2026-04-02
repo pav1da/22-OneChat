@@ -48,7 +48,7 @@ const Notification = {
                 `SELECT n.*, 
                         e.name AS sender_name, 
                         e.username AS sender_username,
-                        c.cus_name AS customer_name,
+                        COALESCE(c.displayname, c.cus_name) AS customer_name,
                         c.cus_picture AS customer_avatar
                  FROM notifications n
                  LEFT JOIN EMP e ON n.sender_id = e.emp_id

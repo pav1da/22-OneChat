@@ -51,7 +51,7 @@ export const ChatProvider = ({ children }) => {
                     // แปลงข้อมูลให้ตรงกับ format เดิมที่ frontend ใช้
                     const mapped = custData.map((c) => ({
                         id: c.cus_id,
-                        name: c.cus_name || `Customer #${c.cus_id}`,
+                        name: c.display_name || c.cus_name || `Customer #${c.cus_id}`,
                         originalName: c.cus_name || `Customer #${c.cus_id}`,
                         img: c.cus_picture || "",
                         app: c.platform ? `${c.platform === "line" ? "Line" : "Facebook"}` : "",
@@ -130,11 +130,13 @@ export const ChatProvider = ({ children }) => {
         // อัปเดตโปรไฟล์ลูกค้า real-time (หลัง refresh ทุก 24 ชม.)
         socket.on("update-customer", (cust) => {
             setCustomers((prev) =>
-                prev.map((c) =>
-                    c.id === cust.cus_id
-                        ? { ...c, name: cust.cus_name || c.name, originalName: cust.cus_name || c.originalName, img: cust.cus_picture || c.img }
-                        : c
-                )
+                prev.map((c) => {
+                    if (c.id !== cust.cus_id) return c;
+                    const newOriginalName = cust.cus_name || c.originalName;
+                    // ถ้า admin ยังไม่ได้ตั้งชื่อ (name === originalName) → อัปเดตชื่อแสดงด้วย
+                    const newName = c.name === c.originalName ? newOriginalName : c.name;
+                    return { ...c, originalName: newOriginalName, name: newName, img: cust.cus_picture || c.img };
+                })
             );
         });
 
@@ -146,7 +148,7 @@ export const ChatProvider = ({ children }) => {
                 return [
                     {
                         id: cust.cus_id,
-                        name: cust.cus_name || `Customer #${cust.cus_id}`,
+                        name: cust.display_name || cust.cus_name || `Customer #${cust.cus_id}`,
                         originalName: cust.cus_name || `Customer #${cust.cus_id}`,
                         img: cust.cus_picture || "",
                         app: cust.platform === "line" ? "Line" : "Facebook",
@@ -272,7 +274,12 @@ export const ChatProvider = ({ children }) => {
     // ---------- อัปเดตชื่อลูกค้า ----------
     const updateCustomerName = useCallback(async (customerId, newName) => {
         setCustomers((prev) =>
-            prev.map((c) => (c.id === customerId ? { ...c, name: newName } : c))
+            prev.map((c) => {
+                if (c.id !== customerId) return c;
+                // ถ้า newName เป็น null → กลับไปใช้ชื่อจาก platform (originalName)
+                const displayName = newName || c.originalName;
+                return { ...c, name: displayName };
+            })
         );
 
         try {

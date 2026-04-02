@@ -5,7 +5,7 @@ const Note = {
   findAll: async () => {
     const [rows] = await pool.query(
       `SELECT n.id, n.customer_id, n.text AS content, n.author, n.created_at,
-              c.cus_name AS user,
+              COALESCE(c.displayname, c.cus_name) AS user,
               c.cus_picture AS customer_avatar
        FROM notes n
        LEFT JOIN customers c ON n.customer_id = c.cus_id
@@ -36,7 +36,7 @@ const Note = {
   findById: async (id) => {
     const [rows] = await pool.query(
       `SELECT n.id, n.customer_id, n.text AS content, n.author, n.created_at,
-              c.cus_name AS user,
+              COALESCE(c.displayname, c.cus_name) AS user,
               c.cus_picture AS customer_avatar
        FROM notes n
        LEFT JOIN customers c ON n.customer_id = c.cus_id
