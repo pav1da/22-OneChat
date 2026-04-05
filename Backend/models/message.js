@@ -1,5 +1,18 @@
 const pool = require('../config/db.js');
 
+// Helper: แปลง row ดิบจาก DB ให้อยู่ในรูปแบบที่ Frontend ใช้
+const transformRow = (row) => ({
+  id: row.message_id,
+  customer_id: row.customer_id,
+  sender: row.sender || 'customer',
+  message_type: row.message_type,
+  text: row.message_type === 'text' ? row.message_text : null,
+  image: row.message_type === 'image' ? `/uploads/chat-images/${row.message_text}`
+       : row.message_type === 'sticker' ? row.message_text
+       : null,
+  created_at: row.created_at,
+});
+
 const Message = {
   // ดึงข้อความทั้งหมดของลูกค้า
   findByCustomerId: async (customerId) => {
@@ -7,7 +20,7 @@ const Message = {
       'SELECT message_id, customer_id, sender, message_type, message_text, created_at FROM chat_messages WHERE customer_id = ? ORDER BY created_at ASC',
       [customerId]
     );
-    return rows;
+    return rows.map(transformRow);
   },
 
   // ดึงข้อความทั้งหมดจัดกลุ่มตาม customer_id
@@ -21,16 +34,7 @@ const Message = {
     for (const row of rows) {
       const cid = row.customer_id;
       if (!grouped[cid]) grouped[cid] = [];
-      grouped[cid].push({
-        id: row.id,
-        sender: row.sender || 'customer',
-        message_type: row.message_type,
-        text: row.message_type === 'text' ? row.message_text : null,
-        image: row.message_type === 'image' ? `/uploads/chat-images/${row.message_text}`
-             : row.message_type === 'sticker' ? row.message_text
-             : null,
-        created_at: row.created_at,
-      });
+      grouped[cid].push(transformRow(row));
     }
     return grouped;
   },
