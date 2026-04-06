@@ -501,3 +501,29 @@
   flex-shrink: 0;
   opacity: 0.7;
 }
+
+/* ===== Mini chat emoji button ===== */
+.mini-emoji-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 18px;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.mini-emoji-btn:hover,
+.mini-emoji-btn.active {
+  color: var(--primary-color);
+  background: var(--primary-light, rgba(242, 102, 35, 0.1));
+}
+
+/* Position emoji picker above the mini chat input */
+.mini-chat-input .emoji-picker {
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: 300px;
+}

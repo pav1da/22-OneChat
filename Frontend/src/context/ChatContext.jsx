@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
 
@@ -29,6 +29,7 @@ export const ChatProvider = ({ children }) => {
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [unreadCounts, setUnreadCounts] = useState({}); // { customerId: count }
+    const activeCustomerIdRef = useRef(null); // เก็บ customerId ที่กำลังเปิดดูอยู่
 
     // ---------- โหลดข้อมูลตอน mount ----------
     useEffect(() => {
@@ -57,7 +58,7 @@ export const ChatProvider = ({ children }) => {
                         app: c.platform ? `${c.platform === "line" ? "Line" : "Facebook"}` : "",
                         platform: c.platform,
                         platform_id: c.platform_id,
-                        status: STATUS.NOT_STARTED,
+                        status: c.status || STATUS.NOT_STARTED,
                         last: "",
                     }));
                     setCustomers(mapped);
@@ -118,8 +119,8 @@ export const ChatProvider = ({ children }) => {
                 return updated;
             });
 
-            // เพิ่ม unread count (เฉพาะข้อความจากลูกค้า)
-            if (msg.sender !== "own") {
+            // เพิ่ม unread count (เฉพาะข้อความจากลูกค้า + ไม่ได้เปิดแชทนั้นอยู่)
+            if (msg.sender !== "own" && cid !== activeCustomerIdRef.current) {
                 setUnreadCounts((prev) => ({
                     ...prev,
                     [cid]: (prev[cid] || 0) + 1,
@@ -154,7 +155,7 @@ export const ChatProvider = ({ children }) => {
                         app: cust.platform === "line" ? "Line" : "Facebook",
                         platform: cust.platform,
                         platform_id: cust.platform_id,
-                        status: STATUS.NOT_STARTED,
+                        status: cust.status || STATUS.NOT_STARTED,
                         last: cust.first_message || "",
                     },
                     ...prev,
@@ -256,6 +257,7 @@ export const ChatProvider = ({ children }) => {
 
     // ---------- อ่านแล้ว (clear unread) ----------
     const markAsRead = useCallback((customerId) => {
+        activeCustomerIdRef.current = customerId; // อัปเดตว่ากำลังดูแชทไหนอยู่
         setUnreadCounts((prev) => {
             if (!prev[customerId]) return prev;
             const next = { ...prev };
@@ -264,11 +266,20 @@ export const ChatProvider = ({ children }) => {
         });
     }, []);
 
-    // ---------- อัปเดตสถานะลูกค้า (local only) ----------
-    const updateCustomerStatus = useCallback((customerId, newStatus) => {
+    // ---------- อัปเดตสถานะลูกค้า ----------
+    const updateCustomerStatus = useCallback(async (customerId, newStatus) => {
         setCustomers((prev) =>
             prev.map((c) => (c.id === customerId ? { ...c, status: newStatus } : c))
         );
+        try {
+            await fetch(`/api/customers/${customerId}/status`, {
+                method: "PUT",
+                headers: getHeaders(),
+                body: JSON.stringify({ status: newStatus }),
+            });
+        } catch (err) {
+            console.error("Update status error:", err);
+        }
     }, []);
 
     // ---------- อัปเดตชื่อลูกค้า ----------

@@ -2,7 +2,15 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../../context/ChatContext";
+import EmojiPicker from "../../components/EmojiPicker";
 import "./allChat.css";
+
+// Helper: ตรวจว่าข้อความเป็น emoji ล้วนหรือไม่
+const EMOJI_REGEX = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji}\u200D\p{Emoji}|\uFE0F|\u200D|\s)+$/u;
+const isEmojiOnly = (text) => {
+  if (!text || !text.trim()) return false;
+  return EMOJI_REGEX.test(text.trim());
+};
 
 // === Helper: แปลงเวลา ===
 const formatTime = (dateStr) => {
@@ -34,7 +42,9 @@ const STATUS_STYLE = {
 // === Mini Chat Panel ===
 const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) => {
   const [replyText, setReplyText] = useState("");
+  const [showEmoji, setShowEmoji] = useState(false);
   const messagesContainerRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (messagesContainerRef.current) {
@@ -81,6 +91,8 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
               </div>
             ) : msg.image ? (
               <img src={msg.image} alt="upload" style={{ maxWidth: "180px", maxHeight: "180px", borderRadius: "8px", display: "block" }} />
+            ) : isEmojiOnly(msg.text) ? (
+              <span style={{ fontSize: "28px", letterSpacing: "2px", lineHeight: 1.2 }}>{msg.text}</span>
             ) : (
               <div className="bubble">{msg.text}</div>
             )}
@@ -93,7 +105,27 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
 
       {/* Input */}
       <form className="mini-chat-input" onSubmit={handleSubmit}>
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <button
+            type="button"
+            className={`icon-btn mini-emoji-btn${showEmoji ? " active" : ""}`}
+            onClick={() => setShowEmoji((v) => !v)}
+            title="Emoji"
+          >
+            <i className="bi bi-emoji-smile"></i>
+          </button>
+          {showEmoji && (
+            <EmojiPicker
+              onSelect={(emoji) => {
+                setReplyText((prev) => prev + emoji);
+                inputRef.current?.focus();
+              }}
+              onClose={() => setShowEmoji(false)}
+            />
+          )}
+        </div>
         <input
+          ref={inputRef}
           type="text"
           placeholder="พิมพ์ข้อความ..."
           value={replyText}

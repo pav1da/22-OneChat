@@ -2,7 +2,16 @@ import { useRef, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useChat } from "../../context/ChatContext";
 import ChatList from "./chatList/ChatList";
+import EmojiPicker from "../../components/EmojiPicker";
 import "./inbox.css";
+
+
+// Helper: ตรวจว่าข้อความเป็น emoji ล้วนหรือไม่ (ไม่มีตัวอักษรอื่น)
+const EMOJI_REGEX = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji}\u200D\p{Emoji}|\uFE0F|\u200D|\s)+$/u;
+const isEmojiOnly = (text) => {
+  if (!text || !text.trim()) return false;
+  return EMOJI_REGEX.test(text.trim());
+};
 
 
 const Inbox = ({ currentUser }) => {
@@ -37,7 +46,8 @@ const Inbox = ({ currentUser }) => {
 
   // Image picker panel state
   const [showImagePanel, setShowImagePanel] = useState(false);
-  const [panelFiles, setPanelFiles] = useState([]); // [{ file, url, selected }]
+  const [panelFiles, setPanelFiles] = useState([]);
+  const [showEmoji, setShowEmoji] = useState(false); // [{ file, url, selected }]
 
 
   // Notes state
@@ -64,11 +74,12 @@ const Inbox = ({ currentUser }) => {
   const hasMore = allMessages.length > visibleCount;
 
 
-  // Clear image panel + reset pagination when switching chats
+  // Clear image panel + reset pagination + close emoji when switching chats
   useEffect(() => {
     panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
     setPanelFiles([]);
     setShowImagePanel(false);
+    setShowEmoji(false);
     setVisibleCount(MSG_LIMIT);
   }, [selectedChatId]);
 
@@ -490,6 +501,10 @@ const Inbox = ({ currentUser }) => {
                     onClick={() => window.open(msg.image, "_blank")}
                   />
                 </div>
+              ) : isEmojiOnly(msg.text) ? (
+                <div className="emoji-only">
+                  <span>{msg.text}</span>
+                </div>
               ) : (
                 <div className="texts">
                   <p className={msg.sender === "own" ? "own" : ""}>{msg.text}</p>
@@ -556,10 +571,24 @@ const Inbox = ({ currentUser }) => {
         <div className="flex-shrink-0 pt-3">
           <form onSubmit={handleSendMessage}>
             <div className="d-flex flex-row p-1 pe-3 gap-1 align-items-center custom-bottom-chat">
-              <div className="d-flex ps-2">
-                <button type="button" className="icon-btn" aria-label="emoji">
+              <div className="d-flex ps-2" style={{ position: "relative" }}>
+                <button
+                  type="button"
+                  className={`icon-btn${showEmoji ? " active" : ""}`}
+                  aria-label="emoji"
+                  onClick={() => setShowEmoji((v) => !v)}
+                >
                   <i className="bi bi-emoji-smile fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
+                {showEmoji && (
+                  <EmojiPicker
+                    onSelect={(emoji) => {
+                      setNewMessage((prev) => prev + emoji);
+                      msgRef.current?.focus();
+                    }}
+                    onClose={() => setShowEmoji(false)}
+                  />
+                )}
               </div>
 
 

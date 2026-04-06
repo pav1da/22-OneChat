@@ -421,6 +421,19 @@
 }
 
 
+/* Emoji-only message (no bubble, large emoji like Instagram) */
+.message .emoji-only {
+  background: transparent;
+  padding: 0;
+  line-height: 1.2;
+}
+
+.message .emoji-only span {
+  font-size: 36px;
+  letter-spacing: 2px;
+}
+
+
 /* ==================== Input Bar ==================== */
 .custom-bottom-chat {
   background-color: var(--bg-input);

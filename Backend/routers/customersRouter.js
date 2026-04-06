@@ -183,4 +183,20 @@ router.put('/:id/name', auth, async (req, res) => {
   }
 });
 
+// PUT /api/customers/:id/status — อัปเดต status
+router.put('/:id/status', auth, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ['ยังไม่เริ่ม', 'กำลังดำเนินการ', 'เสร็จสิ้น'];
+    if (!allowed.includes(status)) return res.status(400).json({ message: 'status ไม่ถูกต้อง' });
+
+    const success = await Customer.updateStatus(req.params.id, status);
+    if (!success) return res.status(404).json({ message: 'ไม่พบลูกค้า' });
+    res.json({ message: 'อัปเดต status สำเร็จ' });
+  } catch (err) {
+    console.error('Update status error:', err);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+  }
+});
+
 module.exports = router;
