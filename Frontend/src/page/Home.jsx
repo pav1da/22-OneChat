@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Button, Form } from "react-bootstrap";
+import { Container, Row, Col, Button, Form, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import AccountModal from "../components/AccountModal";
+import { ChatSquareDots, Diagram3, Layers, Inbox, LightningCharge, EmojiSmile, ShieldCheck, People, GraphUp, Headset } from "react-bootstrap-icons";
 
 const Home = () => {
   const [showModal, setShowModal] = useState(false);
@@ -30,6 +31,28 @@ const Home = () => {
     });
     observer.observe(document.documentElement, { attributes: true });
     return () => observer.disconnect();
+  }, []);
+
+  // Scroll Animation Observer for sections
+  useEffect(() => {
+    const sectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("active");
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    // Give it a tiny delay to allow React rendering to finish
+    setTimeout(() => {
+        const hiddenElements = document.querySelectorAll(".reveal");
+        hiddenElements.forEach((el) => sectionObserver.observe(el));
+    }, 100);
+
+    return () => sectionObserver.disconnect();
   }, []);
 
   return (
@@ -98,7 +121,7 @@ const Home = () => {
       </header>
 
       {/* Main Hero Section */}
-      <main style={{ flex: 1, display: "flex", alignItems: "center", paddingTop: "80px", position: "relative", zIndex: 1 }}>
+      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", paddingTop: "80px", position: "relative", zIndex: 1 }}>
         <Container>
           <Row className="align-items-center">
             <Col lg={7} className="text-center text-lg-start mb-5 mb-lg-0">
@@ -167,6 +190,146 @@ const Home = () => {
           </Row>
         </Container>
       </main>
+
+      {/* --- SaaS Sections Start --- */}
+      
+      {/* 1. What is One Chat? */}
+      <section className="py-5" style={{ zIndex: 1, position: "relative" }}>
+        <Container>
+          <div className="text-center mb-5 reveal">
+            <span className="badge rounded-pill mb-3" style={{ background: "rgba(242,102,35,0.1)", color: "var(--brand-orange)", border: "1px solid rgba(242, 102, 35, 0.2)", padding: "6px 12px" }}>
+              Unified Inbox
+            </span>
+            <h2 className="display-6 fw-bold mb-3">Unified Communication, Elevated.</h2>
+            <p className="fs-5 text-secondary mx-auto" style={{ maxWidth: "700px" }}>
+              One Chat consolidates all your customer interactions into a single, intelligent workspace. 
+              Stop juggling tabs and start delivering lightning-fast, personalized support from anywhere.
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* 2. How It Works */}
+      <section className="py-5" style={{ zIndex: 1, position: "relative" }}>
+        <Container>
+            <div className="text-center mb-5 reveal">
+                <h3 className="fw-bolder">From Setup to Success in Minutes</h3>
+                <p className="text-muted">A streamlined workflow designed for speed</p>
+            </div>
+            <Row className="text-center px-lg-5">
+                <Col md={4} className="mb-4 reveal stagger-1">
+                    <div className="glass-panel p-4 h-100 d-flex flex-column align-items-center">
+                        <div className="rounded-circle d-flex align-items-center justify-content-center mb-3" style={{ width: "60px", height: "60px", background: "rgba(242,102,35,0.1)", color: "var(--brand-orange)", fontSize: "24px" }}>
+                            <Diagram3 />
+                        </div>
+                        <h5>1. Connect Channels</h5>
+                        <p className="text-secondary small">Link LINE, Messenger, and web widgets instantly with secure webhooks.</p>
+                    </div>
+                </Col>
+                <Col md={4} className="mb-4 reveal stagger-2">
+                    <div className="glass-panel p-4 h-100 d-flex flex-column align-items-center">
+                        <div className="rounded-circle d-flex align-items-center justify-content-center mb-3" style={{ width: "60px", height: "60px", background: "rgba(242,102,35,0.1)", color: "var(--brand-orange)", fontSize: "24px" }}>
+                            <Inbox />
+                        </div>
+                        <h5>2. Centralize Messages</h5>
+                        <p className="text-secondary small">Receive and route incoming queries automatically into a noise-free inbox.</p>
+                    </div>
+                </Col>
+                <Col md={4} className="mb-4 reveal stagger-3">
+                    <div className="glass-panel p-4 h-100 d-flex flex-column align-items-center">
+                        <div className="rounded-circle d-flex align-items-center justify-content-center mb-3" style={{ width: "60px", height: "60px", background: "linear-gradient(135deg, #F26623, #e05512)", color: "#fff", fontSize: "24px" }}>
+                            <ChatSquareDots />
+                        </div>
+                        <h5>3. Engage & Resolve</h5>
+                        <p className="text-secondary small">Collaborate with your team and reply directly to customers with rich media.</p>
+                    </div>
+                </Col>
+            </Row>
+        </Container>
+      </section>
+
+      {/* 3. Key Features */}
+      <section className="py-5 mt-4" style={{ zIndex: 1, position: "relative" }}>
+        <Container>
+            <div className="mb-5 reveal">
+                <h3 className="fw-bolder">Everything You Need to Scale</h3>
+                <p className="text-muted">Powerful features wrapped in a simple UI</p>
+            </div>
+            <Row>
+                {[
+                    { icon: <Layers />, title: "Unified Interface", desc: "Manage all customer interactions seamlessly without switching apps." },
+                    { icon: <LightningCharge />, title: "Real-time Sync", desc: "Instant message delivery mapped directly via WebSockets." },
+                    { icon: <EmojiSmile />, title: "Rich Media Support", desc: "Native handling for LINE stickers, emojis, and all image attachments." },
+                    { icon: <People />, title: "Team Collaboration", desc: "Internal context sharing and smooth handoffs between agents." },
+                    { icon: <GraphUp />, title: "Analytics Overview", desc: "Understand your response times and manage chat volume effectively." },
+                    { icon: <ShieldCheck />, title: "Bank-grade Security", desc: "Encrypted message storage protecting your business and customers." }
+                ].map((feature, idx) => (
+                    <Col md={4} sm={6} className={`mb-4 reveal stagger-${(idx % 6) + 1}`} key={idx}>
+                        <div className="glass-panel p-4 h-100" style={{ borderLeft: "3px solid var(--brand-orange)", borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}>
+                            <div className="mb-3 text-brand fs-4">{feature.icon}</div>
+                            <h6 className="fw-bold">{feature.title}</h6>
+                            <p className="text-secondary small mb-0">{feature.desc}</p>
+                        </div>
+                    </Col>
+                ))}
+            </Row>
+        </Container>
+      </section>
+
+      {/* 4. Use Cases */}
+      <section className="py-5 mt-4" style={{ zIndex: 1, position: "relative" }}>
+        <Container>
+            <div className="text-center mb-5 reveal">
+                <h3 className="fw-bolder">Built For Modern Teams</h3>
+            </div>
+            <Row className="justify-content-center">
+                <Col lg={10}>
+                    <div className="glass-panel p-0 overflow-hidden reveal stagger-1">
+                        <Row className="g-0">
+                            <Col md={4} className="p-4 border-end border-light" style={{ borderColor: 'var(--border-light)' }}>
+                                <Headset className="fs-2 text-brand mb-3" />
+                                <h5 className="fw-bold">Customer Support</h5>
+                                <p className="text-secondary small">Resolve tickets faster and provide personalized answers with full context.</p>
+                            </Col>
+                            <Col md={4} className="p-4 border-end border-light" style={{ borderColor: 'var(--border-light)' }}>
+                                <LightningCharge className="fs-2 text-brand mb-3" />
+                                <h5 className="fw-bold">Sales & Onboarding</h5>
+                                <p className="text-secondary small">Engage leads directly on their preferred platform automatically.</p>
+                            </Col>
+                            <Col md={4} className="p-4">
+                                <People className="fs-2 text-brand mb-3" />
+                                <h5 className="fw-bold">Communities</h5>
+                                <p className="text-secondary small">Build relationships, broadcast updates, and moderate conversations.</p>
+                            </Col>
+                        </Row>
+                    </div>
+                </Col>
+            </Row>
+        </Container>
+      </section>
+
+      {/* 5. Call to Action */}
+      <section className="py-5 my-5" style={{ zIndex: 1, position: "relative" }}>
+        <Container>
+            <div className="p-5 rounded-4 text-center reveal stagger-1 text-white shadow-lg overflow-hidden position-relative" style={{ background: "linear-gradient(135deg, #F26623, #d95115)", border: "1px solid rgba(255,255,255,0.2)" }}>
+                {/* Decorative BG pattern */}
+                <div style={{ position: "absolute", right: "-10%", top: "-50%", opacity: "0.1", transform: "scale(2)", pointerEvents: "none" }}>
+                    <Diagram3 size={300} />
+                </div>
+                <div className="position-relative z-1">
+                    <h2 className="fw-bold mb-3">Ready to Transform Your Workflow?</h2>
+                    <p className="fs-5 mb-4 text-white-50 mx-auto" style={{ maxWidth: "600px" }}>
+                        Join the growing modern teams that use One Chat to securely connect with their customers every single day.
+                    </p>
+                    <Link to="/signup">
+                        <button className="btn btn-light rounded-pill px-5 py-3 fw-bold shadow-sm" style={{ color: "var(--brand-orange)", transition: "transform 0.2s" }} onMouseEnter={(e) => e.target.style.transform = "scale(1.05)"} onMouseLeave={(e) => e.target.style.transform = "scale(1)"}>
+                            Create Account for Free
+                        </button>
+                    </Link>
+                </div>
+            </div>
+        </Container>
+      </section>
 
       <AccountModal show={showModal} onHide={() => setShowModal(false)} />
     </div>
