@@ -308,14 +308,14 @@ const Sidebar = ({ onLogout, currentUser }) => {
                   <span>ตรวจสอบบันทึก</span>
                 </Nav.Link>
 
-                <Nav.Link
+                {/* <Nav.Link
                   as={Link}
                   to="/tokenreport"
                   className={`sidebar-nav-item ${isActive("/tokenreport") ? "active" : ""}`}
                 >
                   <i className="bi bi-bar-chart-line"></i>
                   <span>รายงาน Token</span>
-                </Nav.Link>
+                </Nav.Link> */}
               </>
             )}
           </Nav>

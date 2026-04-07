@@ -30,6 +30,7 @@ const notificationSettingsRouter = require("./routers/notificationSettingsRouter
 const templatesRouter = require("./routers/templatesRouter.js");
 const apiKeysRouter = require("./routers/apiKeysRouter.js");
 const channelsRouter = require("./routers/channelsRouter.js");
+const teamRouter = require("./routers/teamRouter.js");
 
 const app = express();
 const server = http.createServer(app);
@@ -162,6 +163,7 @@ app.use("/api/notes", notesRouter);
 app.use("/api/templates", templatesRouter);
 app.use("/api/api-keys", apiKeysRouter);
 app.use("/api/channels", channelsRouter);
+app.use("/api/teams", teamRouter);
 
 // เปิดเซิร์ฟเวอร์ (ใช้ server.listen แทน app.listen เพื่อให้ Socket.IO ทำงาน)
 // ดึง Port จาก Railway ถ้าไม่มีให้ใช้ 3000 (สำหรับรันในเครื่อง)

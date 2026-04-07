@@ -1,5 +1,10 @@
+/* =========================================================================
+   Team Page Stylesheet (team.css)
+   ========================================================================= */
+
+/* คอนเทนเนอร์หลักของหน้า Team */
 .teams-container {
-  font-family: "Kanit", sans-serif; /* kanit-regular */
+  font-family: "Kanit", sans-serif;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -7,32 +12,537 @@
   overflow-y: auto;
 }
 
-.teams-table-header {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
-  gap: 12px;
-  padding: 0.5rem 1rem;
-  color: var(--primary-color);
-  font-size: 1rem;
-  font-weight: 400;
+/* ส่วน Header (ชื่อหน้า + ปุ่มสร้างทีม) */
+.teams-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-light);
+  padding: 1rem 0;
 }
 
-.col-name {
+.teams-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main, #212529);
+  margin: 0;
+}
+
+/* ปุ่มสร้างทีมใหม่ */
+.btn-create-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 0.6rem;
+  background: linear-gradient(135deg, var(--primary-color, #F26623), #e8913a);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(242, 102, 35, 0.25);
+}
+
+.btn-create-team:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(242, 102, 35, 0.35);
+}
+
+.btn-create-team:active {
+  transform: translateY(0);
+}
+
+/* ช่องค้นหาทีม */
+.teams-search-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.teams-search-input {
+  width: 100%;
+  max-width: 320px;
+  height: 38px;
+  background-color: var(--bg-surface, #f8f9fa);
+  border: 1px solid var(--border-light, #e9ecef);
+  border-radius: 0.5rem;
+  padding: 0 1rem 0 2.5rem;
+  font-size: 0.9rem;
+  font-family: "Kanit", sans-serif;
+  color: var(--text-main, #212529);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teams-search-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #F26623);
+  box-shadow: 0 0 0 3px rgba(242, 102, 35, 0.1);
+}
+
+.teams-search-icon {
+  position: absolute;
+  top: 9px;
+  left: 12px;
+  color: var(--text-muted, #6c757d);
+  font-size: 1rem;
+}
+
+/* =========================================================================
+   Team Card Styles
+   ========================================================================= */
+
+.team-card {
+  border: 1px solid var(--border-light, #e9ecef);
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.team-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* ส่วนหัวของทีม (Team Header) */
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background-color: var(--bg-main, #ffffff);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.team-header:hover {
+  background-color: var(--bg-surface, #f8f9fa);
+}
+
+.team-header-left {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 10px;
 }
-/* .col-team { } */
-.col-role {
-  text-transform: uppercase;
+
+.team-chevron {
+  font-size: 0.85rem;
+  color: var(--text-muted, #6c757d);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* .col-status { } */
-.col-actions {
-  width: 80px;
+
+.team-chevron.open {
+  transform: rotate(90deg);
+}
+
+.team-name {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-main, #212529);
+  margin: 0;
+}
+
+.team-member-count {
+  font-size: 0.8rem;
+  color: var(--text-muted, #6c757d);
+  background-color: var(--bg-surface, #f0f0f0);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 400;
+}
+
+.team-header-actions {
   display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ปุ่ม action ในหัวทีม (edit, delete) */
+.btn-team-action {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: transparent;
+  color: var(--text-muted, #6c757d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.btn-team-action:hover {
+  background-color: var(--border-light, #e9ecef);
+  color: var(--text-main, #212529);
+}
+
+.btn-team-action.danger:hover {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* =========================================================================
+   Team Members Area (Accordion Content)
+   ========================================================================= */
+
+.team-members-area {
+  background-color: var(--bg-surface, #fafafa);
+  border-top: 1px solid var(--border-light, #e9ecef);
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.team-members-area.open {
+  max-height: 2000px;
+}
+
+/* แถวข้อมูลสมาชิกในทีม */
+.team-member-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 60px;
+  gap: 12px;
+  align-items: center;
+  padding: 0.8rem 1.25rem 0.8rem 2.5rem;
+  border-bottom: 1px solid var(--border-light, #e9ecef);
+  transition: background-color 0.15s ease;
+  font-size: 0.95rem;
+}
+
+.team-member-row:last-child {
+  border-bottom: none;
+}
+
+.team-member-row:hover {
+  background-color: rgba(242, 102, 35, 0.04);
+}
+
+/* ชื่อ + avatar ในทีม */
+.team-member-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Role badge ในทีม */
+.team-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.team-role-leader {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.team-role-member {
+  background-color: #ede9fe;
+  color: #6d28d9;
+}
+
+/* ปุ่มลบสมาชิกออกจากทีม */
+.btn-remove-member {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: transparent;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 0.85rem;
+  margin-left: auto;
+}
+
+.btn-remove-member:hover {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* ปุ่มเพิ่มสมาชิกในทีม */
+.btn-add-member {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0.6rem;
+  border: 2px dashed var(--border-light, #d1d5db);
+  border-radius: 0.5rem;
+  background-color: transparent;
+  color: var(--text-muted, #6c757d);
+  font-size: 0.85rem;
+  font-family: "Kanit", sans-serif;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  margin: 0.5rem 1.25rem 0.75rem 2.5rem;
+}
+
+.btn-add-member:hover {
+  border-color: var(--primary-color, #F26623);
+  color: var(--primary-color, #F26623);
+  background-color: rgba(242, 102, 35, 0.04);
+}
+
+/* =========================================================================
+   Avatar Styles (เหมือน member.css)
+   ========================================================================= */
+
+.teams-container .avatar-wrapper {
   position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.teams-container .member-avatar {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.teams-container .member-avatar-initials {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  user-select: none;
+  transition: border-color 0.3s ease;
+}
+
+.teams-container .avatar-online {
+  border-color: #22c55e;
+}
+
+.teams-container .avatar-offline {
+  border-color: #e5e7eb;
+}
+
+.teams-container .avatar-status-dot {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-surface, #fafafa);
+}
+
+.teams-container .dot-online {
+  background-color: #22c55e;
+  animation: pulse-green 2s infinite;
+}
+
+.teams-container .dot-offline {
+  background-color: #9ca3af;
+}
+
+/* =========================================================================
+   Status Badge (เหมือน member.css)
+   ========================================================================= */
+
+.teams-container .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.teams-container .status-online {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.teams-container .status-offline {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.teams-container .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.teams-container .dot-green {
+  background-color: #22c55e;
+}
+
+.teams-container .dot-gray {
+  background-color: #9ca3af;
+}
+
+/* =========================================================================
+   Empty state
+   ========================================================================= */
+
+.teams-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted, #6c757d);
+}
+
+.teams-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.4;
+}
+
+.teams-empty-text {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+/* =========================================================================
+   Modal: รายชื่อสมาชิกให้เลือกเพิ่ม (Add Member Modal)
+   ========================================================================= */
+
+.add-member-list {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.add-member-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.add-member-item:hover {
+  background-color: var(--bg-surface, #f8f9fa);
+}
+
+.add-member-item.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.add-member-item-name {
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: var(--text-main, #212529);
+}
+
+.add-member-item-role {
+  font-size: 0.78rem;
+  color: var(--text-muted, #6c757d);
+}
+
+.add-member-item-badge {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Modal search */
+.modal-search-input {
+  width: 100%;
+  height: 36px;
+  background-color: var(--bg-surface, #f8f9fa);
+  border: 1px solid var(--border-light, #e9ecef);
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+  font-family: "Kanit", sans-serif;
+  margin-bottom: 0.75rem;
+}
+
+.modal-search-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #F26623);
+}
+
+/* =========================================================================
+   Loading skeleton
+   ========================================================================= */
+
+.teams-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.skeleton-card {
+  height: 60px;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Animation สำหรับ pulse-green (ใช้ร่วมกับ member.css) */
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+  70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+/* =========================================================================
+   Responsive
+   ========================================================================= */
+
+@media (max-width: 768px) {
+  .team-member-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 0.8rem 1rem 0.8rem 1.5rem;
+  }
+
+  .team-member-name {
+    gap: 10px;
+  }
+
+  .teams-container .member-avatar,
+  .teams-container .member-avatar-initials {
+    width: 34px;
+    height: 34px;
+  }
+
+  .teams-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .teams-search-input {
+    max-width: 100%;
+  }
 }
