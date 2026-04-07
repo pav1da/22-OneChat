@@ -13,6 +13,52 @@ const isEmojiOnly = (text) => {
   return EMOJI_REGEX.test(text.trim());
 };
 
+// Helper: ตรวจว่าข้อความมี LINE emoji marker หรือไม่
+const LINE_EMOJI_PATTERN = /\[line-emoji:([^:]+):([^\]]+)\]/g;
+const hasLineEmoji = (text) => text && LINE_EMOJI_PATTERN.test(text);
+
+// Helper: ตรวจว่าข้อความเป็น LINE emoji ล้วน (ไม่มีข้อความอื่น)
+const isLineEmojiOnly = (text) => {
+  if (!text) return false;
+  const stripped = text.replace(LINE_EMOJI_PATTERN, "").trim();
+  return stripped === "" && LINE_EMOJI_PATTERN.test(text);
+};
+
+// Helper: แปลง [line-emoji:productId:emojiId] เป็น <img> และเก็บข้อความปกติ
+const renderTextWithLineEmoji = (text, size = 24) => {
+  if (!text) return null;
+  // Reset regex lastIndex
+  const regex = /\[line-emoji:([^:]+):([^\]]+)\]/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    // เพิ่มข้อความก่อนหน้า emoji
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    // เพิ่ม emoji image
+    const [, productId, emojiId] = match;
+    const url = `https://stickershop.line-scdn.net/sticonshop/v1/sticon/${productId}/android/${emojiId}.png`;
+    parts.push(
+      <img
+        key={`${match.index}-${emojiId}`}
+        src={url}
+        alt="LINE emoji"
+        className="line-emoji-inline"
+        style={{ width: size, height: size, verticalAlign: "middle", display: "inline" }}
+        loading="lazy"
+      />
+    );
+    lastIndex = regex.lastIndex;
+  }
+  // เพิ่มข้อความหลัง emoji ตัวสุดท้าย
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+  return parts;
+};
+
 
 const Inbox = ({ currentUser }) => {
   const location = useLocation();
@@ -501,13 +547,19 @@ const Inbox = ({ currentUser }) => {
                     onClick={() => window.open(msg.image, "_blank")}
                   />
                 </div>
+              ) : isLineEmojiOnly(msg.text) ? (
+                <div className="emoji-only">
+                  <span>{renderTextWithLineEmoji(msg.text, 40)}</span>
+                </div>
               ) : isEmojiOnly(msg.text) ? (
                 <div className="emoji-only">
                   <span>{msg.text}</span>
                 </div>
               ) : (
                 <div className="texts">
-                  <p className={msg.sender === "own" ? "own" : ""}>{msg.text}</p>
+                  <p className={msg.sender === "own" ? "own" : ""}>
+                    {hasLineEmoji(msg.text) ? renderTextWithLineEmoji(msg.text) : msg.text}
+                  </p>
                 </div>
               )}
               {msg.sender === "own" && (

@@ -117,9 +117,22 @@ async function handleEvent(event, io) {
 
     // ตรวจสอบและบันทึกข้อความลงตาราง chat_messages
     if (event.type === "message") {
-      // Text (ข้อความ)
+      // Text (ข้อความ) — รองรับ LINE emoji ด้วย
       if (event.message.type === "text") {
-        const text = event.message.text;
+        let text = event.message.text;
+
+        // แปลง LINE emoji placeholder → [line-emoji:productId:emojiId]
+        // LINE ส่ง emojis array มาพร้อม text ที่มี placeholder character
+        if (event.message.emojis && event.message.emojis.length > 0) {
+          // ต้อง replace จากท้ายไปหน้าเพื่อไม่ให้ index เลื่อน
+          const sortedEmojis = [...event.message.emojis].sort((a, b) => b.index - a.index);
+          for (const em of sortedEmojis) {
+            const marker = `[line-emoji:${em.productId}:${em.emojiId}]`;
+            text = text.substring(0, em.index) + marker + text.substring(em.index + em.length);
+          }
+          console.log(`แปลง LINE emoji แล้ว: ${text}`);
+        }
+
         const msgSql =
           "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', 'text', ?)";
         const [result] = await db.query(msgSql, [customerId, text]);
@@ -138,12 +151,13 @@ async function handleEvent(event, io) {
         }
 
         // Fire-and-forget: บันทึก Log + Notification แบบ async (ไม่ block)
+        const plainText = text.replace(/\[line-emoji:[^\]]+\]/g, "(emoji)");
         processLogAndNotification(io, {
           customerId, displayName, pictureUrl,
           logAction: "ส่งข้อความเข้ามา",
-          logDetails: text.length > 50 ? text.substring(0, 50) + "..." : text,
+          logDetails: plainText.length > 50 ? plainText.substring(0, 50) + "..." : plainText,
           msgType: "text",
-          msgContent: text.length > 30 ? text.substring(0, 30) + "..." : text,
+          msgContent: plainText.length > 30 ? plainText.substring(0, 30) + "..." : plainText,
         });
       }
 

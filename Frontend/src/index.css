@@ -1,85 +1,318 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
 :root {
+    /* Fonts */
+    --font-main: 'Outfit', sans-serif;
+
     /* Brand Colors */
+    --brand-orange: #F26623;
+    --brand-orange-hover: #ff8042;
     --primary-color: #f4a460;
     --primary-light: #fff1e6;
 
     /* Background Colors */
-    --bg-main: #FFFFFF;
-    --bg-surface: #E3E5E8;
+    --bg-main: #FAFAFC;
+    --bg-surface: #FFFFFF;
     --bg-bubble-user: #353342;
     --bg-bubble-admin: #f4a460;
     --bg-bubble-other: #e5e5ea;
-    --bg-card: #ffffff;
+    --bg-card: rgba(255, 255, 255, 0.7);
     --bg-hover: #f5f5f5;
-    --bg-input: #f0f0f0;
-    --bg-input-focus: #e9ecef;
+    --bg-input: rgba(240, 240, 240, 0.8);
+    --bg-input-focus: #ffffff;
+    --bg-glass: rgba(255, 255, 255, 0.65);
+    
 
     /* Text Colors */
-    --text-main: #1a1a1a;
-    --text-secondary: #666;
-    --text-muted: #999;
+    --text-main: #1a1a2e;
+    --text-secondary: #5a5a72;
+    --text-muted: #9ba1a6;
     --text-inverse: #FFFFFF;
-    --text-heading: #212529;
+    --text-heading: #0f0f1a;
     --text-bubble-user: #ffffff;
     --text-bubble-admin: #ffffff;
     --text-bubble-other: #1a1a1a;
 
     /* Border & Dividers */
-    --border-light: #E4E6EB;
-    --border-medium: #e9ecef;
+    --border-light: rgba(228, 230, 235, 0.5);
+    --border-medium: rgba(233, 236, 239, 0.8);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.3);
 
     /* Shadow */
-    --shadow-sm: rgba(0, 0, 0, 0.05);
-    --shadow-md: rgba(0, 0, 0, 0.12);
-    --shadow-lg: rgba(20, 20, 30, 0.08);
+    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 20px 40px rgba(242, 102, 35, 0.1);
     --shadow-overlay: rgba(0, 0, 0, 0.04);
-
-    /* Status Colors */
-    --status-success: #28A745;
-    --status-error: #DC3545;
-    --status-warning: #FFC107;
 }
 
 /* ============ Dark Theme ============ */
 [data-theme="dark"] {
-    /* Brand Colors - keep accent, darken light variant */
+    /* Brand Colors */
+    --brand-orange: #F26623;
+    --brand-orange-hover: #ff8c5a;
     --primary-color: #f4a460;
-    --primary-light: #2a2a2a;
+    --primary-light: rgba(242, 102, 35, 0.15);
 
     /* Background Colors */
-    --bg-main: #000000;
-    --bg-surface: #1a1a1a;
+    --bg-main: #0B0C10;
+    --bg-surface: #1F2833;
     --bg-bubble-user: #2d5aa0;
     --bg-bubble-admin: #f4a460;
     --bg-bubble-other: #2a2a2a;
-    --bg-card: #1a1a1a;
-    --bg-hover: #2a2a2a;
-    --bg-input: #1a1a1a;
-    --bg-input-focus: #2a2a2a;
+    --bg-card: rgba(31, 40, 51, 0.6);
+    --bg-hover: rgba(255, 255, 255, 0.05);
+    --bg-input: rgba(11, 12, 16, 0.8);
+    --bg-input-focus: #1F2833;
+    --bg-glass: rgba(11, 12, 16, 0.65);
 
     /* Text Colors */
-    --text-main: #ffffff;
-    --text-secondary: #b0b0b0;
-    --text-muted: #808080;
+    --text-main: #E0E6ED;
+    --text-secondary: #9BA4B5;
+    --text-muted: #6B7280;
     --text-inverse: #000000;
-    --text-heading: #ffffff;
+    --text-heading: #FFFFFF;
     --text-bubble-user: #ffffff;
     --text-bubble-admin: #ffffff;
     --text-bubble-other: #e8e8ee;
 
     /* Border & Dividers */
-    --border-light: #333333;
-    --border-medium: #444444;
+    --border-light: rgba(255, 255, 255, 0.05);
+    --border-medium: rgba(255, 255, 255, 0.1);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.05);
 
     /* Shadow */
-    --shadow-sm: rgba(255, 255, 255, 0.1);
-    --shadow-md: rgba(255, 255, 255, 0.15);
-    --shadow-lg: rgba(255, 255, 255, 0.2);
-    --shadow-overlay: rgba(255, 255, 255, 0.05);
-
-    /* Status Colors */
-    --status-success: #34d058;
-    --status-error: #f85149;
-    --status-warning: #e3b341;
+    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 20px 40px rgba(242, 102, 35, 0.15);
 }
 
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* ============ Typography ============ */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-heading);
+    font-weight: 700;
+}
+
+.text-brand {
+    color: var(--brand-orange);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #F26623 0%, #ff8c5a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ============ Custom Buttons ============ */
+.btn-brand {
+    /* Create a wider gradient so we can animate it moving side-to-side */
+    background: linear-gradient(90deg, #F26623 0%, #ff8c5a 50%, #F26623 100%);
+    background-size: 200% auto;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-position 0.4s ease;
+    box-shadow: 0 4px 15px rgba(242, 102, 35, 0.3);
+}
+
+.btn-brand:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(242, 102, 35, 0.4);
+    background-position: right center; /* Slide gradient */
+    color: #fff;
+}
+
+.btn-brand:active {
+    transform: translateY(1px) scale(0.96);
+    box-shadow: 0 2px 10px rgba(242, 102, 35, 0.3);
+}
+
+.btn-brand-outline {
+    background: transparent;
+    color: var(--text-main);
+    font-weight: 600;
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    padding: 10px 24px;
+    transition: all 0.2s ease;
+}
+
+.btn-brand-outline:hover {
+    border-color: var(--brand-orange);
+    color: var(--brand-orange);
+    background: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.btn-brand-outline:active {
+    transform: translateY(1px) scale(0.96);
+}
+
+/* ============ Glassmorphism ============ */
+.glass-panel {
+    background: var(--bg-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: var(--glass-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.glass-panel:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.glass-nav {
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: var(--glass-border);
+}
+
+/* ============ Animated Background Orbs ============ */
+.bg-orbs-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background-color: var(--bg-main);
+    transition: background-color 0.5s ease;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.6;
+    animation: float 20s infinite ease-in-out alternate;
+}
+
+/* Light mode orb colors (defaults) */
+.orb-1 {
+    width: 400px;
+    height: 400px;
+    background: rgba(242, 102, 35, 0.15); /* orange */
+    top: -100px;
+    right: -100px;
+    animation-delay: 0s;
+}
+
+.orb-2 {
+    width: 500px;
+    height: 500px;
+    background: rgba(100, 150, 255, 0.1); /* light blue */
+    bottom: -150px;
+    left: -150px;
+    animation-delay: -5s;
+}
+
+.orb-3 {
+    width: 300px;
+    height: 300px;
+    background: rgba(242, 102, 35, 0.1); 
+    top: 40%;
+    left: 20%;
+    animation-delay: -10s;
+}
+
+/* Dark mode orb colors */
+[data-theme="dark"] .orb-1 { background: rgba(242, 102, 35, 0.2); }
+[data-theme="dark"] .orb-2 { background: rgba(80, 80, 200, 0.15); }
+[data-theme="dark"] .orb-3 { background: rgba(242, 102, 35, 0.15); }
+
+@keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(50px, -50px) scale(1.1); }
+    66% { transform: translate(-50px, 50px) scale(0.9); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+/* ============ Form Inputs ============ */
+.custom-input {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    color: var(--text-main);
+    padding: 10px 16px;
+    transition: all 0.2s ease;
+}
+
+.custom-input:focus {
+    background-color: var(--bg-input-focus);
+    border-color: var(--brand-orange);
+    box-shadow: 0 0 0 4px rgba(242, 102, 35, 0.15);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+/* ============ Animations ============ */
+@keyframes fadeUpEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-up {
+    animation: fadeUpEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+
+/* ============ Navbar Hover Interaction ============ */
+.nav-signin-btn {
+    padding: 8px 16px;
+    border-radius: 50px;
+    color: var(--text-heading);
+    background-color: transparent;
+    border: 1px solid transparent;
+    transition: background-color 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+                color 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+                transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+                box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.nav-signin-btn:hover {
+    background-color: var(--brand-orange);
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(242, 102, 35, 0.25);
+}
+
+/* Base override for smooth reverting */
+.nav-signup-btn {
+    transition: background 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+                color 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+                box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+                transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+}
+
+/* Sibling selector: when sign-in is hovered, modify the get-started button */
+.nav-signin-btn:hover ~ .nav-signup-link .nav-signup-btn {
+    background: transparent !important;
+    color: var(--brand-orange) !important;
+    /* Using inset box-shadow avoids physical layout shifts which cause border flicker */
+    box-shadow: inset 0 0 0 1.5px var(--brand-orange) !important;
+    transform: translateY(0); 
+}

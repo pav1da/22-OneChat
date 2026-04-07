@@ -12,6 +12,33 @@ const isEmojiOnly = (text) => {
   return EMOJI_REGEX.test(text.trim());
 };
 
+// Helper: LINE emoji
+const LINE_EMOJI_PATTERN = /\[line-emoji:([^:]+):([^\]]+)\]/g;
+const hasLineEmoji = (text) => text && LINE_EMOJI_PATTERN.test(text);
+const isLineEmojiOnly = (text) => {
+  if (!text) return false;
+  const stripped = text.replace(LINE_EMOJI_PATTERN, "").trim();
+  return stripped === "" && LINE_EMOJI_PATTERN.test(text);
+};
+const renderTextWithLineEmoji = (text, size = 24) => {
+  if (!text) return null;
+  const regex = /\[line-emoji:([^:]+):([^\]]+)\]/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.substring(lastIndex, match.index));
+    const [, productId, emojiId] = match;
+    parts.push(
+      <img key={`${match.index}-${emojiId}`} src={`https://stickershop.line-scdn.net/sticonshop/v1/sticon/${productId}/android/${emojiId}.png`}
+        alt="emoji" style={{ width: size, height: size, verticalAlign: "middle", display: "inline" }} loading="lazy" />
+    );
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) parts.push(text.substring(lastIndex));
+  return parts;
+};
+
 // === Helper: แปลงเวลา ===
 const formatTime = (dateStr) => {
   if (!dateStr) return "";
@@ -91,10 +118,12 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
               </div>
             ) : msg.image ? (
               <img src={msg.image} alt="upload" style={{ maxWidth: "180px", maxHeight: "180px", borderRadius: "8px", display: "block" }} />
+            ) : isLineEmojiOnly(msg.text) ? (
+              <span style={{ lineHeight: 1.2 }}>{renderTextWithLineEmoji(msg.text, 36)}</span>
             ) : isEmojiOnly(msg.text) ? (
               <span style={{ fontSize: "28px", letterSpacing: "2px", lineHeight: 1.2 }}>{msg.text}</span>
             ) : (
-              <div className="bubble">{msg.text}</div>
+              <div className="bubble">{hasLineEmoji(msg.text) ? renderTextWithLineEmoji(msg.text) : msg.text}</div>
             )}
             {msg.created_at && (
               <span className="mini-msg-time">{formatTime(msg.created_at)}</span>
