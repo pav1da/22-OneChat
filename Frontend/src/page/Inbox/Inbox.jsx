@@ -105,6 +105,16 @@ const Inbox = ({ currentUser }) => {
   const [members, setMembers] = useState([]);
   const [assignedMap, setAssignedMap] = useState({}); // { customerId: { emp_id, username } }
 
+  // Tags state
+  const [tagsMap, setTagsMap] = useState({}); // { customerId: [{ text, color }] }
+  const [newTagText, setNewTagText] = useState("");
+  const [showTagInput, setShowTagInput] = useState(false);
+  const TAG_COLORS = [
+    "#ef4444", "#f97316", "#eab308", "#22c55e",
+    "#3b82f6", "#8b5cf6", "#ec4899", "#6b7280",
+  ];
+  const [selectedTagColor, setSelectedTagColor] = useState(TAG_COLORS[0]);
+
   // Pagination
   const [visibleCount, setVisibleCount] = useState(50);
 
@@ -293,6 +303,32 @@ const Inbox = ({ currentUser }) => {
         username: currentUser.username || currentUser.name,
       };
     return null;
+  };
+
+  // ---------- Tag handlers ----------
+  const handleAddTag = () => {
+    const trimmed = newTagText.trim();
+    if (!trimmed || !selectedChatId) return;
+    setTagsMap((prev) => ({
+      ...prev,
+      [selectedChatId]: [
+        ...(prev[selectedChatId] || []),
+        { text: trimmed, color: selectedTagColor },
+      ],
+    }));
+    setNewTagText("");
+    setShowTagInput(false);
+    setSelectedTagColor(TAG_COLORS[0]);
+  };
+
+  const handleRemoveTag = (index) => {
+    if (!selectedChatId) return;
+    setTagsMap((prev) => ({
+      ...prev,
+      [selectedChatId]: (prev[selectedChatId] || []).filter(
+        (_, i) => i !== index,
+      ),
+    }));
   };
 
   // ---------- Helper: get auth headers ----------
@@ -808,6 +844,93 @@ const Inbox = ({ currentUser }) => {
                   ))}
                 </select>
               </div>
+            </div>
+
+            {/* Tags */}
+            <div className="detail-tags w-100 px-2 mt-3">
+              <div className="detail-tags-header d-flex justify-content-between align-items-center">
+                <span>แท็ก</span>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => setShowTagInput(!showTagInput)}
+                >
+                  <i className="bi bi-plus fs-5"></i>
+                </button>
+              </div>
+
+              {/* Tag pills */}
+              <div className="detail-tags-list">
+                {(tagsMap[selectedChatId] || []).map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="detail-tag-pill"
+                    style={{ backgroundColor: tag.color }}
+                  >
+                    {tag.text}
+                    <button
+                      type="button"
+                      className="detail-tag-remove"
+                      onClick={() => handleRemoveTag(idx)}
+                    >
+                      <i className="bi bi-x"></i>
+                    </button>
+                  </span>
+                ))}
+                {(tagsMap[selectedChatId] || []).length === 0 && !showTagInput && (
+                  <span className="detail-tags-empty">ยังไม่มีแท็ก</span>
+                )}
+              </div>
+
+              {/* Add tag form */}
+              {showTagInput && (
+                <div className="detail-tag-form">
+                  <input
+                    type="text"
+                    className="detail-tag-input"
+                    placeholder="ชื่อแท็ก..."
+                    value={newTagText}
+                    onChange={(e) => setNewTagText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddTag();
+                      }
+                    }}
+                    autoFocus
+                  />
+                  <div className="detail-tag-colors">
+                    {TAG_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        className={`detail-tag-color-btn${selectedTagColor === c ? " active" : ""}`}
+                        style={{ backgroundColor: c }}
+                        onClick={() => setSelectedTagColor(c)}
+                      />
+                    ))}
+                  </div>
+                  <div className="detail-tag-form-actions">
+                    <button
+                      type="button"
+                      className="note-btn note-btn-save"
+                      onClick={handleAddTag}
+                    >
+                      เพิ่ม
+                    </button>
+                    <button
+                      type="button"
+                      className="note-btn note-btn-cancel"
+                      onClick={() => {
+                        setShowTagInput(false);
+                        setNewTagText("");
+                      }}
+                    >
+                      ยกเลิก
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <hr className="detail-divider" />
