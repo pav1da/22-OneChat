@@ -1,6 +1,6 @@
 .settings-page-wrapper {
-    background: var(--bg-main);
-    height: calc(100vh - 45px);
+    background: var(--bg-surface, #ffffff);
+    height: 100%;
     overflow: hidden;
     padding-bottom: 0;
     display: flex;
@@ -22,7 +22,7 @@
 }
 
 .settings-nav .nav-heading {
-    font-size: 0.8rem;
+    font-size: var(--fs-sm);
     font-weight: 500;
     color: var(--text-muted);
     margin-top: 1.5rem;
@@ -33,7 +33,7 @@
 
 .settings-nav .nav-link {
     color: var(--text-main);
-    padding: 0.7rem 1rem;
+    padding: 0.6rem 0.8rem;
     border-radius: 0.5rem;
     margin-bottom: 0.25rem;
     font-weight: 500;
@@ -43,7 +43,7 @@
 }
 
 .settings-nav .nav-link svg {
-    font-size: 1.2rem;
+    font-size: var(--fs-xl);
     color: var(--text-secondary);
     transition: color 0.2s ease;
 }
@@ -78,7 +78,7 @@
 
 /* แก้ไขหัวข้อหมวดหมู่ (เช่น "ทั่วไป", "ตั้งค่าผู้ใช้") */
 .settings-nav .nav-heading {
-    font-size: 0.85rem;
+    font-size: var(--fs-base);
     color: var(--text-muted);
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
@@ -92,7 +92,7 @@
 .settings-nav .nav-link {
     color: var(--text-main);
     font-weight: 500;
-    padding: 10px 1rem;
+    padding: 8px 0.8rem;
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -146,8 +146,8 @@
 
 /* สไตล์ Avatar ด้านขวา */
 .profile-avatar-lg {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     background-color: var(--bg-accent);
     position: relative;
@@ -167,8 +167,8 @@
     background-color: #343a40;
     color: white;
     border-radius: 50%;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     display: grid;
     place-items: center;
     border: 2px solid white;
@@ -177,7 +177,7 @@
 
 
 .profile-info-item {
-    padding: 1rem 1.2rem 0.3rem 1.2rem;
+    padding: 0.8rem 1rem 0.2rem 1rem;
     border-bottom: 1px solid var(--border-medium);
     width: 100%;
 }
@@ -191,13 +191,13 @@
 
 
 .profile-info-item .label {
-    font-size: 1.3rem;
+    font-size: var(--fs-xl);
     color: var(--text-main);
     margin-bottom: 0.25rem;
 }
 
 .profile-info-item .value {
-    font-size: 1rem;
+    font-size: var(--fs-lg);
     font-weight: 500;
     color: var(--text-secondary);
     margin-bottom: 0;
@@ -275,17 +275,17 @@
 
 /* สำหรับหน้า Policy */
 .policy-page {
-    font-size: 0.95rem;
+    font-size: var(--fs-md);
     line-height: 1.6;
 }
 
 .policy-page h2 {
-    font-size: 2rem;
+    font-size: var(--fs-3xl);
 }
 
 
 .policy-page h4 {
-    font-size: 0.95rem;
+    font-size: var(--fs-md);
     font-weight: 600;
 }
 
@@ -293,17 +293,17 @@
 
 /* สำหรับหน้า About */
 .about-page {
-    font-size: 0.95rem;
+    font-size: var(--fs-md);
     line-height: 1.6;
     color: var(--text-main);
 }
 
 .about-page h2 {
-    font-size: 2rem;
+    font-size: var(--fs-3xl);
 }
 
 .about-page h4 {
-    font-size: 1rem;
+    font-size: var(--fs-lg);
     font-weight: 600;
 }
 
@@ -334,7 +334,7 @@
     /* ความมนของขอบปุ่ม */
     padding: 6px 20px;
     /* ขนาดปุ่ม */
-    font-size: 0.9rem;
+    font-size: var(--fs-base);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -356,14 +356,14 @@
 
 /* 3. ปรับขนาดตัวหนังสือหัวข้อและคำอธิบาย */
 .chat-text-group h5 {
-    font-size: 1.1rem;
+    font-size: var(--fs-xl);
     font-weight: 600;
     margin-bottom: 4px;
     color: var(--text-main);
 }
 
 .chat-text-group p {
-    font-size: 0.9rem;
+    font-size: var(--fs-base);
     color: var(--text-muted);
 }
 
@@ -393,12 +393,12 @@
 
 /* Floating card (centered panel like modal) */
 .floating-card {
-    background: var(--bg-card);
+    background: var(--bg-surface, #ffffff);
     border-radius: 12px;
     box-shadow: 0 20px 40px var(--shadow-lg), 0 2px 6px var(--shadow-sm);
     width: min(920px, 88%);
-    padding: 28px 32px;
-    margin: 26px 0;
+    padding: 22px 26px;
+    margin: 20px 0;
 }
 
 /* When content inside is long, keep internal scrolling but card stays centered */
@@ -461,14 +461,14 @@
 }
 
 .floating-modal {
-    background: var(--bg-card);
+    background: var(--bg-surface, #ffffff);
     height: clamp(920px, 92vh, 2000px);
     width: clamp(920px, 92vw, 2000px);
     border-radius: 12px;
     box-shadow: 0 30px 60px var(--shadow-lg), 0 6px 12px var(--shadow-md);
     max-height: calc(100vh - 120px);
     overflow: auto;
-    padding: 28px 32px;
+    padding: 22px 26px;
 }
 
 
@@ -484,7 +484,7 @@
     right: 12px;
     background: transparent;
     border: none;
-    font-size: 22px;
+    font-size: var(--fs-2xl);
     line-height: 1;
     cursor: pointer;
     color: var(--text-secondary);

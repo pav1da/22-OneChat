@@ -67,7 +67,7 @@ function SignInPage({ onLogin }) {
         <div className="orb orb-3"></div>
       </div>
 
-      <div className="glass-panel p-5 d-flex flex-column align-items-center animate-fade-up" style={{ width: "100%", maxWidth: "450px", position: "relative", zIndex: 1 }}>
+      <div className="glass-panel p-5 d-flex flex-column align-items-center animate-fade-up" style={{ width: "100%", maxWidth: "550px", position: "relative", zIndex: 1 }}>
         <img 
             className="mb-4" 
             src="./sb-logo.png" 

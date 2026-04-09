@@ -332,7 +332,7 @@ const AllChat = () => {
                     const customer = filteredCustomers[i];
                     const isExpanded = expandedChatIds.includes(customer.id);
                     colItems.push(
-                      <div key={customer.id} className="w-100 mb-4">
+                      <div key={customer.id} className="w-100 mb-3">
                         {renderUserCard(customer, isExpanded)}
                         {isExpanded && (
                           <div className="mt-2" style={{ width: "100%", animation: "slideDown 0.25s ease-out" }}>

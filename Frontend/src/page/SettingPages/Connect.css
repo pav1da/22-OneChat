@@ -28,20 +28,20 @@
 }
 
 .ch-platform-icon {
-  font-size: 1.8rem;
+  font-size: var(--fs-3xl);
   display: block;
   margin-bottom: 8px;
 }
 
 .ch-platform-label {
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: var(--text-main);
   margin-bottom: 4px;
 }
 
 .ch-platform-count {
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   color: var(--text-muted);
 }
 
@@ -49,7 +49,7 @@
   position: absolute;
   top: 10px;
   right: 12px;
-  font-size: 0.7rem;
+  font-size: var(--fs-xs);
   background: var(--status-success);
   color: #fff;
   width: 18px;
@@ -80,7 +80,7 @@
 }
 
 .connect-title {
-  font-size: 1.5rem;
+  font-size: var(--fs-3xl);
   font-weight: 600;
   color: var(--text-heading);
   margin-bottom: 6px;
@@ -91,11 +91,11 @@
 
 .connect-title i {
   color: var(--primary-color);
-  font-size: 1.3rem;
+  font-size: var(--fs-2xl);
 }
 
 .connect-desc {
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   color: var(--text-secondary);
   margin: 0;
 }
@@ -109,7 +109,7 @@
   border-radius: 10px;
   background: var(--primary-color);
   color: #fff;
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -139,7 +139,7 @@
   gap: 12px;
   padding: 48px 24px;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
 }
 
 /* --- Table --- */
@@ -154,7 +154,7 @@
 
 .connect-table th {
   padding: 14px 18px;
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -163,7 +163,7 @@
 
 .connect-table td {
   padding: 14px 18px;
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   color: var(--text-main);
   border-bottom: 1px solid var(--border-light);
   vertical-align: middle;
@@ -186,7 +186,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   font-weight: 500;
 }
 
@@ -224,7 +224,7 @@
   display: inline-block;
   padding: 3px 10px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.03em;
   background: var(--primary-light);
@@ -240,7 +240,7 @@
 
 .connect-key-text {
   font-family: 'Courier New', monospace;
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
   background: var(--bg-input);
   padding: 4px 10px;
@@ -255,7 +255,7 @@
   padding: 4px 6px;
   border-radius: 6px;
   transition: all 0.15s ease;
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
 }
 
 .connect-copy-btn:hover {
@@ -292,7 +292,7 @@
   gap: 10px;
   padding: 16px 20px;
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
   color: var(--text-heading);
   border-bottom: 1px solid var(--border-light);
 }
@@ -317,14 +317,14 @@
 }
 
 .connect-personal-label {
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .connect-personal-value {
   font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   color: var(--text-main);
   background: var(--bg-input);
   padding: 6px 14px;
@@ -341,7 +341,7 @@
   border-radius: 8px;
   background: transparent;
   color: var(--text-main);
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -398,7 +398,7 @@
 
 .connect-modal-header h5 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--fs-xl);
   font-weight: 600;
   color: var(--text-heading);
 }
@@ -407,7 +407,7 @@
   border: none;
   background: transparent;
   color: var(--text-muted);
-  font-size: 1.1rem;
+  font-size: var(--fs-xl);
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
@@ -424,7 +424,7 @@
 
 .connect-label {
   display: block;
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text-secondary);
   margin-bottom: 6px;
@@ -437,7 +437,7 @@
   border-radius: 10px;
   background: var(--bg-input);
   color: var(--text-main);
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   font-family: inherit;
   outline: none;
   transition: border-color 0.2s ease;
@@ -461,7 +461,7 @@
   background: transparent;
   color: var(--text-main);
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -477,7 +477,7 @@
   background: var(--primary-color);
   color: #fff;
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;

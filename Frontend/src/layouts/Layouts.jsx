@@ -14,22 +14,24 @@ const Layouts = ({ onLogout, user }) => {
       {/* 2. Main Content (กล่องขาว): กำหนดให้ Scroll ได้เฉพาะในนี้ */}
       <div
         style={{
-          width: "100vw",
+          flex: 1,
+          minWidth: 0,
           
           // --- การจัดการ Scroll ---
           boxSizing: "border-box", 
-          overflowY: "hidden", // ซ่อน Scroll แนวตั้ง
-          overflowX: "hidden", // ซ่อน Scroll แนวนอน
+          overflowY: "hidden",
+          overflowX: "hidden",
           display: "flex",
           flexDirection: "column",
-          gap: "12px",
         }}
       >
-        <div style={{padding: '13px 25px', borderBottom: '1px solid var(--border-light)', position: 'sticky', top: 0, zIndex: 1200, background: 'var(--bg-main, #fff)'}}>
+        <div style={{padding: '13px 25px', borderBottom: '1px solid var(--border-light)', position: 'sticky', top: 0, zIndex: 1200, background: 'var(--bg-main, #fff)', flexShrink: 0}}>
           <NavIndicator />
         </div>
         
-        <Outlet />
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <Outlet />
+        </div>
       </div>
     </div>
   );

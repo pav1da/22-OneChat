@@ -130,6 +130,9 @@
 body {
     background: var(--bg-primary);
     color: var(--text-primary);
+    font-family: "Kanit", sans-serif;
+    font-size: var(--fs-base); /* 14px — มาตรฐาน dashboard */
+    line-height: 1.5;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 

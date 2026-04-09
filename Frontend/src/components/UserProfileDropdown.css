@@ -1,8 +1,8 @@
 .user-profile-dropdown {
   position: absolute;
   top: 100%; /* Position below the header */
-  left: 15px;
-  width: 250px;
+  left: 10px;
+  width: 190px;
   background-color: #212121;
   border-radius: 14px;
   border: 1px solid #333;
@@ -20,14 +20,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 20px 8px;
+  padding: 12px 16px 6px;
 }
 
 .upd-avatar-wrapper {
   position: relative;
-  width: 64px;
-  height: 64px;
-  margin-bottom: 12px;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 8px;
   /* border: 1px solid #fff; */
   border-radius: 50%;
 }
@@ -50,7 +50,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.65rem;
+  font-size: var(--fs-xs);
   color: #e8eaed;
   border: 2px solid #212121;
   cursor: pointer;
@@ -63,13 +63,13 @@
 
 .upd-name {
   font-weight: 500;
-  font-size: 1rem;
+  font-size: var(--fs-lg);
   margin-bottom: 2px;
   color: #ffffff;
 }
 
 .upd-email {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: #9aa0a6;
 }
 
@@ -82,7 +82,7 @@
 .upd-menu-item {
   display: flex;
   align-items: center;
-  padding: 10px 20px;
+  padding: 8px 16px;
   cursor: pointer;
   transition: background-color 0.2s;
   color: #e8eaed;
@@ -93,8 +93,8 @@
 }
 
 .upd-icon {
-  font-size: 1.1rem;
-  margin-right: 16px;
+  font-size: var(--fs-lg);
+  margin-right: 12px;
   color: #e8eaed;
   width: 20px;
   text-align: center;
@@ -110,13 +110,13 @@
 
 .upd-menu-text {
   flex-grow: 1;
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   font-weight: 400;
   color: #e8eaed;
 }
 
 .upd-arrow {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: #9aa0a6;
 }
 
@@ -126,14 +126,14 @@
 }
 
 .upd-subtext {
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   color: #9aa0a6;
   margin-top: 2px;
 }
 
 /* ===== Theme Submenu ===== */
 .upd-theme-submenu {
-  padding: 4px 12px 4px 52px;
+  padding: 4px 10px 4px 44px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -149,10 +149,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   color: #c0c0c0;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
@@ -167,7 +167,7 @@
 }
 
 .upd-theme-icon {
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   width: 18px;
   text-align: center;
 }
@@ -175,5 +175,5 @@
 .upd-theme-check {
   margin-left: auto;
   color: #f4a460;
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
 }

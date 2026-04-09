@@ -153,14 +153,14 @@ function Dashboard() {
           // การ์ดแสดงรายละเอียดโน้ต
           <Card
             className="rounded-4 border-light-subtle"
-            style={{ height: "250px", boxShadow: "0 2px 5px rgba(0,0,0,0.05)" }}
+            style={{ height: "180px", boxShadow: "0 2px 5px rgba(0,0,0,0.05)" }}
           >
-            <Card.Body className="d-flex flex-column justify-content-between p-4">
+            <Card.Body className="d-flex flex-column justify-content-between p-3">
               {/* เนื้อหาโน้ต (มี Scroll ถ้าข้อความยาว) */}
               <div
-                className="flex-grow-1 mb-3"
+                className="flex-grow-1 mb-2"
                 style={{
-                  maxHeight: "150px",
+                  maxHeight: "90px",
                   overflowY: "auto",
                   cursor: note.customer_id ? "pointer" : "default",
                 }}
@@ -172,9 +172,9 @@ function Dashboard() {
                 title={note.customer_id ? "คลิกเพื่อไปยังหน้าแชทของลูกค้ารายนี้" : "โน้ตนี้ไม่ได้ผูกกับลูกค้า"}
               >
                 <Card.Text
-                  className="fs-5"
+                  className="fs-6"
                   style={{
-                    lineHeight: "1.6",
+                    lineHeight: "1.5",
                     whiteSpace: "pre-wrap",
                     overflowWrap: "break-word",
                   }}
@@ -186,7 +186,7 @@ function Dashboard() {
               <hr className="my-0" style={{ opacity: 0.1 }} />
 
               {/* Footer: customer avatar + name | author + menu */}
-              <div className="d-flex justify-content-between align-items-center pt-3">
+              <div className="d-flex justify-content-between align-items-center pt-2">
                 {/* ซ้าย: รูปลูกค้า + ชื่อลูกค้า */}
                 <div className="d-flex align-items-center gap-2">
                   {note.customer_avatar ? (
@@ -194,8 +194,8 @@ function Dashboard() {
                       src={note.customer_avatar}
                       alt={note.user}
                       style={{
-                        width: "28px",
-                        height: "28px",
+                        width: "22px",
+                        height: "22px",
                         borderRadius: "50%",
                         objectFit: "cover",
                         flexShrink: 0,
@@ -204,14 +204,14 @@ function Dashboard() {
                   ) : (
                     <div
                       style={{
-                        width: "28px",
-                        height: "28px",
+                        width: "22px",
+                        height: "22px",
                         borderRadius: "50%",
                         background: "var(--bg-hover)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "0.75rem",
+                        fontSize: "0.65rem",
                         fontWeight: "600",
                         color: "var(--text-secondary)",
                         flexShrink: 0,
@@ -221,14 +221,14 @@ function Dashboard() {
                     </div>
                   )}
                   <div style={{ lineHeight: 1.2 }}>
-                    <div style={{ fontSize: "0.85rem", fontWeight: "600" }}>
+                    <div style={{ fontSize: "0.75rem", fontWeight: "600" }}>
                       {note.user || "ไม่ระบุ"}
                     </div>
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+                    <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)" }}>
                       สร้างโดย: {note.author || "-"}
                     </div>
                     {note.created_at && (
-                      <div style={{ fontSize: "0.68rem", color: "var(--text-secondary)", marginTop: "2px" }}>
+                      <div style={{ fontSize: "0.6rem", color: "var(--text-secondary)", marginTop: "1px" }}>
                         <i className="bi bi-clock me-1"></i>{formatDateTime(note.created_at)}
                       </div>
                     )}
@@ -266,7 +266,7 @@ function Dashboard() {
           // ช่องว่าง (Placeholder)
           <div
             style={{
-              height: "250px",
+              height: "180px",
               border: "2px dashed #e9ecef",
               borderRadius: "1rem",
             }}
@@ -378,7 +378,7 @@ function Dashboard() {
       {/* โซน Grid แสดงโน้ต */}
       <Container fluid>
         <div style={{ maxHeight: "85vh", overflowY: "auto" }}>
-          <Row className="g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4">
+          <Row className="g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4">
             {cells}
           </Row>
         </div>

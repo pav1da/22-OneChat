@@ -127,19 +127,19 @@ const Log = () => {
     };
 
     return (
-        <div className="kanit-regular h-100 d-flex flex-column px-4">
+        <div className="kanit-regular h-100 d-flex flex-column px-3">
             {/* ================= Header Section ================= */}
             <div className="d-flex justify-content-end align-items-center">
                 {/* Filters */}
-                <div className="d-flex flex-column flex-sm-row gap-4">
+                <div className="d-flex flex-column flex-sm-row gap-3">
                     {/* Filter by User */}
                     <div className="d-flex align-items-center gap-3">
-                        <span className="fs-6 text-nowrap">กรองโดยผู้ใช้ :</span>
+                        <span className="text-nowrap" style={{ fontSize: "var(--fs-sm)" }}>กรองโดยผู้ใช้ :</span>
                         <Form.Select
                             value={filterUser}
                             onChange={(e) => setFilterUser(e.target.value)}
                             className="bg-light border-0 rounded-3"
-                            style={{ minWidth: "250px" }}
+                            style={{ minWidth: "200px", fontSize: "var(--fs-sm)" }}
                         >
                             <option value="">ค้นหาสมาชิก</option>
                             {users.map((user) => (
@@ -151,12 +151,12 @@ const Log = () => {
                     </div>
                     {/* Filter by Action */}
                     <div className="d-flex align-items-center gap-3">
-                        <span className="fs-6 text-nowrap">กรองโดยการกระทำ :</span>
+                        <span className="text-nowrap" style={{ fontSize: "var(--fs-sm)" }}>กรองโดยการกระทำ :</span>
                         <Form.Select
                             value={filterAction}
                             onChange={(e) => setFilterAction(e.target.value)}
                             className="bg-light border-0 rounded-3"
-                            style={{ minWidth: "250px" }}
+                            style={{ minWidth: "200px", fontSize: "var(--fs-sm)" }}
                         >
                             <option value="">ค้นหาการกระทำ</option>
                             {uniqueActions.map((a) => (
@@ -171,7 +171,7 @@ const Log = () => {
 
             {/* ================= Log List Section ================= */}
 
-            <div className="d-flex flex-column gap-3 overflow-auto mt-3">
+            <div className="d-flex flex-column gap-2 overflow-auto mt-2">
                 {loading ? (
                     <div className="text-center py-5">
                         <Spinner animation="border" variant="secondary" />
@@ -191,7 +191,7 @@ const Log = () => {
                     logs.map((log) => (
                         <div
                             key={log.log_id}
-                            className="d-flex align-items-center p-3 rounded-4 w-100 log-item"
+                            className="d-flex align-items-center p-2 rounded-4 w-100 log-item"
                         >
                             {/* 1. Avatar */}
                             <div className="flex-shrink-0">
@@ -201,8 +201,8 @@ const Log = () => {
                                         alt={log.user}
                                         className="rounded-circle"
                                         style={{
-                                            width: "55px",
-                                            height: "55px",
+                                            width: "40px",
+                                            height: "40px",
                                             objectFit: "cover",
                                         }}
                                     />
@@ -210,11 +210,11 @@ const Log = () => {
                                     <div
                                         className="rounded-circle d-flex align-items-center justify-content-center"
                                         style={{
-                                            width: "55px",
-                                            height: "55px",
+                                            width: "40px",
+                                            height: "40px",
                                             backgroundColor: "#e0e7ef",
                                             color: "#5a6f85",
-                                            fontSize: "1.3rem",
+                                            fontSize: "1rem",
                                             fontWeight: "bold",
                                         }}
                                     >
@@ -224,18 +224,18 @@ const Log = () => {
                             </div>
                             {/* 2. Content Info */}
                             <div className="flex-grow-1 ms-3">
-                                <div className="fs-5 text-dark" style={{ fontSize: "1.1rem" }}>
-                                    <span className="fs-5">{log.user}</span>
+                                <div style={{ fontSize: "var(--fs-base)" }}>
+                                    <span style={{ fontWeight: 500 }}>{log.user}</span>
                                     <span className="mx-2">{log.action}</span>
-                                    <span className="fs-5">{log.target}</span>
+                                    <span style={{ fontWeight: 500 }}>{log.target}</span>
                                     {log.details && (
                                         <span className="ms-2 text-secondary">{log.details}</span>
                                     )}
                                 </div>
 
                                 <div
-                                    className="text-secondary mt-2 fw-medium"
-                                    style={{ fontSize: "0.85rem" }}
+                                    className="text-secondary mt-1 fw-medium"
+                                    style={{ fontSize: "var(--fs-xs)" }}
                                 >
                                     วันที่ {formatDate(log.created_at)} เวลา{" "}
                                     {formatTime(log.created_at)}

@@ -4,7 +4,7 @@
 
 /* คอนเทนเนอร์หลักของหน้า Member */
 .member-container {
-  font-family: "Kanit", sans-serif; /* kanit-regular */
+  font-family: inherit;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -14,7 +14,7 @@
 
 /* หัวข้อ (Section Title) */
 .section-title {
-  font-size: 1.25rem;
+  font-size: var(--fs-xl);
   margin-bottom: 0;
   font-weight: 500;
   color: var(--text-main);
@@ -22,8 +22,8 @@
 
 /* ช่องค้นหา (Search Input) */
 .search-input {
-  min-width: 200px;
-  height: 38px;
+  min-width: 180px;
+  height: 32px;
   background-color: var(--bg-surface, #f8f9fa) !important;
   border: none !important;
   border-radius: 0.5rem !important;
@@ -42,7 +42,7 @@
 .divider {
   border-top: 1px solid var(--border-light, #e9ecef) !important;
   margin-top: 0.25rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 /* =========================================================================
@@ -62,7 +62,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 0.75rem;
   background-color: var(--bg-main, #ffffff);
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -74,8 +74,8 @@
 
 /* ปุ่มลบทีม */
 .btn-delete-team {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   padding: 0 !important;
   border-radius: 50% !important;
   border: none !important;
@@ -103,15 +103,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 0.75rem;
   border-bottom: 1px solid var(--border-light, #e9ecef);
-  padding-left: 3rem !important;
+  padding-left: 2.5rem !important;
 }
 
 /* รูปโปรไฟล์สมาชิก */
 .member-avatar {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   object-fit: cover;
   border-radius: 50%;
   border: 2.5px solid transparent;
@@ -120,15 +120,15 @@
 
 /* Avatar แบบตัวอักษร (ใช้เมื่อไม่มีรูป) */
 .member-avatar-initials {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 2.5px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-size: 1.05rem;
+  font-size: var(--fs-lg);
   font-weight: 600;
   letter-spacing: 0.5px;
   user-select: none;
@@ -194,8 +194,8 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 999px; /* ทำให้เป็นรูป capsule */
-  font-size: 0.85rem;
+  border-radius: 999px;
+  font-size: var(--fs-base);
   font-weight: 500;
 }
 
@@ -254,7 +254,7 @@
   gap: 12px;
   padding: 0.5rem 1rem;
   color: var(--primary-color);
-  font-size: 1rem;
+  font-size: var(--fs-base);
   font-weight: 400;
   align-items: center;
   border-bottom: 1px solid var(--border-light);
@@ -266,9 +266,9 @@
   grid-template-columns: 2fr 1fr 1fr 1fr 80px;
   gap: 12px;
   align-items: center;
-  padding: 0.9rem 1rem;
+  padding: 0.7rem 1rem;
   background-color: var(--bg-main, #ffffff);
-  font-size: 0.98rem;
+  font-size: var(--fs-base);
   border-bottom: 1px solid var(--border-light, #e9ecef);
   transition:
     background-color 0.15s ease,
@@ -301,8 +301,8 @@
 
 /* ปุ่ม Action ต่างๆ (รูปดินสอแก้ไข, รูป 3 จุด) */
 .btn-action {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   background-color: var(--primary-color) !important;
   border: none !important;
   border-radius: 0.5rem !important;
@@ -368,7 +368,7 @@
   .col-role,
   .col-status {
     color: var(--text-muted);
-    font-size: 0.95rem;
+    font-size: var(--fs-md);
   }
 
   .col-actions {

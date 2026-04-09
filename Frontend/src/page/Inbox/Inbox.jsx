@@ -5,9 +5,8 @@ import ChatList from "./chatList/ChatList";
 import EmojiPicker from "../../components/EmojiPicker";
 import "./inbox.css";
 
-
-// Helper: ตรวจว่าข้อความเป็น emoji ล้วนหรือไม่ (ไม่มีตัวอักษรอื่น)
-const EMOJI_REGEX = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji}\u200D\p{Emoji}|\uFE0F|\u200D|\s)+$/u;
+const EMOJI_REGEX =
+  /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji}\u200D\p{Emoji}|\uFE0F|\u200D|\s)+$/u;
 const isEmojiOnly = (text) => {
   if (!text || !text.trim()) return false;
   return EMOJI_REGEX.test(text.trim());
@@ -46,9 +45,14 @@ const renderTextWithLineEmoji = (text, size = 24) => {
         src={url}
         alt="LINE emoji"
         className="line-emoji-inline"
-        style={{ width: size, height: size, verticalAlign: "middle", display: "inline" }}
+        style={{
+          width: size,
+          height: size,
+          verticalAlign: "middle",
+          display: "inline",
+        }}
         loading="lazy"
-      />
+      />,
     );
     lastIndex = regex.lastIndex;
   }
@@ -59,7 +63,6 @@ const renderTextWithLineEmoji = (text, size = 24) => {
   return parts;
 };
 
-
 const Inbox = ({ currentUser }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -69,8 +72,6 @@ const Inbox = ({ currentUser }) => {
   const chatAreaRef = useRef(null);
   const MSG_LIMIT = 50;
 
-
-  // Shared context
   const {
     messages,
     customers: customer,
@@ -83,18 +84,15 @@ const Inbox = ({ currentUser }) => {
     STATUS,
   } = useChat();
 
-
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [sortBy, setSortBy] = useState("latest");
   const [newMessage, setNewMessage] = useState("");
 
-
   // Image picker panel state
   const [showImagePanel, setShowImagePanel] = useState(false);
   const [panelFiles, setPanelFiles] = useState([]);
   const [showEmoji, setShowEmoji] = useState(false); // [{ file, url, selected }]
-
 
   // Notes state
   const [notes, setNotes] = useState([]);
@@ -103,22 +101,18 @@ const Inbox = ({ currentUser }) => {
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState("");
 
-
   // Members list for "ผู้รับผิดชอบ" dropdown
   const [members, setMembers] = useState([]);
   const [assignedMap, setAssignedMap] = useState({}); // { customerId: { emp_id, username } }
 
-
   // Pagination
   const [visibleCount, setVisibleCount] = useState(50);
-
 
   // ---------- Derived state ----------
   const selectedCustomer = customer.find((c) => c.id === selectedChatId);
   const allMessages = messages[selectedChatId] || [];
   const chatMessages = allMessages.slice(-visibleCount);
   const hasMore = allMessages.length > visibleCount;
-
 
   // Clear image panel + reset pagination + close emoji when switching chats
   useEffect(() => {
@@ -129,7 +123,6 @@ const Inbox = ({ currentUser }) => {
     setVisibleCount(MSG_LIMIT);
   }, [selectedChatId]);
 
-
   // ---------- Sort logic ----------
   const sortedCustomers = [...customer].sort((a, b) => {
     if (sortBy === "latest") return 0; // คงลำดับจาก ChatContext (เรียงตามข้อความล่าสุดแล้ว)
@@ -137,7 +130,6 @@ const Inbox = ({ currentUser }) => {
     if (sortBy === "name_desc") return b.name.localeCompare(a.name);
     return 0;
   });
-
 
   const handleSortToggle = () => {
     setSortBy((prev) => {
@@ -147,28 +139,29 @@ const Inbox = ({ currentUser }) => {
     });
   };
 
-
   // ---------- Status helpers ----------
   const getStatusVariant = (status) => {
     switch (status) {
-      case STATUS.NOT_STARTED: return "secondary";
-      case STATUS.IN_PROGRESS: return "warning";
-      case STATUS.DONE: return "success";
-      default: return "secondary";
+      case STATUS.NOT_STARTED:
+        return "secondary";
+      case STATUS.IN_PROGRESS:
+        return "warning";
+      case STATUS.DONE:
+        return "success";
+      default:
+        return "secondary";
     }
   };
-
 
   // ---------- Message handlers ----------
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (showImagePanel && panelFiles.some(f => f.selected)) {
+    if (showImagePanel && panelFiles.some((f) => f.selected)) {
       handleSendPanelImages();
       return;
     }
     const trimmed = newMessage.trim();
     if (!trimmed || !selectedCustomer) return;
-
 
     sendMessage(selectedChatId, trimmed);
     setNewMessage("");
@@ -176,28 +169,30 @@ const Inbox = ({ currentUser }) => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-
   const autoResize = (e) => {
     const el = e.target;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
   };
 
-
   const handleUploadImage = (e) => {
     const files = Array.from(e.target.files);
     if (!files.length || !selectedCustomer) return;
-    const newEntries = files.map((file) => ({ file, url: URL.createObjectURL(file), selected: true }));
+    const newEntries = files.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+      selected: true,
+    }));
     setPanelFiles((prev) => [...prev, ...newEntries]);
     setShowImagePanel(true);
     e.target.value = "";
   };
 
-
   const handleTogglePanelFile = (idx) => {
-    setPanelFiles((prev) => prev.map((f, i) => i === idx ? { ...f, selected: !f.selected } : f));
+    setPanelFiles((prev) =>
+      prev.map((f, i) => (i === idx ? { ...f, selected: !f.selected } : f)),
+    );
   };
-
 
   const handleRemovePanelFile = (idx) => {
     setPanelFiles((prev) => {
@@ -208,16 +203,16 @@ const Inbox = ({ currentUser }) => {
     });
   };
 
-
   const handleSendPanelImages = () => {
     const toSend = panelFiles.filter((f) => f.selected);
     toSend.forEach((f) => sendImageMessage(selectedChatId, f.file));
-    panelFiles.filter((f) => !f.selected).forEach((f) => URL.revokeObjectURL(f.url));
+    panelFiles
+      .filter((f) => !f.selected)
+      .forEach((f) => URL.revokeObjectURL(f.url));
     setPanelFiles([]);
     setShowImagePanel(false);
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
 
   const handleCloseImagePanel = () => {
     panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
@@ -225,14 +220,12 @@ const Inbox = ({ currentUser }) => {
     setShowImagePanel(false);
   };
 
-
   // ---------- Chat select ----------
   const handleChatSelect = (id) => {
     setSelectedChatId(id);
     setIsEditingName(false);
     markAsRead(id);
   };
-
 
   // ---------- Name editing ----------
   const [editName, setEditName] = useState("");
@@ -261,7 +254,6 @@ const Inbox = ({ currentUser }) => {
     setIsEditingName(false);
   };
 
-
   // ---------- Fetch members for assignment dropdown ----------
   useEffect(() => {
     const fetchMembers = async () => {
@@ -281,7 +273,6 @@ const Inbox = ({ currentUser }) => {
     fetchMembers();
   }, []);
 
-
   // ---------- Assignment handler ----------
   const handleAssignChange = (customerId, empId) => {
     const member = members.find((m) => m.emp_id === Number(empId));
@@ -293,14 +284,16 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
-
   const getAssignedUser = (customerId) => {
     if (assignedMap[customerId]) return assignedMap[customerId];
     // Default: current user
-    if (currentUser) return { emp_id: currentUser.emp_id, username: currentUser.username || currentUser.name };
+    if (currentUser)
+      return {
+        emp_id: currentUser.emp_id,
+        username: currentUser.username || currentUser.name,
+      };
     return null;
   };
-
 
   // ---------- Helper: get auth headers ----------
   const getHeaders = () => ({
@@ -308,13 +301,14 @@ const Inbox = ({ currentUser }) => {
     Authorization: `Bearer ${sessionStorage.getItem("token")}`,
   });
 
-
   // ---------- Load notes from API ----------
   useEffect(() => {
     if (!selectedChatId) return;
     const fetchNotes = async () => {
       try {
-        const res = await fetch(`/api/notes/${selectedChatId}`, { headers: getHeaders() });
+        const res = await fetch(`/api/notes/${selectedChatId}`, {
+          headers: getHeaders(),
+        });
         if (res.ok) {
           const data = await res.json();
           setNotes(data.map((n) => ({ ...n, date: new Date(n.created_at) })));
@@ -326,22 +320,33 @@ const Inbox = ({ currentUser }) => {
     fetchNotes();
   }, [selectedChatId]);
 
-
   // ---------- Note handlers (API-backed) ----------
   const handleAddNote = async () => {
     if (!newNote.trim() || !selectedChatId) return;
     const author = currentUser?.username || currentUser?.name || "Admin";
 
-
     try {
       const res = await fetch("/api/notes", {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ customer_id: selectedChatId, text: newNote, author }),
+        body: JSON.stringify({
+          customer_id: selectedChatId,
+          text: newNote,
+          author,
+        }),
       });
       if (res.ok) {
         const data = await res.json();
-        setNotes([{ id: data.id, text: newNote, author, date: new Date(), customer_id: selectedChatId }, ...notes]);
+        setNotes([
+          {
+            id: data.id,
+            text: newNote,
+            author,
+            date: new Date(),
+            customer_id: selectedChatId,
+          },
+          ...notes,
+        ]);
       }
     } catch (err) {
       console.error("Add note error:", err);
@@ -350,22 +355,22 @@ const Inbox = ({ currentUser }) => {
     setIsAddingNote(false);
   };
 
-
   const handleDeleteNote = async (id) => {
     setNotes(notes.filter((n) => n.id !== id));
     try {
-      await fetch(`/api/notes/${id}`, { method: "DELETE", headers: getHeaders() });
+      await fetch(`/api/notes/${id}`, {
+        method: "DELETE",
+        headers: getHeaders(),
+      });
     } catch (err) {
       console.error("Delete note error:", err);
     }
   };
 
-
   const handleEditNote = (note) => {
     setEditingNoteId(note.id);
     setEditingText(note.text);
   };
-
 
   const handleSaveEdit = async (id) => {
     if (!editingText.trim()) return;
@@ -383,12 +388,10 @@ const Inbox = ({ currentUser }) => {
     }
   };
 
-
   const handleCancelEdit = () => {
     setEditingNoteId(null);
     setEditingText("");
   };
-
 
   // ---------- Effects ----------
   // Effect 1: กดจาก notification → เปิดแชทของลูกค้าที่ถูกต้อง
@@ -397,40 +400,40 @@ const Inbox = ({ currentUser }) => {
     if (cid) {
       setSelectedChatId(Number(cid));
       // ใช้ replaceState แทน navigate เพื่อไม่ให้ component remount
-      window.history.replaceState({}, '', window.location.pathname);
+      window.history.replaceState({}, "", window.location.pathname);
     }
   }, [location.state?.customerId, location.state?.chatId, location.pathname]);
 
-
   // Effect 2: โหลดครั้งแรก → เปิดแชทแรก (เฉพาะกรณีที่ยังไม่ได้ select และไม่ได้มาจาก notification)
   useEffect(() => {
-    const hasNavState = !!(location.state?.customerId || location.state?.chatId);
+    const hasNavState = !!(
+      location.state?.customerId || location.state?.chatId
+    );
     if (customer.length > 0 && selectedChatId === null && !hasNavState) {
       setSelectedChatId(customer[0].id);
     }
   }, [customer.length, selectedChatId]);
-
 
   // Scroll to latest message
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, selectedChatId]);
 
-
   // ---------- Render ----------
   return (
-    <div className="kanit-regular inbox-container px-3">
-
-
+    <div className="kanit-regular inbox-container px-2">
       {/* ========== LEFT — Chat List ========== */}
       <div className="customer-list">
         <div className="search-sort-row">
           <input placeholder="Search" className="custom-search-input" />
-          <div className="custom-icon-sort" onClick={handleSortToggle} style={{ cursor: "pointer" }}>
+          <div
+            className="custom-icon-sort"
+            onClick={handleSortToggle}
+            style={{ cursor: "pointer" }}
+          >
             <i className="bi bi-arrow-down-up"></i>
           </div>
         </div>
-
 
         <div className="list">
           <ChatList
@@ -442,7 +445,6 @@ const Inbox = ({ currentUser }) => {
         </div>
       </div>
 
-
       {/* ========== CENTER — Chat Area ========== */}
       <div className="chat-section">
         {/* Top bar */}
@@ -453,14 +455,16 @@ const Inbox = ({ currentUser }) => {
                 <img
                   src={selectedCustomer.img}
                   className="rounded-circle"
-                  style={{ width: "46px", height: "46px", objectFit: "cover" }}
+                  style={{ width: "38px", height: "38px", objectFit: "cover" }}
                   alt={selectedCustomer.name}
                 />
                 <div className="d-flex flex-column">
-                  <span style={{ fontSize: "18px", fontWeight: 500 }}>
+                  <span style={{ fontSize: "16px", fontWeight: 500 }}>
                     {selectedCustomer.name}
                   </span>
-                  <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+                  <span
+                    style={{ fontSize: "13px", color: "var(--text-secondary)" }}
+                  >
                     {selectedCustomer.app}
                   </span>
                 </div>
@@ -468,16 +472,19 @@ const Inbox = ({ currentUser }) => {
             )}
           </div>
 
-
           {selectedCustomer && (
             <div className="d-flex gap-3 align-items-center">
               <select
                 className={`status-select status-${getStatusVariant(selectedCustomer.status)}`}
                 value={selectedCustomer.status}
-                onChange={(e) => updateCustomerStatus(selectedCustomer.id, e.target.value)}
+                onChange={(e) =>
+                  updateCustomerStatus(selectedCustomer.id, e.target.value)
+                }
               >
                 {Object.values(STATUS).map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))}
               </select>
               <button className="icon-btn" aria-label="more-options">
@@ -486,7 +493,6 @@ const Inbox = ({ currentUser }) => {
             </div>
           )}
         </div>
-
 
         {/* Messages */}
         <div
@@ -522,9 +528,17 @@ const Inbox = ({ currentUser }) => {
             </div>
           )}
           {chatMessages.map((msg) => (
-            <div key={msg.id} className={`message ${msg.sender === "own" ? "own" : ""}`}>
+            <div
+              key={msg.id}
+              className={`message ${msg.sender === "own" ? "own" : ""}`}
+            >
               {msg.sender === "customer" && (
-                <img src={selectedCustomer?.img} alt="Customer" loading="lazy" decoding="async" />
+                <img
+                  src={selectedCustomer?.img}
+                  alt="Customer"
+                  loading="lazy"
+                  decoding="async"
+                />
               )}
               {msg.message_type === "sticker" ? (
                 <div className="sticker">
@@ -533,7 +547,11 @@ const Inbox = ({ currentUser }) => {
                     alt="sticker"
                     loading="lazy"
                     decoding="async"
-                    style={{ width: "120px", height: "120px", objectFit: "contain" }}
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "contain",
+                    }}
                   />
                 </div>
               ) : msg.image ? (
@@ -543,7 +561,13 @@ const Inbox = ({ currentUser }) => {
                     alt="upload"
                     loading="lazy"
                     decoding="async"
-                    style={{ maxWidth: "320px", maxHeight: "420px", borderRadius: "12px", objectFit: "cover", cursor: "pointer" }}
+                    style={{
+                      maxWidth: "260px",
+                      maxHeight: "360px",
+                      borderRadius: "10px",
+                      objectFit: "cover",
+                      cursor: "pointer",
+                    }}
                     onClick={() => window.open(msg.image, "_blank")}
                   />
                 </div>
@@ -558,24 +582,32 @@ const Inbox = ({ currentUser }) => {
               ) : (
                 <div className="texts">
                   <p className={msg.sender === "own" ? "own" : ""}>
-                    {hasLineEmoji(msg.text) ? renderTextWithLineEmoji(msg.text) : msg.text}
+                    {hasLineEmoji(msg.text)
+                      ? renderTextWithLineEmoji(msg.text)
+                      : msg.text}
                   </p>
                 </div>
               )}
               {msg.sender === "own" && (
-                <img src={currentUser?.image} alt="Admin" loading="lazy" decoding="async" />
+                <img
+                  src={currentUser?.image}
+                  alt="Admin"
+                  loading="lazy"
+                  decoding="async"
+                />
               )}
             </div>
           ))}
           <div ref={endRef}></div>
         </div>
 
-
         {/* Image picker panel */}
         {showImagePanel && (
           <div className="image-picker-panel">
             <div className="image-picker-header">
-              <span>{panelFiles.filter(f => f.selected).length} รูปที่เลือก</span>
+              <span>
+                {panelFiles.filter((f) => f.selected).length} รูปที่เลือก
+              </span>
               <div className="d-flex gap-2">
                 <button
                   className="icon-btn"
@@ -584,12 +616,15 @@ const Inbox = ({ currentUser }) => {
                 >
                   <i className="bi bi-plus-lg"></i>
                 </button>
-                <button className="icon-btn" onClick={handleCloseImagePanel} title="ปิด">
+                <button
+                  className="icon-btn"
+                  onClick={handleCloseImagePanel}
+                  title="ปิด"
+                >
                   <i className="bi bi-x-lg"></i>
                 </button>
               </div>
             </div>
-
 
             <div className="image-picker-grid">
               {panelFiles.map((f, idx) => (
@@ -606,18 +641,18 @@ const Inbox = ({ currentUser }) => {
                   )}
                   <button
                     className="image-picker-remove"
-                    onClick={(e) => { e.stopPropagation(); handleRemovePanelFile(idx); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemovePanelFile(idx);
+                    }}
                   >
                     <i className="bi bi-x"></i>
                   </button>
                 </div>
               ))}
             </div>
-
-
           </div>
         )}
-
 
         {/* Input bar */}
         <div className="flex-shrink-0 pt-3">
@@ -630,7 +665,10 @@ const Inbox = ({ currentUser }) => {
                   aria-label="emoji"
                   onClick={() => setShowEmoji((v) => !v)}
                 >
-                  <i className="bi bi-emoji-smile fs-4" style={{ lineHeight: 1 }}></i>
+                  <i
+                    className="bi bi-emoji-smile fs-4"
+                    style={{ lineHeight: 1 }}
+                  ></i>
                 </button>
                 {showEmoji && (
                   <EmojiPicker
@@ -643,20 +681,26 @@ const Inbox = ({ currentUser }) => {
                 )}
               </div>
 
-
               <textarea
                 rows={1}
                 placeholder="พิมพ์ข้อความ"
                 ref={msgRef}
                 value={newMessage}
-                onChange={(e) => { setNewMessage(e.target.value); autoResize(e); }}
+                onChange={(e) => {
+                  setNewMessage(e.target.value);
+                  autoResize(e);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) handleSendMessage(e);
                 }}
                 className="w-100 pt-2 custom-text-input message-input"
-                style={{ overflow: "hidden", resize: "none", minHeight: "40px", maxHeight: "120px" }}
+                style={{
+                  overflow: "hidden",
+                  resize: "none",
+                  minHeight: "40px",
+                  maxHeight: "120px",
+                }}
               />
-
 
               <div className="d-flex ps-2 gap-1">
                 <button type="button" className="icon-btn" aria-label="mic">
@@ -666,20 +710,37 @@ const Inbox = ({ currentUser }) => {
                   type="button"
                   className={`icon-btn${showImagePanel ? " active" : ""}`}
                   aria-label="image"
-                  onClick={() => showImagePanel ? handleCloseImagePanel() : fileInputRef.current?.click()}
+                  onClick={() =>
+                    showImagePanel
+                      ? handleCloseImagePanel()
+                      : fileInputRef.current?.click()
+                  }
                 >
                   <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
                 </button>
-                <input type="file" accept="image/*" multiple hidden ref={fileInputRef} onChange={handleUploadImage} />
-                <button type="submit" className="icon-btn send-btn" aria-label="send">
-                  <i className="bi bi-send-fill fs-5" style={{ lineHeight: 1 }}></i>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  hidden
+                  ref={fileInputRef}
+                  onChange={handleUploadImage}
+                />
+                <button
+                  type="submit"
+                  className="icon-btn send-btn"
+                  aria-label="send"
+                >
+                  <i
+                    className="bi bi-send-fill fs-5"
+                    style={{ lineHeight: 1 }}
+                  ></i>
                 </button>
               </div>
             </div>
           </form>
         </div>
       </div>
-
 
       {/* ========== RIGHT — Detail Panel ========== */}
       <div className="detail-panel">
@@ -694,7 +755,6 @@ const Inbox = ({ currentUser }) => {
               />
             </div>
 
-
             {/* Name (editable) */}
             <div className="detail-name-section">
               {isEditingName ? (
@@ -703,24 +763,32 @@ const Inbox = ({ currentUser }) => {
                   value={editName}
                   onChange={handleNameChange}
                   onBlur={handleNameSave}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleNameSave(); } }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleNameSave();
+                    }
+                  }}
                   className="detail-name-input"
                   autoFocus
                 />
               ) : (
                 <p className="detail-name" onClick={handleStartEditName}>
                   {selectedCustomer.name}
-                  <i className="bi bi-pencil ms-2" style={{ cursor: "pointer", fontSize: "14px" }}></i>
+                  <i
+                    className="bi bi-pencil ms-2"
+                    style={{ cursor: "pointer", fontSize: "12px" }}
+                  ></i>
                 </p>
               )}
 
-
               {selectedCustomer.originalName &&
                 selectedCustomer.originalName !== selectedCustomer.name && (
-                  <p className="detail-original-name">{selectedCustomer.originalName}</p>
+                  <p className="detail-original-name">
+                    {selectedCustomer.originalName}
+                  </p>
                 )}
             </div>
-
 
             {/* Assigned to */}
             <div className="detail-assigned">
@@ -729,7 +797,9 @@ const Inbox = ({ currentUser }) => {
                 <select
                   className="assign-select"
                   value={getAssignedUser(selectedChatId)?.emp_id || ""}
-                  onChange={(e) => handleAssignChange(selectedChatId, e.target.value)}
+                  onChange={(e) =>
+                    handleAssignChange(selectedChatId, e.target.value)
+                  }
                 >
                   {members.map((m) => (
                     <option key={m.emp_id} value={m.emp_id}>
@@ -740,9 +810,7 @@ const Inbox = ({ currentUser }) => {
               </div>
             </div>
 
-
             <hr className="detail-divider" />
-
 
             {/* Notes */}
             <div className="detail-notes">
@@ -756,7 +824,10 @@ const Inbox = ({ currentUser }) => {
                     title="ไปหน้าโน๊ตรวม"
                     style={{ padding: "2px 6px" }}
                   >
-                    <i className="bi bi-box-arrow-up-right" style={{ fontSize: "14px" }}></i>
+                    <i
+                      className="bi bi-box-arrow-up-right"
+                      style={{ fontSize: "12px" }}
+                    ></i>
                   </button>
                 </div>
                 <button
@@ -768,7 +839,6 @@ const Inbox = ({ currentUser }) => {
                 </button>
               </div>
 
-
               {isAddingNote && (
                 <div className="note-form">
                   <textarea
@@ -779,12 +849,26 @@ const Inbox = ({ currentUser }) => {
                     className="note-textarea"
                   />
                   <div className="note-form-actions">
-                    <button type="button" className="note-btn note-btn-save" onClick={handleAddNote}>บันทึก</button>
-                    <button type="button" className="note-btn note-btn-cancel" onClick={() => { setIsAddingNote(false); setNewNote(""); }}>ยกเลิก</button>
+                    <button
+                      type="button"
+                      className="note-btn note-btn-save"
+                      onClick={handleAddNote}
+                    >
+                      บันทึก
+                    </button>
+                    <button
+                      type="button"
+                      className="note-btn note-btn-cancel"
+                      onClick={() => {
+                        setIsAddingNote(false);
+                        setNewNote("");
+                      }}
+                    >
+                      ยกเลิก
+                    </button>
                   </div>
                 </div>
               )}
-
 
               <div className="notes-list">
                 {notes.map((note) => (
@@ -798,8 +882,20 @@ const Inbox = ({ currentUser }) => {
                           className="note-textarea"
                         />
                         <div className="note-form-actions">
-                          <button type="button" className="note-btn note-btn-save" onClick={() => handleSaveEdit(note.id)}>บันทึก</button>
-                          <button type="button" className="note-btn note-btn-cancel" onClick={handleCancelEdit}>ยกเลิก</button>
+                          <button
+                            type="button"
+                            className="note-btn note-btn-save"
+                            onClick={() => handleSaveEdit(note.id)}
+                          >
+                            บันทึก
+                          </button>
+                          <button
+                            type="button"
+                            className="note-btn note-btn-cancel"
+                            onClick={handleCancelEdit}
+                          >
+                            ยกเลิก
+                          </button>
                         </div>
                       </div>
                     ) : (
@@ -807,15 +903,36 @@ const Inbox = ({ currentUser }) => {
                         <p className="note-text">{note.text}</p>
                         <div className="note-footer">
                           <small className="note-date">
-                            {note.date.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}{" "}
-                            {note.date.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}
+                            {note.date.toLocaleDateString("th-TH", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}{" "}
+                            {note.date.toLocaleTimeString("th-TH", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </small>
                           <div className="note-actions">
-                            <button type="button" className="icon-btn" onClick={() => handleEditNote(note)}>
-                              <i className="bi bi-pencil" style={{ fontSize: "14px" }}></i>
+                            <button
+                              type="button"
+                              className="icon-btn"
+                              onClick={() => handleEditNote(note)}
+                            >
+                              <i
+                                className="bi bi-pencil"
+                                style={{ fontSize: "12px" }}
+                              ></i>
                             </button>
-                            <button type="button" className="icon-btn" onClick={() => handleDeleteNote(note.id)}>
-                              <i className="bi bi-trash" style={{ fontSize: "14px" }}></i>
+                            <button
+                              type="button"
+                              className="icon-btn"
+                              onClick={() => handleDeleteNote(note.id)}
+                            >
+                              <i
+                                className="bi bi-trash"
+                                style={{ fontSize: "12px" }}
+                              ></i>
                             </button>
                           </div>
                         </div>
@@ -836,8 +953,4 @@ const Inbox = ({ currentUser }) => {
   );
 };
 
-
 export default Inbox;
-
-
-

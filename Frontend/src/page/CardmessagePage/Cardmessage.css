@@ -1,5 +1,5 @@
 .main-content {
-    height: 100vh;
+    height: 100%;
     background-color: #ffffff;
     display: flex;
     flex-direction: column;
@@ -43,7 +43,7 @@
     grid-template-columns: 0.3fr 2fr 2fr 2fr 1fr 0.3fr;
     align-items: center;
     text-align: center;
-    padding: 30px 10px;
+    padding: 20px 10px;
     column-gap: 20px;
     /* ขยายพื้นที่ระหว่างช่อง ไม่ดันข้อความ */
     border-top: 1px solid #dee2e6;
@@ -59,8 +59,8 @@
 
 /* รูปภาพในตาราง */
 .card-table-row img {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
     object-fit: cover;
 }
 

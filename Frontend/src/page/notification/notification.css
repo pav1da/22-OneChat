@@ -1,8 +1,8 @@
 .page-wrap {
-  height: calc(100vh - 45px);
+  height: 100%;
   background-color: var(--bg-card);
   border-radius: 20px;
-  width: 96%;
+  width: 100%;
 }
 
 .custom-filters {
@@ -21,7 +21,7 @@
 
 .notif-divider {
   border-top: 1px solid var(--border-light);
-  margin-bottom: 25px;
+  margin-bottom: 16px;
 }
 
 .notification-card {
@@ -43,33 +43,33 @@
 }
 
 .notif-avatar {
-  width: 70px;
-  height: 70px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .notif-avatar-placeholder {
-  width: 70px;
-  height: 70px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background-color: var(--bg-hover);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: var(--fs-2xl);
   font-weight: bold;
 }
 
 .notif-text {
-  font-size: 1.05rem;
+  font-size: var(--fs-lg);
   color: var(--text-main);
   margin-bottom: 4px;
 }
 
 .notif-date {
-  font-size: 0.9rem;
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
 }
 

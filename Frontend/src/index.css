@@ -43,6 +43,20 @@
     --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 20px 40px rgba(242, 102, 35, 0.1);
     --shadow-overlay: rgba(0, 0, 0, 0.04);
+
+    /* Status Colors */
+    --status-success: #28A745;
+    --status-error: #DC3545;
+    --status-warning: #FFC107;
+
+    /* Font Sizes — มาตรฐานสำหรับทั้งโปรเจค */
+    --fs-xs: 0.6875rem;   /* 11px — timestamp, badge */
+    --fs-sm: 0.75rem;     /* 12px — secondary text, captions */
+    --fs-base: 0.8125rem; /* 13px — body text ปกติ */
+    --fs-lg: 0.9375rem;   /* 15px — prominent text, names */
+    --fs-xl: 1.125rem;    /* 18px — section titles */
+    --fs-2xl: 1.5rem;     /* 24px — page titles */
+    --fs-3xl: 1.75rem;    /* 28px — large headings */
 }
 
 /* ============ Dark Theme ============ */
