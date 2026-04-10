@@ -311,7 +311,7 @@ const Teams = () => {
       {/* ===== Team List ===== */}
       {!loading && filteredTeams.length === 0 && (
         <div className="teams-empty">
-          <i className="bi bi-people teams-empty-icon"></i>
+          <i className="bi bi-inboxes teams-empty-icon"></i>
           <span className="teams-empty-text">
             {searchTerm ? "ไม่พบทีมที่ค้นหา" : "ยังไม่มีทีม — กดสร้างทีมใหม่เลย!"}
           </span>
@@ -334,6 +334,9 @@ const Teams = () => {
                   <i
                     className={`bi bi-chevron-right team-chevron ${isOpen ? "open" : ""}`}
                   ></i>
+                  <div className="team-header-icon">
+                    <i className="bi bi-people-fill"></i>
+                  </div>
                   <span className="team-name">{team.team_name}</span>
                   <span className="team-member-count">
                     {members.length} สมาชิก

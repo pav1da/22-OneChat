@@ -71,6 +71,8 @@ const Home = () => {
       {/* Background Animated Orbs (Hidden if custom image is used) */}
       {!backgroundImage && (
         <div className="bg-orbs-container">
+          <div className="bg-grid"></div>
+          <div className="bg-noise"></div>
           <div className="orb orb-1"></div>
           <div className="orb orb-2"></div>
           <div className="orb orb-3"></div>

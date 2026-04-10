@@ -195,6 +195,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ============ Animated Background Orbs ============ */
+/* ============ Premium Background System ============ */
 .bg-orbs-container {
     position: fixed;
     top: 0;
@@ -208,52 +209,95 @@ h1, h2, h3, h4, h5, h6 {
     transition: background-color 0.5s ease;
 }
 
+/* Central Radial Glow */
+.bg-orbs-container::after {
+    content: '';
+    position: absolute;
+    inset: -200px;
+    background: radial-gradient(circle at 50% -10%, rgba(242, 102, 35, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+[data-theme="dark"] .bg-orbs-container::after {
+    background: radial-gradient(circle at 50% -10%, rgba(242, 102, 35, 0.12) 0%, transparent 65%);
+}
+
+/* Subtle Grid Pattern */
+.bg-grid {
+    position: absolute;
+    inset: 0;
+    background-size: 40px 40px;
+    background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    mask-image: radial-gradient(circle at center top, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle at center top, black 30%, transparent 80%);
+}
+
+[data-theme="dark"] .bg-grid {
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Noise overlay */
+.bg-noise {
+    position: absolute;
+    inset: 0;
+    /* Clean base64 inline SVG noise texture to avoid external loads */
+    background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.4"/%3E%3C/svg%3E');
+    opacity: 0.15;
+    mix-blend-mode: overlay;
+}
+
+[data-theme="dark"] .bg-noise {
+    opacity: 0.1;
+}
+
+/* Premium Floating Blobs */
 .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
+    filter: blur(100px);
     opacity: 0.6;
-    animation: float 20s infinite ease-in-out alternate;
+    animation: premiumFloat 25s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Light mode orb colors (defaults) */
 .orb-1 {
-    width: 400px;
-    height: 400px;
-    background: rgba(242, 102, 35, 0.15); /* orange */
-    top: -100px;
+    width: 600px;
+    height: 600px;
+    background: rgba(242, 102, 35, 0.12); /* Brighter brand orange */
+    top: -150px;
     right: -100px;
-    animation-delay: 0s;
 }
 
 .orb-2 {
     width: 500px;
     height: 500px;
-    background: rgba(100, 150, 255, 0.1); /* light blue */
-    bottom: -150px;
-    left: -150px;
-    animation-delay: -5s;
-}
-
-.orb-3 {
-    width: 300px;
-    height: 300px;
-    background: rgba(242, 102, 35, 0.1); 
-    top: 40%;
-    left: 20%;
+    background: rgba(160, 90, 255, 0.08); /* Soft violet to contrast the orange */
+    bottom: -100px;
+    left: -200px;
     animation-delay: -10s;
 }
 
-/* Dark mode orb colors */
-[data-theme="dark"] .orb-1 { background: rgba(242, 102, 35, 0.2); }
-[data-theme="dark"] .orb-2 { background: rgba(80, 80, 200, 0.15); }
-[data-theme="dark"] .orb-3 { background: rgba(242, 102, 35, 0.15); }
+.orb-3 {
+    width: 400px;
+    height: 400px;
+    background: rgba(242, 102, 35, 0.08); 
+    top: 30%;
+    left: 20%;
+    animation-delay: -5s;
+}
 
-@keyframes float {
-    0% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(50px, -50px) scale(1.1); }
-    66% { transform: translate(-50px, 50px) scale(0.9); }
-    100% { transform: translate(0, 0) scale(1); }
+[data-theme="dark"] .orb-1 { background: rgba(242, 102, 35, 0.15); }
+[data-theme="dark"] .orb-2 { background: rgba(100, 50, 200, 0.15); filter: blur(120px); }
+[data-theme="dark"] .orb-3 { background: rgba(242, 102, 35, 0.1); }
+
+@keyframes premiumFloat {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    33% { transform: translate(40px, -60px) scale(1.05) rotate(5deg); }
+    66% { transform: translate(-30px, 40px) scale(0.95) rotate(-5deg); }
+    100% { transform: translate(0, 0) scale(1) rotate(0deg); }
 }
 
 /* ============ Form Inputs ============ */
