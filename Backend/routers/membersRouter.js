@@ -70,6 +70,84 @@ const auth = require("../middleware/auth.js");
 
 /**
  * @swagger
+ * /api/members/with-teams:
+ *   get:
+ *     summary: ดึงข้อมูลสมาชิกทั้งหมดพร้อมทีมที่สังกัด
+ *     description: ดึงรายชื่อสมาชิกทั้งหมดจากตาราง EMP พร้อม JOIN ข้อมูลทีมจาก team_members + teams (รองรับหลายทีมต่อคน)
+ *     tags: [Members]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: สำเร็จ — ส่งรายชื่อสมาชิกทั้งหมดพร้อมข้อมูลทีม
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 allOf:
+ *                   - $ref: '#/components/schemas/Member'
+ *                   - type: object
+ *                     properties:
+ *                       teams:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             team_id:
+ *                               type: integer
+ *                             team_name:
+ *                               type: string
+ *                             role_in_team:
+ *                               type: string
+ *       401:
+ *         description: ไม่พบ Token / Token หมดอายุ
+ *       500:
+ *         description: Server error
+ */
+router.get("/with-teams", auth, async (req, res) => {
+  try {
+    // ดึง EMP ทั้งหมด
+    const [empRows] = await pool.query(
+      "SELECT * FROM EMP ORDER BY created_at ASC"
+    );
+
+    // ดึง team memberships ทั้งหมดพร้อมชื่อทีม
+    const [teamRows] = await pool.query(
+      `SELECT tm.emp_id, tm.team_id, tm.role_in_team, t.team_name
+       FROM team_members tm
+       JOIN teams t ON tm.team_id = t.team_id
+       ORDER BY t.team_name ASC`
+    );
+
+    // สร้าง Map: emp_id -> array of teams
+    const teamsByEmpId = {};
+    for (const row of teamRows) {
+      if (!teamsByEmpId[row.emp_id]) {
+        teamsByEmpId[row.emp_id] = [];
+      }
+      teamsByEmpId[row.emp_id].push({
+        team_id: row.team_id,
+        team_name: row.team_name,
+        role_in_team: row.role_in_team,
+      });
+    }
+
+    // รวมข้อมูล EMP + teams แล้วลบ password ออก
+    const members = empRows.map(({ password, ...rest }) => ({
+      ...rest,
+      teams: teamsByEmpId[rest.emp_id] || [],
+    }));
+
+    res.json(members);
+  } catch (err) {
+    console.error("GetMembersWithTeams error:", err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูลสมาชิก" });
+  }
+});
+
+/**
+ * @swagger
  * /api/members:
  *   get:
  *     summary: ดึงข้อมูลสมาชิกทั้งหมด

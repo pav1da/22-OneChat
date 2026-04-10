@@ -8,6 +8,10 @@ const Teams = () => {
   // ================== STATE ==================
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // ===== Role-based permission =====
+  const currentUser = JSON.parse(sessionStorage.getItem("myAppUser") || "{}");
+  const canManageTeams = ["admin", "manager"].includes(currentUser.role);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Accordion open state (team_id -> boolean)
@@ -272,13 +276,15 @@ const Teams = () => {
       {/* ===== Header ===== */}
       <div className="teams-header">
         <h1 className="teams-title">ทีม</h1>
-        <button
-          className="btn-create-team"
-          onClick={() => setShowCreateModal(true)}
-        >
-          <i className="bi bi-plus-lg"></i>
-          สร้างทีม
-        </button>
+        {canManageTeams && (
+          <button
+            className="btn-create-team"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <i className="bi bi-plus-lg"></i>
+            สร้างทีม
+          </button>
+        )}
       </div>
 
       {/* ===== Search ===== */}
@@ -334,25 +340,27 @@ const Teams = () => {
                   </span>
                 </div>
 
-                <div
-                  className="team-header-actions"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    className="btn-team-action"
-                    title="เปลี่ยนชื่อทีม"
-                    onClick={() => openRenameModal(team)}
+                {canManageTeams && (
+                  <div
+                    className="team-header-actions"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <i className="bi bi-pencil"></i>
-                  </button>
-                  <button
-                    className="btn-team-action danger"
-                    title="ลบทีม"
-                    onClick={() => handleDeleteTeam(team)}
-                  >
-                    <i className="bi bi-trash"></i>
-                  </button>
-                </div>
+                    <button
+                      className="btn-team-action"
+                      title="เปลี่ยนชื่อทีม"
+                      onClick={() => openRenameModal(team)}
+                    >
+                      <i className="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      className="btn-team-action danger"
+                      title="ลบทีม"
+                      onClick={() => handleDeleteTeam(team)}
+                    >
+                      <i className="bi bi-trash"></i>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Team Members (Accordion) */}
@@ -429,30 +437,34 @@ const Teams = () => {
                         </span>
                       </div>
 
-                      {/* ปุ่มลบสมาชิก */}
-                      <div>
-                        <button
-                          className="btn-remove-member"
-                          title="นำออกจากทีม"
-                          onClick={() =>
-                            openConfirmRemove(team.team_id, member.emp_id, displayName)
-                          }
-                        >
-                          <i className="bi bi-x-lg"></i>
-                        </button>
-                      </div>
+                      {/* ปุ่มลบสมาชิก — เฉพาะ admin/manager */}
+                      {canManageTeams && (
+                        <div>
+                          <button
+                            className="btn-remove-member"
+                            title="นำออกจากทีม"
+                            onClick={() =>
+                              openConfirmRemove(team.team_id, member.emp_id, displayName)
+                            }
+                          >
+                            <i className="bi bi-x-lg"></i>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
 
-                {/* ปุ่มเพิ่มสมาชิก */}
-                <button
-                  className="btn-add-member"
-                  onClick={() => openAddMemberModal(team.team_id)}
-                >
-                  <i className="bi bi-plus-circle"></i>
-                  เพิ่มสมาชิก
-                </button>
+                {/* ปุ่มเพิ่มสมาชิก — เฉพาะ admin/manager */}
+                {canManageTeams && (
+                  <button
+                    className="btn-add-member"
+                    onClick={() => openAddMemberModal(team.team_id)}
+                  >
+                    <i className="bi bi-plus-circle"></i>
+                    เพิ่มสมาชิก
+                  </button>
+                )}
               </div>
             </div>
           );

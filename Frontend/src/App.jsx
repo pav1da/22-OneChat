@@ -112,7 +112,7 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                     path="/signin"
                     element={
                         currentUser ? (
-                            <Navigate to="/dashboard" />
+                            <Navigate to="/notes" />
                         ) : (
                             <SignInPage onLogin={handleLogin} />
                         )
@@ -138,14 +138,13 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                         </ProtectedRoute>
                     }
                 >
-                    <Route path="/dashboard" element={<Notes user={currentUser} />} />
                     <Route path="/notes" element={<Notes user={currentUser} />} />
                     <Route path="/allchat" element={<AllChat currentUser={currentUser} />} />
                     <Route path="/inbox" element={<Inbox currentUser={currentUser} />} />
                     <Route path="/cardmessage" element={<CardMessage currentUser={currentUser} />} />
                     <Route path="/log" element={<Log />} />
                     <Route path="/notification" element={<Notifiacation />} />
-                    <Route path="/member" element={<Member />} />
+                    <Route path="/member" element={<Member currentUser={currentUser} />} />
                     <Route path="/teams" element={<Teams />} />
                     <Route path="/tokenreport" element={<TokenReport />} />
                     <Route path="/setting" element={<Setting user={currentUser} />} />

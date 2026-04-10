@@ -12,123 +12,212 @@
   overflow-y: auto;
 }
 
-/* หัวข้อ (Section Title) */
-.section-title {
+/* =========================================================================
+   Controls (Search + Sort)
+   ========================================================================= */
+
+.member-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  gap: 0.75rem;
+}
+
+.member-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.member-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.member-page-title {
   font-size: var(--fs-xl);
-  margin-bottom: 0;
-  font-weight: 500;
-  color: var(--text-main);
+  font-weight: 600;
+  color: var(--text-main, #212529);
+  margin: 0;
 }
 
-/* ช่องค้นหา (Search Input) */
-.search-input {
-  min-width: 180px;
+/* ช่องค้นหา */
+.member-search-wrapper {
+  position: relative;
+}
+
+.member-search-input {
+  width: 100%;
+  min-width: 200px;
+  max-width: 280px;
   height: 32px;
-  background-color: var(--bg-surface, #f8f9fa) !important;
-  border: none !important;
-  border-radius: 0.5rem !important;
-  padding-left: 2.5rem !important; /* ps-5 */
+  background-color: var(--bg-surface, #f8f9fa);
+  border: 1px solid var(--border-light, #e9ecef);
+  border-radius: 0.5rem;
+  padding: 0 1rem 0 2.5rem;
+  font-size: var(--fs-base);
+  font-family: inherit;
+  color: var(--text-main, #212529);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* ไอคอนแว่นขยายในช่องค้นหา */
-.search-icon {
+.member-search-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #F26623);
+  box-shadow: 0 0 0 3px rgba(242, 102, 35, 0.1);
+}
+
+.member-search-icon {
   position: absolute;
   top: 8px;
-  left: 15px;
+  left: 12px;
   color: var(--text-muted, #6c757d);
+  font-size: var(--fs-base);
 }
 
-/* เส้นแบ่ง (Divider) */
-.divider {
-  border-top: 1px solid var(--border-light, #e9ecef) !important;
-  margin-top: 0.25rem;
-  margin-bottom: 1rem;
+/* ปุ่มเรียงลำดับ */
+.btn-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-light, #e9ecef);
+  border-radius: 0.5rem;
+  background-color: var(--bg-surface, #f8f9fa);
+  color: var(--text-main, #212529);
+  font-size: var(--fs-base);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-sort:hover {
+  background-color: #e9ecef;
+}
+
+.btn-sort.active {
+  background-color: var(--primary-color, #F26623);
+  color: #fff;
+  border-color: var(--primary-color, #F26623);
 }
 
 /* =========================================================================
-   Team Section Styles
+   Member Table
    ========================================================================= */
 
-/* กล่องแต่ละทีม */
-.team-card {
-  border: 1px solid var(--border-light, #e9ecef);
-  border-radius: 1rem;
-  overflow: hidden;
-  margin-bottom: 1rem;
+/* ส่วนหัวคอลัมน์ของตารางสมาชิก */
+.member-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 80px;
+  gap: 10px;
+  padding: 0.4rem 1rem;
+  color: var(--primary-color);
+  font-size: var(--fs-base);
+  font-weight: 400;
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
 }
 
-/* ส่วนหัวของทีม (Team Header) */
-.team-header {
-  display: flex;
-  justify-content: space-between;
+/* แถวข้อมูลสมาชิกแต่ละคน */
+.member-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 80px;
+  gap: 10px;
   align-items: center;
-  padding: 0.75rem;
+  padding: 0.5rem 1rem;
   background-color: var(--bg-main, #ffffff);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.team-header:hover {
-  background-color: var(--bg-surface, #f8f9fa);
-}
-
-/* ปุ่มลบทีม */
-.btn-delete-team {
-  width: 26px;
-  height: 26px;
-  padding: 0 !important;
-  border-radius: 50% !important;
-  border: none !important;
-  background-color: transparent !important;
-  color: var(--text-danger, #dc3545) !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s ease;
-}
-
-.btn-delete-team:hover {
-  background-color: var(--border-light, #e9ecef) !important;
-}
-
-/* พื้นที่แสดงสมาชิกในทีม */
-.team-members-area {
-  background-color: var(--bg-surface, #f8f9fa);
-  border-top: 1px solid var(--border-light, #e9ecef);
-  padding: 0.5rem 0;
-}
-
-/* แถวข้อมูลสมาชิกในทีมแต่ละคน */
-.team-member-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem;
+  font-size: var(--fs-md, var(--fs-base));
   border-bottom: 1px solid var(--border-light, #e9ecef);
-  padding-left: 2.5rem !important;
+  transition:
+    background-color 0.15s ease,
+    transform 0.12s ease;
 }
+
+.member-row:hover {
+  background-color: var(--bg-surface, #f8f9fa);
+  transform: translateY(-1px);
+}
+
+/* กำหนดความกว้างของแต่ละคอลัมน์ */
+.col-name {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.col-role {
+  text-transform: uppercase;
+}
+
+.col-actions {
+  width: 80px;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  position: relative;
+}
+
+/* =========================================================================
+   Team Badge Pills (แสดงทีมเป็น tag ในหน้า Member)
+   ========================================================================= */
+
+.team-badges-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.team-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  background: linear-gradient(135deg, #fff5eb, #fff0e0);
+  color: #c4550a;
+  border: 1px solid #fcd5b5;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+.team-badge-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(242, 102, 35, 0.15);
+}
+
+.no-team-text {
+  color: var(--text-muted, #9ca3af);
+  font-size: var(--fs-base);
+}
+
+/* =========================================================================
+   Avatar + Online/Offline Status
+   ========================================================================= */
 
 /* รูปโปรไฟล์สมาชิก */
 .member-avatar {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   object-fit: cover;
   border-radius: 50%;
-  border: 2.5px solid transparent;
+  border: 2px solid transparent;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Avatar แบบตัวอักษร (ใช้เมื่อไม่มีรูป) */
 .member-avatar-initials {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 2.5px solid transparent;
+  border: 2px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-size: var(--fs-lg);
+  font-size: var(--fs-base);
   font-weight: 600;
   letter-spacing: 0.5px;
   user-select: none;
@@ -140,16 +229,7 @@
   box-shadow: 0 2px 8px rgba(242, 102, 35, 0.18);
 }
 
-/* =========================================================================
-   ส่วนแสดงสถานะ Online/Offline (เพิ่มใหม่สำหรับ real-time status)
-   - avatar-wrapper: ครอบรูป avatar + จุดสถานะ
-   - avatar-online/offline: ขอบสีเขียว/เทา รอบรูป avatar
-   - avatar-status-dot: จุดกลมเล็กมุมขวาล่างของ avatar
-   - status-badge: ป้ายแสดง "ออนไลน์" / "ออฟไลน์" ในคอลัมน์สถานะ
-   - pulse-green: animation กระพริบสำหรับจุดสีเขียว (online)
-   ========================================================================= */
-
-/* Wrapper ครอบรูป avatar กับจุดสถานะ (ใช้ position: relative เพื่อวางจุดทับ) */
+/* Wrapper ครอบรูป avatar กับจุดสถานะ */
 .avatar-wrapper {
   position: relative;
   display: inline-block;
@@ -171,8 +251,8 @@
   position: absolute;
   bottom: 0px;
   right: 0px;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   border: 2px solid var(--bg-main, #ffffff);
 }
@@ -183,126 +263,70 @@
   animation: pulse-green 2s infinite;
 }
 
-/* จุดสีเทา = offline (ไม่มี animation) */
+/* จุดสีเทา = offline */
 .dot-offline {
   background-color: #9ca3af;
 }
 
-/* ป้ายแสดงสถานะในคอลัมน์ "สถานะ" (แบบ pill/capsule) */
+/* =========================================================================
+   Status Badge
+   ========================================================================= */
+
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
+  gap: 5px;
+  padding: 3px 10px;
   border-radius: 999px;
-  font-size: var(--fs-base);
+  font-size: var(--fs-sm);
   font-weight: 500;
 }
 
-/* ป้ายสีเขียวอ่อน สำหรับ "ออนไลน์" */
 .status-online {
   background-color: #dcfce7;
   color: #16a34a;
 }
 
-/* ป้ายสีเทาอ่อน สำหรับ "ออฟไลน์" */
 .status-offline {
   background-color: #f3f4f6;
   color: #6b7280;
 }
 
-/* จุดเล็กๆ ภายใน badge (ข้างซ้ายของข้อความ) */
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   display: inline-block;
 }
 
-/* สีเขียว สำหรับจุดใน badge "ออนไลน์" */
 .dot-green {
   background-color: #22c55e;
 }
 
-/* สีเทา สำหรับจุดใน badge "ออฟไลน์" */
 .dot-gray {
   background-color: #9ca3af;
 }
 
-/* Animation กระพริบ (pulse) สำหรับจุดสีเขียว online */
-/* สร้างเอฟเฟกต์ "แสงกระจาย" รอบจุด ทำให้ดูมีชีวิตชีวา */
+/* Animation กระพริบ */
 @keyframes pulse-green {
   0% {
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); /* เริ่มต้น: แสงเขียวรอบจุด */
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
   }
   70% {
-    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); /* กระจายออก 6px แล้วจางหาย */
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); /* กลับสู่สถานะเริ่มต้น */
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
   }
 }
 
 /* =========================================================================
-   Member Section Styles (ตารางสมาชิกทั้งหมด)
+   Action Buttons & Popup
    ========================================================================= */
 
-/* ส่วนหัวคอลัมน์ของตารางสมาชิก */
-.member-table-header {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
-  gap: 12px;
-  padding: 0.5rem 1rem;
-  color: var(--primary-color);
-  font-size: var(--fs-base);
-  font-weight: 400;
-  align-items: center;
-  border-bottom: 1px solid var(--border-light);
-}
-
-/* แถวข้อมูลสมาชิกแต่ละคน */
-.member-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
-  gap: 12px;
-  align-items: center;
-  padding: 0.7rem 1rem;
-  background-color: var(--bg-main, #ffffff);
-  font-size: var(--fs-base);
-  border-bottom: 1px solid var(--border-light, #e9ecef);
-  transition:
-    background-color 0.15s ease,
-    transform 0.12s ease;
-}
-
-.member-row:hover {
-  background-color: var(--bg-surface, #f8f9fa);
-  transform: translateY(-1px);
-}
-
-/* กำหนดความกว้างของแต่ละคอลัมน์ (เหมือนใน inline styles) */
-.col-name {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-/* .col-team { } */
-.col-role {
-  text-transform: uppercase;
-}
-/* .col-status { } */
-.col-actions {
-  width: 80px;
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  position: relative;
-}
-
-/* ปุ่ม Action ต่างๆ (รูปดินสอแก้ไข, รูป 3 จุด) */
 .btn-action {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   background-color: var(--primary-color) !important;
   border: none !important;
   border-radius: 0.5rem !important;
@@ -311,6 +335,7 @@
   justify-content: center;
   align-items: center;
   color: white !important;
+  font-size: var(--fs-base);
   transition: opacity 0.2s ease;
 }
 
@@ -318,7 +343,6 @@
   opacity: 0.85;
 }
 
-/* กล่อง Popup เมนู Action (ลบ, นำออกจากทีม ฯลฯ) */
 .action-popup {
   position: absolute;
   right: 0;
@@ -332,21 +356,29 @@
   border: 1px solid var(--border-light, #e9ecef);
 }
 
-/* ไอเทมคลิกได้ในกล่อง Popup (ลบผู้ใช้, ลบออกจากทีม ฯลฯ) */
 .action-item {
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  padding: 0.2rem 0.5rem;
   color: var(--text-danger, #dc3545);
   border-radius: 0.25rem;
+  font-size: var(--fs-base);
   transition: background-color 0.2s ease;
 }
 
 .action-item:hover {
-  background-color: var(--bg-surface, #f8f9fa); /* hover-bg-light */
+  background-color: var(--bg-surface, #f8f9fa);
 }
 
-/* Responsive: stack columns on small screens */
+/* =========================================================================
+   Responsive
+   ========================================================================= */
+
 @media (max-width: 768px) {
+  .member-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .member-table-header {
     display: none;
   }
@@ -355,20 +387,20 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
-    padding: 12px;
+    gap: 6px;
+    padding: 10px;
   }
 
   .col-name {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
   .col-team,
   .col-role,
   .col-status {
     color: var(--text-muted);
-    font-size: var(--fs-md);
+    font-size: var(--fs-base);
   }
 
   .col-actions {
@@ -379,7 +411,11 @@
 
   .member-avatar,
   .member-avatar-initials {
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .member-search-input {
+    min-width: 160px;
   }
 }

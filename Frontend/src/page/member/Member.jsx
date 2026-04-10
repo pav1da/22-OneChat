@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Modal } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./member.css";
 // นำเข้า useSocket จาก SocketContext เพื่อใช้ตรวจสอบสถานะ online/offline ของ user
 import { useSocket } from "../../context/SocketContext";
 
-const Member = () => {
+const Member = ({ currentUser }) => {
   // ================== 1. STATE MANAGEMENT ==================
   const [allMembers, setAllMembers] = useState([]);
-  const [teams, setTeams] = useState([]);
 
   // ===== Avatar Helpers =====
   const avatarColors = [
@@ -26,29 +25,22 @@ const Member = () => {
   // Search & Sort (Member Section)
   const [searchTerm, setSearchTerm] = useState("");
   const [isSorted, setIsSorted] = useState(false);
-  const [selectedRoleForEdit, setSelectedRoleForEdit] = useState("");
-
-  // Modals
-  const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
-  const [newTeamName, setNewTeamName] = useState("");
-
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [selectedTeamForEdit, setSelectedTeamForEdit] = useState("");
 
   const [activePopupId, setActivePopupId] = useState(null);
 
   // ===== Socket.IO: ดึงฟังก์ชันเช็คสถานะ online จาก SocketContext =====
-  // isUserOnline(emp_id) จะ return true ถ้า user คนนั้นกำลัง online อยู่
-  // ข้อมูลจะอัปเดตแบบ real-time โดยอัตโนมัติผ่าน Socket.IO events
   const { isUserOnline } = useSocket();
+
+  // ===== Role-based permission =====
+  const currentUserRole = currentUser?.role || "";
+  const canManage = ["admin", "manager"].includes(currentUserRole);
 
   // ================== 2. INITIALIZATION (FROM API) ==================
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUsersWithTeams = async () => {
       try {
         const token = sessionStorage.getItem("token");
-        const res = await fetch("/api/users", {
+        const res = await fetch("/api/members/with-teams", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -58,7 +50,7 @@ const Member = () => {
             id: u.emp_id,
             name: u.username || u.name,
             role: u.role || "staff",
-            team: u.team || "",
+            teams: u.teams || [], // array of { team_id, team_name, role_in_team }
             color: "#607D8B",
             email: u.email,
             phone: u.phone,
@@ -67,10 +59,10 @@ const Member = () => {
           setAllMembers(mapped);
         }
       } catch (err) {
-        console.error("Error fetching users:", err);
+        console.error("Error fetching users with teams:", err);
       }
     };
-    fetchUsers();
+    fetchUsersWithTeams();
   }, []);
 
   // ================== 3. LOGIC (SORT & SEARCH) ==================
@@ -106,68 +98,6 @@ const Member = () => {
   const displayMembers = getProcessedMembers();
 
   // ================== 4. HELPER FUNCTIONS ==================
-  const toggleTeam = (id) => {
-    setTeams((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, isOpen: !t.isOpen } : t)),
-    );
-  };
-
-  const handleCreateTeam = () => {
-    if (!newTeamName.trim()) return;
-
-    const newTeam = {
-      id: Date.now(),
-      name: newTeamName,
-      memberCount: 0,
-      isOpen: true,
-      members: [],
-    };
-
-    setTeams([...teams, newTeam]);
-    setNewTeamName("");
-    setShowCreateTeamModal(false);
-  };
-
-  // --- 🔴 ฟังก์ชันลบทีม ---
-  const handleDeleteTeam = (teamId, teamName) => {
-    if (window.confirm(`ต้องการลบทีม "${teamName}" ใช่หรือไม่?`)) {
-      setTeams((prev) => prev.filter((t) => t.id !== teamId));
-      setAllMembers((prev) =>
-        prev.map((member) =>
-          member.team === teamName ? { ...member, team: "" } : member,
-        ),
-      );
-    }
-  };
-
-  const openEditModal = (user) => {
-    setEditingUser(user);
-    setSelectedTeamForEdit(user.team);
-    setSelectedRoleForEdit(user.role);
-    setShowEditModal(true);
-    setActivePopupId(null);
-  };
-
-  const handleSaveEdit = () => {
-    const updatedMembers = allMembers.map((user) =>
-      user.id === editingUser.id
-        ? { ...user, team: selectedTeamForEdit, role: selectedRoleForEdit }
-        : user,
-    );
-
-    setAllMembers(updatedMembers);
-    setShowEditModal(false);
-  };
-
-  const handleRemoveFromTeam = (userId) => {
-    if (window.confirm("ยืนยันการนำสมาชิกออกจากทีม?")) {
-      setAllMembers((prev) =>
-        prev.map((user) => (user.id === userId ? { ...user, team: "" } : user)),
-      );
-      setActivePopupId(null);
-    }
-  };
-
   const handleDeleteUser = async (userId) => {
     if (window.confirm("ยืนยันการลบสมาชิกนี้ออกจากระบบ?")) {
       try {
@@ -193,25 +123,49 @@ const Member = () => {
   // ================== 5. RENDER UI ==================
   return (
     <div className="member-container px-4" onClick={() => setActivePopupId(null)}>
+      {/* Search & Sort controls */}
+      <div className="member-controls">
+        <div className="member-controls-left">
+          <h1 className="member-page-title">สมาชิก</h1>
+        </div>
+        <div className="member-controls-right">
+          <div className="member-search-wrapper">
+            <i className="bi bi-search member-search-icon"></i>
+            <input
+              className="member-search-input"
+              type="text"
+              placeholder="ค้นหาสมาชิก..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button
+            className={`btn-sort ${isSorted ? "active" : ""}`}
+            onClick={() => setIsSorted(!isSorted)}
+          >
+            <i className="bi bi-arrow-down-up"></i>
+            {isSorted ? "เรียงแล้ว" : "เรียงลำดับ"}
+          </button>
+        </div>
+      </div>
+
+      {/* Table Header */}
       <div className="member-table-header">
         <div className="col-name">ชื่อ</div>
         <div className="col-team">ทีม</div>
         <div className="col-role">บทบาท</div>
         <div className="col-status">สถานะ</div>
-        <div className="col-actions"></div>
+        {canManage && <div className="col-actions"></div>}
       </div>
 
       {/* Member List */}
       <div className="d-flex flex-column pb-5">
         {displayMembers.map((member) => {
-          // ตรวจสอบว่า user คนนี้ online หรือไม่ ผ่าน SocketContext
-          // ค่า online จะเปลี่ยนแบบ real-time เมื่อ server broadcast event
           const online = isUserOnline(member.id);
           return (
             <div key={member.id} className="member-row">
               {/* ชื่อ + Avatar พร้อมตัวบ่งชี้สถานะ online/offline */}
               <div className="col-name">
-                {/* avatar-wrapper: ครอบ avatar + จุดสถานะ (position: relative) */}
                 <div className="avatar-wrapper">
                   {member.image ? (
                     <img
@@ -227,68 +181,69 @@ const Member = () => {
                       {getInitial(member.name)}
                     </div>
                   )}
-                  {/* จุดสถานะมุมขวาล่างของ avatar */}
                   <span className={`avatar-status-dot ${online ? "dot-online" : "dot-offline"}`}></span>
                 </div>
                 <span>{member.name}</span>
               </div>
 
-              <div className="col-team">{member.team}</div>
+              {/* ทีม — แสดงเป็น badge pills (รองรับหลายทีม) */}
+              <div className="col-team">
+                {member.teams.length > 0 ? (
+                  <div className="team-badges-wrapper">
+                    {member.teams.map((t) => (
+                      <span key={t.team_id} className="team-badge-pill">
+                        {t.team_name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="no-team-text">—</span>
+                )}
+              </div>
 
               <div className="col-role">{member.role}</div>
 
-              {/* Badge แสดงสถานะ: "ออนไลน์" (พื้นเขียวอ่อน) หรือ "ออฟไลน์" (พื้นเทา) */}
+              {/* Badge แสดงสถานะ */}
               <div className="col-status">
                 <span className={`status-badge ${online ? "status-online" : "status-offline"}`}>
-                  {/* จุดเล็กๆ ใน badge: dot-green (เขียว) หรือ dot-gray (เทา) */}
                   <span className={`status-dot ${online ? "dot-green" : "dot-gray"}`}></span>
                   {online ? "ออนไลน์" : "ออฟไลน์"}
                 </span>
               </div>
 
-              {/* Actions */}
-              <div className="col-actions">
-                <Button
-                  variant="secondary"
-                  className="btn-action"
-                  onClick={() => openEditModal(member)}
-                >
-                  <i
-                    className="bi bi-pencil-fill"
-                    style={{ fontSize: "0.8rem" }}
-                  ></i>
-                </Button>
+              {/* Actions — เฉพาะ admin/manager */}
+              {canManage && (
+                <div className="col-actions">
+                  <div className="position-relative">
+                    <Button
+                      variant="secondary"
+                      className="btn-action"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActivePopupId(
+                          activePopupId === `member-${member.id}`
+                            ? null
+                            : `member-${member.id}`,
+                        );
+                      }}
+                    >
+                      <i className="bi bi-three-dots"></i>
+                    </Button>
 
-                {/* Popup */}
-                <div className="position-relative">
-                  <Button
-                    variant="secondary"
-                    className="btn-action"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActivePopupId(
-                        activePopupId === `member-${member.id}`
-                          ? null
-                          : `member-${member.id}`,
-                      );
-                    }}
-                  >
-                    <i className="bi bi-three-dots"></i>
-                  </Button>
-
-                  {activePopupId === `member-${member.id}` && (
-                    <div className="action-popup">
-                      <div
-                        className="action-item"
-                        onClick={() => handleDeleteUser(member.id)}
-                      >
-                        <i className="bi bi-trash me-2"></i>
-                        ลบ
+                    {activePopupId === `member-${member.id}` && (
+                      <div className="action-popup">
+                        <div
+                          className="action-item"
+                          onClick={() => handleDeleteUser(member.id)}
+                        >
+                          <i className="bi bi-trash me-2"></i>
+                          ลบ
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           );
         })}
@@ -297,91 +252,6 @@ const Member = () => {
           <div className="text-center py-5 text-muted">ไม่พบข้อมูลสมาชิก</div>
         )}
       </div>
-
-      {/* ================= MODALS ================= */}
-      {/* Create Team Modal */}
-      <Modal
-        show={showCreateTeamModal}
-        onHide={() => setShowCreateTeamModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-bold">สร้างทีมใหม่</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Label>ชื่อทีม</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="กรอกชื่อทีม"
-            value={newTeamName}
-            onChange={(e) => setNewTeamName(e.target.value)}
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowCreateTeamModal(false)}
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            variant="warning"
-            className="text-white"
-            onClick={handleCreateTeam}
-          >
-            สร้างทีม
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Edit Member Modal */}
-      <Modal
-        show={showEditModal}
-        onHide={() => setShowEditModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-bold">แก้ไขทีม</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>
-            สมาชิก:
-            <strong>{editingUser?.name}</strong>
-          </p>
-          <Form.Group>
-            <Form.Label>เลือกทีม</Form.Label>
-            <Form.Select
-              value={selectedTeamForEdit}
-              onChange={(e) => setSelectedTeamForEdit(e.target.value)}
-            >
-              <option value="">-- ไม่ระบุทีม --</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.name}>
-                  {team.name}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-          <Form.Group>
-            <Form.Label>บทบาท</Form.Label>
-            <Form.Select
-              value={selectedRoleForEdit}
-              onChange={(e) => setSelectedRoleForEdit(e.target.value)}
-            >
-              <option value="หัวหน้า">หัวหน้า</option>
-              <option value="สมาชิก">สมาชิก</option>
-            </Form.Select>
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
-            ยกเลิก
-          </Button>
-          <Button variant="primary" onClick={handleSaveEdit}>
-            บันทึก
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 };

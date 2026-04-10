@@ -8,6 +8,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../config/db.js");
 const auth = require("../middleware/auth.js");
+const authorize = require("../middleware/authorize.js");
 
 // ============================================================
 //  Swagger Component Schemas
@@ -177,7 +178,7 @@ router.get("/", auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post("/", auth, async (req, res) => {
+router.post("/", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const { team_name } = req.body;
     if (!team_name || !team_name.trim()) {
@@ -276,7 +277,7 @@ router.get("/available-members", auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.put("/:id", auth, async (req, res) => {
+router.put("/:id", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const { team_name } = req.body;
     if (!team_name || !team_name.trim()) {
@@ -324,7 +325,7 @@ router.put("/:id", auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const [result] = await pool.query(
       "DELETE FROM teams WHERE team_id = ?",
@@ -388,7 +389,7 @@ router.delete("/:id", auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post("/:id/members", auth, async (req, res) => {
+router.post("/:id/members", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const teamId = req.params.id;
     const { emp_id, role_in_team = "สมาชิก" } = req.body;
@@ -465,7 +466,7 @@ router.post("/:id/members", auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete("/:id/members/:empId", auth, async (req, res) => {
+router.delete("/:id/members/:empId", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const [result] = await pool.query(
       "DELETE FROM team_members WHERE team_id = ? AND emp_id = ?",
