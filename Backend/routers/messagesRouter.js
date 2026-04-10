@@ -1,31 +1,25 @@
-const express = require('express');
+const express = require("express");
+const auth = require("../middleware/auth.js");
+const multer = require("multer");
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const Message = require('../models/message.js');
-const Customer = require('../models/customer.js');
-const Log = require('../models/log.js');
-const { lineClient } = require('../controllers/lineController.js');
-const auth = require('../middleware/auth.js');
-
+const path = require("path");
+const Message = require("../models/message.js");
+const Customer = require("../models/customer.js");
+const Log = require("../models/log.js");
+const cloudinary = require("../config/cloudinary");
+const { lineClient } = require("../controllers/lineController.js");
 
 // Multer config for admin-uploaded chat images
-const chatImageStorage = multer.diskStorage({
-  destination: path.join(__dirname, '..', 'uploads', 'chat-images'),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `admin-${Date.now()}${ext}`);
-  },
-});
+const chatImageStorage = multer.memoryStorage();
+
 const uploadChatImage = multer({
   storage: chatImageStorage,
   fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     cb(null, allowed.includes(file.mimetype));
   },
   limits: { fileSize: 10 * 1024 * 1024 },
 });
-
 
 /**
  * @swagger
@@ -67,19 +61,50 @@ const uploadChatImage = multer({
  *       401:
  *         description: Unauthorized
  */
-router.post('/upload-image', auth, uploadChatImage.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ message: 'ไม่พบไฟล์รูปภาพ' });
-  res.json({ filename: req.file.filename, url: `/uploads/chat-images/${req.file.filename}` });
-});
 
+router.post(
+  "/upload-image",
+  auth,
+  uploadChatImage.single("image"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "กรุณาเลือกรูปภาพ" });
+
+      // อัปโหลดไฟล์จาก Buffer เข้า Cloudinary
+      const uploadResponse = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            {
+              folder: "admin-chat-images",
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            },
+          )
+          .end(req.file.buffer);
+      });
+
+      // ส่ง URL ของ Cloudinary กลับไปให้ Frontend
+      res.json({
+        message: "อัปโหลดสำเร็จ",
+        filename: uploadResponse.secure_url, // ส่ง Full URL กลับไป
+        url: uploadResponse.secure_url,
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: "เกิดข้อผิดพลาดในการอัปโหลด" });
+    }
+  },
+);
 
 // Helper: สร้างวันที่เวลาแบบ MySQL format
 const getLocalDatetime = () => {
   const d = new Date();
-  const pad = (n) => String(n).padStart(2, '0');
+  const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
-
 
 /**
  * @swagger
@@ -87,7 +112,6 @@ const getLocalDatetime = () => {
  *   name: Messages
  *   description: จัดการข้อความแชท (Chat Messages)
  */
-
 
 /**
  * @swagger
@@ -117,7 +141,6 @@ const getLocalDatetime = () => {
  *           type: string
  *           example: "2026-03-24 19:00:00"
  */
-
 
 /**
  * @swagger
@@ -159,7 +182,6 @@ const getLocalDatetime = () => {
  *         description: Server error
  */
 
-
 /**
  * @swagger
  * /api/messages/{customerId}:
@@ -189,7 +211,6 @@ const getLocalDatetime = () => {
  *       500:
  *         description: Server error
  */
-
 
 /**
  * @swagger
@@ -249,63 +270,61 @@ const getLocalDatetime = () => {
  *         description: Server error
  */
 
-
 // GET /api/messages — ดึงข้อความทั้งหมด (by customer_id)
-router.get('/', auth, async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const grouped = await Message.findAllGrouped();
     res.json(grouped);
   } catch (err) {
-    console.error('Get messages error:', err);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อความ' });
+    console.error("Get messages error:", err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อความ" });
   }
 });
 
-
 // GET /api/messages/:customerId — ดึงข้อความของลูกค้า
-router.get('/:customerId', auth, async (req, res) => {
+router.get("/:customerId", auth, async (req, res) => {
   try {
     const messages = await Message.findByCustomerId(req.params.customerId);
     res.json(messages);
   } catch (err) {
-    console.error('Get messages by customer error:', err);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+    console.error("Get messages by customer error:", err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
   }
 });
 
-
 // POST /api/messages — ส่งข้อความใหม่ + ส่งไปยัง LINE ถ้าเป็นข้อความจาก dashboard
-router.post('/', auth, async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
     const { customer_id, sender, message_type, message_text } = req.body;
 
-
     if (!customer_id || !message_text) {
-      return res.status(400).json({ message: 'กรุณาระบุ customer_id และข้อความ' });
+      return res
+        .status(400)
+        .json({ message: "กรุณาระบุ customer_id และข้อความ" });
     }
-
 
     const newId = await Message.create({
       customer_id,
-      sender: sender || 'own',
-      message_type: message_type || 'text',
+      sender: sender || "own",
+      message_type: message_type || "text",
       message_text,
     });
 
-
     // ถ้าเป็นข้อความจาก dashboard (own) ให้ส่งไปยัง LINE ด้วย
-    if ((sender || 'own') === 'own') {
+    if ((sender || "own") === "own") {
       try {
         const customer = await Customer.findById(customer_id);
-        if (customer && customer.platform === 'line' && customer.platform_id) {
+        if (customer && customer.platform === "line" && customer.platform_id) {
           const lineMessages = [];
-          if ((message_type || 'text') === 'text') {
-            lineMessages.push({ type: 'text', text: message_text });
-          } else if (message_type === 'image') {
-            const backendUrl = (process.env.BACKEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+          if ((message_type || "text") === "text") {
+            lineMessages.push({ type: "text", text: message_text });
+          } else if (message_type === "image") {
+            const backendUrl = (
+              process.env.BACKEND_URL || "http://localhost:3000"
+            ).replace(/\/$/, "");
             const imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
             lineMessages.push({
-              type: 'image',
+              type: "image",
               originalContentUrl: imageAbsUrl,
               previewImageUrl: imageAbsUrl,
             });
@@ -315,67 +334,79 @@ router.post('/', auth, async (req, res) => {
               to: customer.platform_id,
               messages: lineMessages,
             });
-            console.log(`📤 ส่งข้อความไปยัง LINE (${customer.cus_name}) สำเร็จ`);
+            console.log(
+              `📤 ส่งข้อความไปยัง LINE (${customer.cus_name}) สำเร็จ`,
+            );
           }
         }
       } catch (lineErr) {
-        console.error('LINE push message error:', lineErr);
+        console.error("LINE push message error:", lineErr);
       }
     }
-
 
     // ส่ง real-time event ผ่าน Socket.IO
-    const io = req.app.get('io');
+    const io = req.app.get("io");
     if (io) {
       const senderSocketId = req.body.socket_id;
-      const msgPayload = { id: newId, customer_id, sender: sender || 'own', message_type: message_type || 'text', text: (message_type || 'text') === 'text' ? message_text : null, image: (message_type === 'image') ? `/uploads/chat-images/${message_text}` : null, created_at: getLocalDatetime() };
+      const msgPayload = {
+        id: newId,
+        customer_id,
+        sender: sender || "own",
+        message_type: message_type || "text",
+        text: (message_type || "text") === "text" ? message_text : null,
+        image:
+          message_type === "image"
+            ? `/uploads/chat-images/${message_text}`
+            : null,
+        created_at: getLocalDatetime(),
+      };
       if (senderSocketId) {
         // ส่งให้ทุกคนยกเว้นคนส่ง (เพราะคนส่งทำ optimistic update ไปแล้ว)
-        io.except(senderSocketId).emit('new-message', msgPayload);
+        io.except(senderSocketId).emit("new-message", msgPayload);
       } else {
-        io.emit('new-message', msgPayload);
+        io.emit("new-message", msgPayload);
       }
     }
 
-
     // บันทึก Log การส่งข้อความจาก dashboard
-    if ((sender || 'own') === 'own') {
+    if ((sender || "own") === "own") {
       try {
         const customer = await Customer.findById(customer_id);
         const customerName = customer?.cus_name || `Customer #${customer_id}`;
-        const adminName = req.user?.username || 'unknown';
-        const msgPreview = (message_type || 'text') === 'text'
-          ? (message_text.length > 50 ? message_text.substring(0, 50) + '...' : message_text)
-          : '(รูปภาพ)';
-
+        const adminName = req.user?.username || "unknown";
+        const msgPreview =
+          (message_type || "text") === "text"
+            ? message_text.length > 50
+              ? message_text.substring(0, 50) + "..."
+              : message_text
+            : "(รูปภาพ)";
 
         const logData = {
           user: adminName,
           avatar: null,
-          action: 'ส่งข้อความ',
+          action: "ส่งข้อความ",
           target: customerName,
           details: msgPreview,
         };
         const logResult = await Log.create(logData);
-        const io = req.app.get('io');
+        const io = req.app.get("io");
         if (io) {
-          io.emit('new-log', { ...logData, log_id: logResult.insertId, created_at: getLocalDatetime() });
+          io.emit("new-log", {
+            ...logData,
+            log_id: logResult.insertId,
+            created_at: getLocalDatetime(),
+          });
         }
       } catch (logErr) {
-        console.error('Chat log error:', logErr.message);
+        console.error("Chat log error:", logErr.message);
       }
     }
 
-
-    res.status(201).json({ message: 'ส่งข้อความสำเร็จ', id: newId });
+    res.status(201).json({ message: "ส่งข้อความสำเร็จ", id: newId });
   } catch (err) {
-    console.error('Send message error:', err);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการส่งข้อความ' });
+    console.error("Send message error:", err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการส่งข้อความ" });
   }
 });
 
-
 module.exports = router;
-
-
-

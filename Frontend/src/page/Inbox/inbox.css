@@ -394,6 +394,76 @@
   letter-spacing: 2px;
 }
 
+/* ==================== Message Timestamps ==================== */
+.msg-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+/* ข้อความต่อเนื่องในกลุ่มเดียวกัน (ไม่ใช่ข้อความแรก) → spacing แคบ */
+.msg-wrapper.msg-grouped {
+  margin-top: 2px;
+}
+
+/* Avatar spacer — รักษาการจัดเรียงเมื่อซ่อน avatar */
+.avatar-spacer {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.message {
+  align-items: flex-end;
+}
+
+.msg-time {
+  font-size: var(--fs-xs, 0.6875rem);
+  color: var(--text-muted, #9ba1a6);
+  white-space: nowrap;
+  align-self: flex-end;
+  flex-shrink: 0;
+  line-height: 1;
+  padding-bottom: 2px;
+  user-select: none;
+}
+
+.msg-time-left {
+  margin-right: 2px;
+}
+
+.msg-time-right {
+  margin-left: 2px;
+}
+
+/* ==================== Day Divider ==================== */
+.day-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0 8px;
+  width: 100%;
+}
+
+.day-divider::before,
+.day-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-light, #e4e6eb);
+}
+
+.day-divider-label {
+  font-size: var(--fs-xs, 0.6875rem);
+  color: var(--text-muted, #9ba1a6);
+  background: var(--bg-card, rgba(255, 255, 255, 0.7));
+  padding: 3px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-light, #e4e6eb);
+  white-space: nowrap;
+  user-select: none;
+}
+
 /* ==================== Input Bar ==================== */
 .custom-bottom-chat {
   background-color: var(--bg-main);

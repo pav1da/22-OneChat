@@ -5,6 +5,83 @@ import ChatList from "./chatList/ChatList";
 import EmojiPicker from "../../components/EmojiPicker";
 import "./inbox.css";
 
+// ===== Timestamp helpers =====
+const THAI_MONTHS = [
+  "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+  "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.",
+];
+
+/** แปลง timestamp เป็น Date object (รองรับทั้ง ISO string และ MySQL datetime) */
+const toDate = (ts) => {
+  if (!ts) return null;
+  if (ts instanceof Date) return ts;
+  // MySQL datetime เช่น "2026-04-10 14:35:00" → เปลี่ยนเป็น ISO
+  const str = String(ts).includes("T") ? ts : ts.replace(" ", "T");
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+/** Format เวลาเป็น HH:mm (ใช้ local timezone) */
+const formatTime = (ts) => {
+  const d = toDate(ts);
+  if (!d) return "";
+  return d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", hour12: false });
+};
+
+/** Format วันที่แบบไทย เช่น "10 เม.ย. 2026" */
+const formatDateThai = (ts) => {
+  const d = toDate(ts);
+  if (!d) return "";
+  const day = d.getDate();
+  const month = THAI_MONTHS[d.getMonth()];
+  const year = d.getFullYear() + 543; // พ.ศ.
+  return `${day} ${month} ${year}`;
+};
+
+/** ตรวจว่า 2 timestamp อยู่คนละวันหรือไม่ */
+const isDifferentDay = (ts1, ts2) => {
+  const d1 = toDate(ts1);
+  const d2 = toDate(ts2);
+  if (!d1 || !d2) return true;
+  return (
+    d1.getFullYear() !== d2.getFullYear() ||
+    d1.getMonth() !== d2.getMonth() ||
+    d1.getDate() !== d2.getDate()
+  );
+};
+
+/**
+ * ตรวจว่าควรแสดงเวลาหรือไม่
+ * — แสดงถ้า: ข้อความสุดท้ายของกลุ่ม หรือ ห่างจากข้อความถัดไป > 5 นาที หรือ sender เปลี่ยน
+ */
+const shouldShowTime = (currentMsg, nextMsg) => {
+  if (!nextMsg) return true; // ข้อความสุดท้าย → แสดงเสมอ
+  if (currentMsg.sender !== nextMsg.sender) return true; // sender เปลี่ยน
+  const d1 = toDate(currentMsg.created_at);
+  const d2 = toDate(nextMsg.created_at);
+  if (!d1 || !d2) return true;
+  return Math.abs(d2 - d1) > 5 * 60 * 1000; // ห่างกัน > 5 นาที
+};
+
+/**
+ * ตรวจว่าข้อความนี้เป็นข้อความ "แรก" ของกลุ่มหรือไม่
+ * (sender เปลี่ยน หรือ ห่างจากข้อความก่อนหน้า > 5 นาที)
+ */
+const isFirstInGroup = (currentMsg, prevMsg) => {
+  if (!prevMsg) return true;
+  if (currentMsg.sender !== prevMsg.sender) return true;
+  const d1 = toDate(prevMsg.created_at);
+  const d2 = toDate(currentMsg.created_at);
+  if (!d1 || !d2) return true;
+  return Math.abs(d2 - d1) > 5 * 60 * 1000;
+};
+
+/**
+ * ตรวจว่าข้อความนี้เป็นข้อความ "สุดท้าย" ของกลุ่มหรือไม่
+ * (เหมือน shouldShowTime — ถ้าข้อความถัดไปเป็นคนละ sender หรือห่าง > 5 นาที)
+ */
+const isLastInGroup = (currentMsg, nextMsg) => shouldShowTime(currentMsg, nextMsg);
+
 const EMOJI_REGEX =
   /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji}\u200D\p{Emoji}|\uFE0F|\u200D|\s)+$/u;
 const isEmojiOnly = (text) => {
@@ -489,7 +566,7 @@ const Inbox = ({ currentUser }) => {
             {selectedCustomer && (
               <>
                 <img
-                  src={selectedCustomer.img}
+                  src={selectedCustomer.img || undefined}
                   className="rounded-circle"
                   style={{ width: "38px", height: "38px", objectFit: "cover" }}
                   alt={selectedCustomer.name}
@@ -533,7 +610,7 @@ const Inbox = ({ currentUser }) => {
         {/* Messages */}
         <div
           ref={chatAreaRef}
-          className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2 chat-messages-area"
+          className="flex-grow-1 overflow-y-auto d-flex flex-column chat-messages-area"
           onScroll={(e) => {
             if (e.currentTarget.scrollTop === 0 && hasMore) {
               const prev = e.currentTarget.scrollHeight;
@@ -563,77 +640,124 @@ const Inbox = ({ currentUser }) => {
               </button>
             </div>
           )}
-          {chatMessages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`message ${msg.sender === "own" ? "own" : ""}`}
-            >
-              {msg.sender === "customer" && (
-                <img
-                  src={selectedCustomer?.img}
-                  alt="Customer"
-                  loading="lazy"
-                  decoding="async"
-                />
-              )}
-              {msg.message_type === "sticker" ? (
-                <div className="sticker">
-                  <img
-                    src={msg.image}
-                    alt="sticker"
-                    loading="lazy"
-                    decoding="async"
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      objectFit: "contain",
-                    }}
-                  />
+          {chatMessages.map((msg, idx) => {
+            const prevMsg = idx > 0 ? chatMessages[idx - 1] : null;
+            const nextMsg = idx < chatMessages.length - 1 ? chatMessages[idx + 1] : null;
+            const showDayDivider = !prevMsg || isDifferentDay(prevMsg.created_at, msg.created_at);
+            const showTime = shouldShowTime(msg, nextMsg);
+            const timeStr = formatTime(msg.created_at);
+            const firstInGroup = showDayDivider || isFirstInGroup(msg, prevMsg);
+            const lastInGroup = isLastInGroup(msg, nextMsg);
+            // แสดง avatar เฉพาะข้อความสุดท้ายของกลุ่ม (แบบ LINE)
+            const showAvatar = lastInGroup;
+
+            // CSS class สำหรับจัด spacing
+            const wrapperCls = [
+              "msg-wrapper",
+              !firstInGroup ? "msg-grouped" : "",
+              lastInGroup ? "msg-group-last" : "",
+            ].filter(Boolean).join(" ");
+
+            return (
+              <div key={msg.id} className={wrapperCls}>
+                {/* Day divider */}
+                {showDayDivider && msg.created_at && (
+                  <div className="day-divider">
+                    <span className="day-divider-label">{formatDateThai(msg.created_at)}</span>
+                  </div>
+                )}
+
+                <div className={`message ${msg.sender === "own" ? "own" : ""}`}>
+                  {/* Customer avatar หรือ spacer */}
+                  {msg.sender === "customer" && (
+                    showAvatar ? (
+                      <img
+                        src={selectedCustomer?.img || undefined}
+                        alt="Customer"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="avatar-spacer" />
+                    )
+                  )}
+
+                  {/* Timestamp ฝั่งซ้ายของ bubble (สำหรับ own) */}
+                  {msg.sender === "own" && showTime && timeStr && (
+                    <span className="msg-time msg-time-left">{timeStr}</span>
+                  )}
+
+                  {msg.message_type === "sticker" ? (
+                    <div className="sticker">
+                      <img
+                        src={msg.image}
+                        alt="sticker"
+                        loading="lazy"
+                        decoding="async"
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                          objectFit: "contain",
+                        }}
+                      />
+                    </div>
+                  ) : msg.image ? (
+                    <div className="chat-image">
+                      <img
+                        src={msg.image}
+                        alt="upload"
+                        loading="lazy"
+                        decoding="async"
+                        style={{
+                          maxWidth: "260px",
+                          maxHeight: "360px",
+                          borderRadius: "10px",
+                          objectFit: "cover",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => window.open(msg.image, "_blank")}
+                      />
+                    </div>
+                  ) : isLineEmojiOnly(msg.text) ? (
+                    <div className="emoji-only">
+                      <span>{renderTextWithLineEmoji(msg.text, 40)}</span>
+                    </div>
+                  ) : isEmojiOnly(msg.text) ? (
+                    <div className="emoji-only">
+                      <span>{msg.text}</span>
+                    </div>
+                  ) : (
+                    <div className="texts">
+                      <p className={msg.sender === "own" ? "own" : ""}>
+                        {hasLineEmoji(msg.text)
+                          ? renderTextWithLineEmoji(msg.text)
+                          : msg.text}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Timestamp ฝั่งขวาของ bubble (สำหรับ customer) */}
+                  {msg.sender === "customer" && showTime && timeStr && (
+                    <span className="msg-time msg-time-right">{timeStr}</span>
+                  )}
+
+                  {/* Own avatar หรือ spacer */}
+                  {msg.sender === "own" && (
+                    showAvatar ? (
+                      <img
+                        src={currentUser?.image || undefined}
+                        alt="Admin"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="avatar-spacer" />
+                    )
+                  )}
                 </div>
-              ) : msg.image ? (
-                <div className="chat-image">
-                  <img
-                    src={msg.image}
-                    alt="upload"
-                    loading="lazy"
-                    decoding="async"
-                    style={{
-                      maxWidth: "260px",
-                      maxHeight: "360px",
-                      borderRadius: "10px",
-                      objectFit: "cover",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => window.open(msg.image, "_blank")}
-                  />
-                </div>
-              ) : isLineEmojiOnly(msg.text) ? (
-                <div className="emoji-only">
-                  <span>{renderTextWithLineEmoji(msg.text, 40)}</span>
-                </div>
-              ) : isEmojiOnly(msg.text) ? (
-                <div className="emoji-only">
-                  <span>{msg.text}</span>
-                </div>
-              ) : (
-                <div className="texts">
-                  <p className={msg.sender === "own" ? "own" : ""}>
-                    {hasLineEmoji(msg.text)
-                      ? renderTextWithLineEmoji(msg.text)
-                      : msg.text}
-                  </p>
-                </div>
-              )}
-              {msg.sender === "own" && (
-                <img
-                  src={currentUser?.image}
-                  alt="Admin"
-                  loading="lazy"
-                  decoding="async"
-                />
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
           <div ref={endRef}></div>
         </div>
 
@@ -785,7 +909,7 @@ const Inbox = ({ currentUser }) => {
             {/* Profile image */}
             <div className="detail-avatar-wrapper">
               <img
-                src={selectedCustomer.img}
+                src={selectedCustomer.img || undefined}
                 className="detail-avatar"
                 alt={selectedCustomer.name}
               />

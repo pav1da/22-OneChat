@@ -4,13 +4,16 @@ const path = require("path");
 const db = require("../config/db.js");
 const Log = require("../models/log.js");
 const Notification = require("../models/notification.js");
+const cloudinary = require("../config/cloudinary");
 
 const channelAccessToken = process.env.Channel_ID;
 const channelSecret = process.env.channelSecret;
 
 // สร้าง Client ของ LINE (v10 API)
 const client = new line.messagingApi.MessagingApiClient({ channelAccessToken });
-const blobClient = new line.messagingApi.MessagingApiBlobClient({ channelAccessToken });
+const blobClient = new line.messagingApi.MessagingApiBlobClient({
+  channelAccessToken,
+});
 
 // Helper: สร้างวันที่เวลาแบบ MySQL format
 const getLocalDatetime = () => {
@@ -28,9 +31,12 @@ exports.handleWebhook = async (req, res) => {
   // ถ้ามีการตั้งค่าไว้แต่ทุก channel ถูกปิด → ตอบ 200 แต่ไม่ประมวลผล
   try {
     const [lineChannels] = await db.query(
-      "SELECT status FROM channels WHERE platform = 'line'"
+      "SELECT status FROM channels WHERE platform = 'line'",
     );
-    if (lineChannels.length > 0 && !lineChannels.some(c => c.status === 'active')) {
+    if (
+      lineChannels.length > 0 &&
+      !lineChannels.some((c) => c.status === "active")
+    ) {
       console.log("⏸️ LINE channel ถูกปิดทั้งหมด — ไม่ประมวลผล");
       return res.status(200).send("OK");
     }
@@ -69,13 +75,13 @@ async function handleEvent(event, io) {
 
       // ค้นหา channel_id ของ LINE ที่ active อยู่
       const [lineChannels] = await db.query(
-        "SELECT id FROM channels WHERE platform = 'line' AND status = 'active' LIMIT 1"
+        "SELECT id FROM channels WHERE platform = 'line' AND status = 'active' LIMIT 1",
       );
       const channelId = lineChannels.length > 0 ? lineChannels[0].id : null;
 
       await db.query(
         `INSERT INTO customers (platform, platform_id, cus_name, cus_picture, channel_id) VALUES ('line', ?, ?, ?, ?)`,
-        [userId, displayName, pictureUrl, channelId]
+        [userId, displayName, pictureUrl, channelId],
       );
       const [rows] = await db.query(
         "SELECT cus_id FROM customers WHERE platform = 'line' AND platform_id = ?",
@@ -92,7 +98,10 @@ async function handleEvent(event, io) {
           cus_picture: pictureUrl,
           platform: "line",
           platform_id: userId,
-          first_message: event.type === "message" && event.message.type === "text" ? event.message.text : "",
+          first_message:
+            event.type === "message" && event.message.type === "text"
+              ? event.message.text
+              : "",
         });
       }
     } else {
@@ -103,15 +112,22 @@ async function handleEvent(event, io) {
 
       // อัพเดทโปรไฟล์ทุก 24 ชม. (fire-and-forget ไม่ block)
       const lastUpdate = new Date(existingRows[0].updated_at);
-      const hoursSinceUpdate = (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60);
+      const hoursSinceUpdate =
+        (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60);
       if (hoursSinceUpdate >= 24) {
-        refreshCustomerProfile(customerId, userId, io).then(({ name, pic }) => {
-          displayName = name;
-          pictureUrl = pic;
-          if (io) {
-            io.emit("update-customer", { cus_id: customerId, cus_name: name, cus_picture: pic });
-          }
-        }).catch(() => {});
+        refreshCustomerProfile(customerId, userId, io)
+          .then(({ name, pic }) => {
+            displayName = name;
+            pictureUrl = pic;
+            if (io) {
+              io.emit("update-customer", {
+                cus_id: customerId,
+                cus_name: name,
+                cus_picture: pic,
+              });
+            }
+          })
+          .catch(() => {});
       }
     }
 
@@ -125,10 +141,15 @@ async function handleEvent(event, io) {
         // LINE ส่ง emojis array มาพร้อม text ที่มี placeholder character
         if (event.message.emojis && event.message.emojis.length > 0) {
           // ต้อง replace จากท้ายไปหน้าเพื่อไม่ให้ index เลื่อน
-          const sortedEmojis = [...event.message.emojis].sort((a, b) => b.index - a.index);
+          const sortedEmojis = [...event.message.emojis].sort(
+            (a, b) => b.index - a.index,
+          );
           for (const em of sortedEmojis) {
             const marker = `[line-emoji:${em.productId}:${em.emojiId}]`;
-            text = text.substring(0, em.index) + marker + text.substring(em.index + em.length);
+            text =
+              text.substring(0, em.index) +
+              marker +
+              text.substring(em.index + em.length);
           }
           console.log(`แปลง LINE emoji แล้ว: ${text}`);
         }
@@ -153,11 +174,19 @@ async function handleEvent(event, io) {
         // Fire-and-forget: บันทึก Log + Notification แบบ async (ไม่ block)
         const plainText = text.replace(/\[line-emoji:[^\]]+\]/g, "(emoji)");
         processLogAndNotification(io, {
-          customerId, displayName, pictureUrl,
+          customerId,
+          displayName,
+          pictureUrl,
           logAction: "ส่งข้อความเข้ามา",
-          logDetails: plainText.length > 50 ? plainText.substring(0, 50) + "..." : plainText,
+          logDetails:
+            plainText.length > 50
+              ? plainText.substring(0, 50) + "..."
+              : plainText,
           msgType: "text",
-          msgContent: plainText.length > 30 ? plainText.substring(0, 30) + "..." : plainText,
+          msgContent:
+            plainText.length > 30
+              ? plainText.substring(0, 30) + "..."
+              : plainText,
         });
       }
 
@@ -172,42 +201,53 @@ async function handleEvent(event, io) {
         }
         const buffer = Buffer.concat(chunks);
 
-        const filename = `${messageId}.jpg`;
-        const filepath = path.join(
-          __dirname,
-          "../uploads/chat-images",
-          filename,
-        );
+        // --- ส่วนที่แก้ไข: อัปโหลดเข้า Cloudinary แทนการเขียนไฟล์ลง Disk ---
+        const uploadResponse = await new Promise((resolve, reject) => {
+          cloudinary.uploader
+            .upload_stream(
+              {
+                folder: "chat-images", // ชื่อโฟลเดอร์ใน Cloudinary
+                public_id: messageId, // ใช้ ID จาก LINE เป็นชื่อไฟล์
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              },
+            )
+            .end(buffer);
+        });
 
-        fs.writeFileSync(filepath, buffer);
-        console.log(`บันทึกรูปภาพสำเร็จ: ${filename}`);
+        const secureUrl = uploadResponse.secure_url; // นี่คือ URL จาก Cloudinary
+        console.log(`อัปโหลดรูปไป Cloudinary สำเร็จ: ${secureUrl}`);
 
+        // บันทึก URL ลง Database แทนชื่อไฟล์เดิม
         const msgSql =
           "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', 'image', ?)";
-        const [result] = await db.query(msgSql, [customerId, filename]);
+        const [result] = await db.query(msgSql, [customerId, secureUrl]);
 
-        // ส่ง real-time ไป Frontend ทันที
+        // ส่ง real-time ไป Frontend
         if (io) {
           io.emit("new-message", {
             id: result.insertId,
             customer_id: customerId,
             sender: "customer",
             text: null,
-            image: `/uploads/chat-images/${filename}`,
+            image: secureUrl, // ใช้ URL จาก Cloudinary ได้เลย
             created_at: getLocalDatetime(),
           });
         }
 
-        // Fire-and-forget: Log + Notification
+        // Log + Notification
         processLogAndNotification(io, {
-          customerId, displayName, pictureUrl,
+          customerId,
+          displayName,
+          pictureUrl,
           logAction: "ส่งรูปภาพเข้ามา",
-          logDetails: filename,
+          logDetails: "Cloudinary Image",
           msgType: "image",
           msgContent: "รูปภาพ",
         });
       }
-     
 
       // Sticker (สติกเกอร์)
       else if (event.message.type === "sticker") {
@@ -234,7 +274,9 @@ async function handleEvent(event, io) {
 
         // Fire-and-forget: Log + Notification
         processLogAndNotification(io, {
-          customerId, displayName, pictureUrl,
+          customerId,
+          displayName,
+          pictureUrl,
           logAction: "ส่งสติกเกอร์เข้ามา",
           logDetails: `Sticker ID: ${stickerId}`,
           msgType: "sticker",
@@ -254,14 +296,25 @@ async function refreshCustomerProfile(customerId, lineUserId) {
   const pic = profile.pictureUrl || "";
   await db.query(
     "UPDATE customers SET cus_name = ?, cus_picture = ?, updated_at = NOW() WHERE cus_id = ?",
-    [name, pic, customerId]
+    [name, pic, customerId],
   );
   console.log(`Profile refreshed: ${name}`);
   return { name, pic };
 }
 
 // Helper: บันทึก Log + สร้าง/อัพเดท Notification แบบ async (fire-and-forget)
-function processLogAndNotification(io, { customerId, displayName, pictureUrl, logAction, logDetails, msgType, msgContent }) {
+function processLogAndNotification(
+  io,
+  {
+    customerId,
+    displayName,
+    pictureUrl,
+    logAction,
+    logDetails,
+    msgType,
+    msgContent,
+  },
+) {
   (async () => {
     // บันทึก Log
     try {
@@ -274,7 +327,11 @@ function processLogAndNotification(io, { customerId, displayName, pictureUrl, lo
       };
       const logResult = await Log.create(logData);
       if (io) {
-        io.emit("new-log", { ...logData, log_id: logResult.insertId, created_at: getLocalDatetime() });
+        io.emit("new-log", {
+          ...logData,
+          log_id: logResult.insertId,
+          created_at: getLocalDatetime(),
+        });
       }
     } catch (logErr) {
       console.error("Chat log error:", logErr.message);
@@ -286,57 +343,71 @@ function processLogAndNotification(io, { customerId, displayName, pictureUrl, lo
       const newNotifications = [];
       const updatedNotifications = [];
 
-      await Promise.all(allUsers.map(async (user) => {
-        const receiverId = user.emp_id;
-        const existingNotif = await Notification.findUnreadByCustomer(customerId, receiverId);
+      await Promise.all(
+        allUsers.map(async (user) => {
+          const receiverId = user.emp_id;
+          const existingNotif = await Notification.findUnreadByCustomer(
+            customerId,
+            receiverId,
+          );
 
-        if (existingNotif) {
-          const newMessage = {
-            type: msgType,
-            content: msgContent,
-            timestamp: getLocalDatetime()
-          };
-          await Notification.updateWithNewMessage(existingNotif.id, newMessage);
+          if (existingNotif) {
+            const newMessage = {
+              type: msgType,
+              content: msgContent,
+              timestamp: getLocalDatetime(),
+            };
+            await Notification.updateWithNewMessage(
+              existingNotif.id,
+              newMessage,
+            );
 
-          const updatedNotif = await Notification.getById(existingNotif.id);
-          updatedNotif.customer_name = displayName;
-          updatedNotif.customer_avatar = pictureUrl;
-          updatedNotifications.push(updatedNotif);
-        } else {
-          const initialMessages = [{
-            type: msgType,
-            content: msgContent,
-            timestamp: getLocalDatetime()
-          }];
+            const updatedNotif = await Notification.getById(existingNotif.id);
+            updatedNotif.customer_name = displayName;
+            updatedNotif.customer_avatar = pictureUrl;
+            updatedNotifications.push(updatedNotif);
+          } else {
+            const initialMessages = [
+              {
+                type: msgType,
+                content: msgContent,
+                timestamp: getLocalDatetime(),
+              },
+            ];
 
-          const notifData = {
-            text: JSON.stringify(initialMessages),
-            sender_id: null,
-            receiver_id: receiverId,
-            type: "customer_message",
-            ref_id: customerId,
-            ref_type: "customer_message"
-          };
+            const notifData = {
+              text: JSON.stringify(initialMessages),
+              sender_id: null,
+              receiver_id: receiverId,
+              type: "customer_message",
+              ref_id: customerId,
+              ref_type: "customer_message",
+            };
 
-          const notifResult = await Notification.create(notifData);
-          newNotifications.push({
-            ...notifData,
-            id: notifResult.insertId,
-            created_at: getLocalDatetime(),
-            sender_name: displayName,
-            customer_name: displayName,
-            customer_avatar: pictureUrl
-          });
-        }
-      }));
+            const notifResult = await Notification.create(notifData);
+            newNotifications.push({
+              ...notifData,
+              id: notifResult.insertId,
+              created_at: getLocalDatetime(),
+              sender_name: displayName,
+              customer_name: displayName,
+              customer_avatar: pictureUrl,
+            });
+          }
+        }),
+      );
 
       if (io) {
         if (newNotifications.length > 0) {
-          console.log(`📢 Emitting new-notifications: ${newNotifications.length} entries`);
+          console.log(
+            `📢 Emitting new-notifications: ${newNotifications.length} entries`,
+          );
           io.emit("new-notifications", newNotifications);
         }
         if (updatedNotifications.length > 0) {
-          console.log(`📢 Emitting update-notifications: ${updatedNotifications.length} entries`);
+          console.log(
+            `📢 Emitting update-notifications: ${updatedNotifications.length} entries`,
+          );
           io.emit("update-notifications", updatedNotifications);
         }
       }
