@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Modal, Container, Form, Row, Col, Card, Dropdown } from "react-bootstrap";
+import {
+  Button,
+  Modal,
+  Container,
+  Form,
+  Row,
+  Col,
+  Card,
+  Dropdown,
+} from "react-bootstrap";
 import { io } from "socket.io-client";
 import "./notes.css";
 
@@ -14,10 +23,10 @@ function Dashboard() {
   const [notes, setNotes] = useState([]);
 
   // การเรียงลำดับ: 'newest' = ใหม่ไปเก่า, 'oldest' = เก่าไปใหม่
-  const [sortOrder, setSortOrder] = useState('newest');
+  const [sortOrder, setSortOrder] = useState("newest");
 
   // คำค้นหา
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
 
   // state สำหรับ Form ตอนสร้างหรือแก้ไขโน้ต
   const [newNote, setNewNote] = useState({ user: "", content: "" });
@@ -51,11 +60,13 @@ function Dashboard() {
     });
 
     socket.on("updated_note", (updatedNote) => {
-      setNotes((prev) => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
+      setNotes((prev) =>
+        prev.map((n) => (n.id === updatedNote.id ? updatedNote : n)),
+      );
     });
 
     socket.on("deleted_note", ({ id }) => {
-      setNotes((prev) => prev.filter(n => n.id !== id));
+      setNotes((prev) => prev.filter((n) => n.id !== id));
     });
 
     return () => {
@@ -89,15 +100,25 @@ function Dashboard() {
           // โหมดแก้ไข
           await fetch(`/api/notes/${editingId}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ text: newNote.content })
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ text: newNote.content }),
           });
         } else {
           // สร้างใหม่
           await fetch("/api/notes", {
             method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ customer_id: null, text: newNote.content, author: newNote.user })
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              customer_id: null,
+              text: newNote.content,
+              author: newNote.user,
+            }),
           });
         }
         handleClose();
@@ -124,24 +145,39 @@ function Dashboard() {
 
   // จัดรูปแบบวันที่-เวลา
   const formatDateTime = (dateStr) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr.replace(' ', 'T'));
-    if (isNaN(d)) return '';
-    return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
-      + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    if (!dateStr) return "";
+    const d = new Date(dateStr.replace(" ", "T"));
+    if (isNaN(d)) return "";
+    return (
+      d.toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }) +
+      " " +
+      d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })
+    );
   };
 
   // กรองและเรียงลำดับโน้ต
   const filteredNotes = notes
-    .filter(n => !searchText || (n.content || '').toLowerCase().includes(searchText.toLowerCase()) || (n.author || '').toLowerCase().includes(searchText.toLowerCase()))
+    .filter(
+      (n) =>
+        !searchText ||
+        (n.content || "").toLowerCase().includes(searchText.toLowerCase()) ||
+        (n.author || "").toLowerCase().includes(searchText.toLowerCase()),
+    )
     .sort((a, b) => {
       const da = new Date(a.created_at || 0);
       const db = new Date(b.created_at || 0);
-      return sortOrder === 'newest' ? db - da : da - db;
+      return sortOrder === "newest" ? db - da : da - db;
     });
 
   // จำนวนช่องใน Grid ทั้งหมด (มีทั้งโน้ตจริงและช่องว่าง)
-  const totalCells = Math.max(20, filteredNotes.length + (4 - (filteredNotes.length % 4 || 4)));
+  const totalCells = Math.max(
+    20,
+    filteredNotes.length + (4 - (filteredNotes.length % 4 || 4)),
+  );
 
   // เตรียมช่อง Grid แต่ละช่อง (ถ้า index มีโน้ต จะโชว์โน้ต ถ้าไม่มีก็ว่าง)
   const cells = Array.from({ length: totalCells }, (_, index) => {
@@ -166,10 +202,16 @@ function Dashboard() {
                 }}
                 onClick={() => {
                   if (note.customer_id) {
-                    navigate("/inbox", { state: { customerId: note.customer_id } });
+                    navigate("/inbox", {
+                      state: { customerId: note.customer_id },
+                    });
                   }
                 }}
-                title={note.customer_id ? "คลิกเพื่อไปยังหน้าแชทของลูกค้ารายนี้" : "โน้ตนี้ไม่ได้ผูกกับลูกค้า"}
+                title={
+                  note.customer_id
+                    ? "คลิกเพื่อไปยังหน้าแชทของลูกค้ารายนี้"
+                    : "โน้ตนี้ไม่ได้ผูกกับลูกค้า"
+                }
               >
                 <Card.Text
                   className="fs-6"
@@ -224,12 +266,24 @@ function Dashboard() {
                     <div style={{ fontSize: "0.75rem", fontWeight: "600" }}>
                       {note.user || "ไม่ระบุ"}
                     </div>
-                    <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                    <div
+                      style={{
+                        fontSize: "0.65rem",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
                       สร้างโดย: {note.author || "-"}
                     </div>
                     {note.created_at && (
-                      <div style={{ fontSize: "0.6rem", color: "var(--text-secondary)", marginTop: "1px" }}>
-                        <i className="bi bi-clock me-1"></i>{formatDateTime(note.created_at)}
+                      <div
+                        style={{
+                          fontSize: "0.6rem",
+                          color: "var(--text-secondary)",
+                          marginTop: "1px",
+                        }}
+                      >
+                        <i className="bi bi-clock me-1"></i>
+                        {formatDateTime(note.created_at)}
                       </div>
                     )}
                   </div>
@@ -277,7 +331,7 @@ function Dashboard() {
   });
 
   return (
-    <div className="kanit-regular px-4">
+    <div className="kanit-regular notes-container">
       {/* Modal สำหรับสร้าง/แก้ไขโน้ต */}
       <Modal
         show={show}
@@ -345,19 +399,19 @@ function Dashboard() {
           </Button>
         </Modal.Footer>
       </Modal>
-     
+
       {/* Top controls: left = filter pills, right = compact search */}
       <div className="dashboard-top d-flex align-items-center justify-content-between mb-3 px-1">
         <div className="d-flex gap-2 align-items-center">
           <button
-            className={`nav-search${sortOrder === 'newest' ? ' active' : ''}`}
-            onClick={() => setSortOrder('newest')}
+            className={`nav-search${sortOrder === "newest" ? " active" : ""}`}
+            onClick={() => setSortOrder("newest")}
           >
             ล่าสุด
           </button>
           <button
-            className={`nav-search${sortOrder === 'oldest' ? ' active' : ''}`}
-            onClick={() => setSortOrder('oldest')}
+            className={`nav-search${sortOrder === "oldest" ? " active" : ""}`}
+            onClick={() => setSortOrder("oldest")}
           >
             เก่าสุด
           </button>
@@ -377,7 +431,7 @@ function Dashboard() {
       </div>
       {/* โซน Grid แสดงโน้ต */}
       <Container fluid>
-        <div style={{ maxHeight: "85vh", overflowY: "auto" }}>
+        <div style={{ overflowY: "auto", paddingBottom: "12px" }}>
           <Row className="g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4">
             {cells}
           </Row>

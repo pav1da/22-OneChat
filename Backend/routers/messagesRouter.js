@@ -319,10 +319,16 @@ router.post("/", auth, async (req, res) => {
           if ((message_type || "text") === "text") {
             lineMessages.push({ type: "text", text: message_text });
           } else if (message_type === "image") {
-            const backendUrl = (
-              process.env.BACKEND_URL || "http://localhost:3000"
-            ).replace(/\/$/, "");
-            const imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
+            let imageAbsUrl = message_text;
+
+            // เช็คเผื่อกรณีเป็นรูปเก่าในเครื่อง
+            if (!message_text.startsWith("http")) {
+              const backendUrl = (
+                process.env.BACKEND_URL || "http://localhost:3000"
+              ).replace(/\/$/, "");
+              imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
+            }
+
             lineMessages.push({
               type: "image",
               originalContentUrl: imageAbsUrl,
@@ -356,7 +362,9 @@ router.post("/", auth, async (req, res) => {
         text: (message_type || "text") === "text" ? message_text : null,
         image:
           message_type === "image"
-            ? `/uploads/chat-images/${message_text}`
+            ? message_text.startsWith("http")
+              ? message_text
+              : `/uploads/chat-images/${message_text}`
             : null,
         created_at: getLocalDatetime(),
       };

@@ -1,5 +1,4 @@
 import "./chatList.css";
-import { Card } from "react-bootstrap";
 import React from "react";
 
 const STATUS = {
@@ -15,32 +14,28 @@ const ChatList = ({
   unreadCounts = {},
 }) => {
   return (
-    <div className="overflow-y-auto flex-grow-1 pt-3">
-      <Card className="custom-card-chat">
+    <div className="overflow-y-auto flex-grow-1">
+      <div className="chatlist-container">
         {customers.map((cus) => {
           const isSelected = cus.id === selectedChatId;
           const unread = unreadCounts[cus.id] || 0;
 
+          // Mock Data if not exist
+          // const staffs = cus.staff || [];
+          // const tags = cus.tags || [];
+
           return (
-            <Card.Body
-              onClick={() => onChatSelect(cus.id)}
-              className={`${isSelected ? "selected-chat-item" : ""}`}
+            <div
               key={cus.id}
+              onClick={() => onChatSelect(cus.id)}
+              className={`chatlist-card ${isSelected ? "selected-chat-item" : ""}`}
             >
-              <div className="d-flex align-items-center">
-                {/* Profile Picture with unread badge */}
-                <div
-                  className="position-relative me-3"
-                  style={{ flexShrink: 0 }}
-                >
+              <div className="chatlist-card-main">
+                <div className="position-relative" style={{ flexShrink: 0 }}>
                   <img
                     src={cus.img}
-                    className="rounded-circle custom-img"
-                    style={{
-                      width: "45px",
-                      height: "45px",
-                      objectFit: "cover",
-                    }}
+                    alt={cus.name}
+                    className="chatlist-avatar"
                   />
                   {unread > 0 && (
                     <span className="unread-badge">
@@ -49,59 +44,88 @@ const ChatList = ({
                   )}
                 </div>
 
-                <div
-                  className="d-flex flex-column gap-2 flex-grow-1 chat-text-container"
-                  style={{ minWidth: 0 }}
-                >
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr auto",
-                      alignItems: "baseline",
-                      gap: "6px",
-                    }}
-                  >
-                    <span className="text-truncate username-text">
-                      {cus.name}
-                    </span>
-                  </div>
-                  <p className="custom-text text-truncate mb-0">{cus.last}</p>
-                </div>
-              </div>
-              <hr className="my-2"/>
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center gap-2">
-                  <img src="" /* {emp.img} รูปพนักงานที่รับผิดชอบ อาจจะมีหลายคน ขึ้นตามคนที่เข้ามาตอบไรงี้ */
-                    className="rounded-circle custom-img"
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      objectFit: "cover",
-                      backgroundColor: "black",
-                    }}/>
-                </div>
-                <div>
-                  <span
-                    className="custom-badge"
-                    style={{
-                      backgroundColor:
-                        cus.status === STATUS.DONE
-                          ? "#16a34a"
-                          : cus.status === STATUS.IN_PROGRESS
+                <div className="chatlist-info">
+                  <div className="chatlist-top">
+                    <span className="chatlist-name">{cus.name}</span>
+                    <span
+                      className="chatlist-status"
+                      style={{
+                        backgroundColor:
+                          cus.status === STATUS.DONE
+                            ? "#16a34a"
+                            : cus.status === STATUS.IN_PROGRESS
                             ? "#d97706"
                             : "#6b7280",
-                      color: "#ffffff",
-                      borderRadius: "12px",
-                    }}
-                  >
-                    {cus.status}
-                  </span>
+                        color: "#ffffff",
+                      }}
+                    >
+                      {cus.status}
+                    </span>
+                  </div>
+                  <div className="chatlist-bottom">
+                    <p className="chatlist-last">{cus.last}</p>
+                    <span className="chatlist-time">03:47</span> {/* Mock Time like image */}
+                  </div>
                 </div>
               </div>
-            </Card.Body>
+
+              {/* Bottom Section */}
+              <div className="chatlist-card-footer">
+                <div className="staff-group">
+                  <img
+                    src=""
+                    alt="staff"
+                    style={{ backgroundColor: "black" }}
+                    className="staff-avatar"
+                  />
+                  {/* Dynamic map example */}
+                  {/* {staffs.length > 0 &&
+                    staffs.map((staff, i) => (
+                      <img
+                        key={i}
+                        src={staff.avatar || staff.img || staff}
+                        alt="staff"
+                        title={staff.name || "Staff"}
+                        className="staff-avatar"
+                      />
+                    ))} */}
+                </div>
+                <div className="tag-group">
+                  {/* Static mocks added by user */}
+                  <span className="tag-badge badge-red">Urgent</span>
+                  <span className="tag-badge badge-purple">VIP</span>
+                  <span className="tag-badge badge-green">Active</span>
+                  {/* Mock a long tag rendering as dot */}
+                  <span className="tag-badge badge-gray tag-dot" title="Demo - Do not delete"></span>
+                  
+                  {/* Dynamic map example */}
+                  {/* {tags.length > 0 &&
+                    tags.map((tag, i) => {
+                      const tagLabel = typeof tag === "string" ? tag : tag.label;
+                      const type = tagLabel ? tagLabel.toLowerCase() : "";
+                      let badgeClass = "badge-gray";
+                      if (type.includes("urgent")) badgeClass = "badge-red";
+                      else if (type.includes("vip")) badgeClass = "badge-purple";
+                      else if (type.includes("active")) badgeClass = "badge-green";
+
+                      const isLong = tagLabel.length > 12;
+
+                      return (
+                        <span 
+                          key={i} 
+                          className={`tag-badge ${badgeClass} ${isLong ? 'tag-dot' : ''}`}
+                          title={tagLabel}
+                        >
+                          {!isLong && tagLabel}
+                        </span>
+                      );
+                    })} */}
+                </div>
+              </div>
+            </div>
           );
         })}
-      </Card>
+      </div>
     </div>
   );
 };

@@ -1,291 +1,288 @@
-/* Sidebar Container */
-.sidebar-container {
-  width: 210px;
+:root {
+  --saas-border: #e5e7eb;
+  --saas-bg: #ffffff;
+  --saas-hover: #f3f4f6;
+  --saas-text-dark: #111827;
+  --saas-text-muted: #6b7280;
+  --saas-active-bg: #f3f4f6; /* Gray background for active item */
+}
+
+/* ================= Wrapper (Floating Sidebar Style) ================= */
+.saas-sidebar-container {
   height: 100vh;
+  padding: 12px;
   background-color: var(--bg-main);
-  border-right: 1px solid var(--border-light);
   display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 1000;
-  box-sizing: border-box;
   flex-shrink: 0;
 }
 
-.sidebar-container::-webkit-scrollbar {
-  width: 0px;
+.saas-sidebar-inner {
+  width: 240px;
+  background-color: var(--saas-bg);
+  border-radius: 16px;
+  border: 1px solid var(--saas-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
-/* User Profile Header */
-.sidebar-header {
+/* ================= 1. Header (Profile) ================= */
+.saas-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 14px 12px;
-}
-
-.sidebar-user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sidebar-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.sidebar-username {
-  font-size: var(--fs-base);
-  font-weight: 600;
-  color: var(--text-main);
-  cursor: pointer;
-}
-
-
-
-/* ===== Nav Items ===== */
-.sidebar-nav {
-  padding: 4px 8px;
-}
-
-.sidebar-nav-item {
-  display: flex !important;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px !important;
-  border-radius: 8px;
-  color: var(--text-main) !important;
-  font-size: var(--fs-base);
-  font-weight: 400;
-  text-decoration: none !important;
-  transition: all 0.15s ease;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.sidebar-nav-item i {
-  font-size: var(--fs-base);
-  width: 20px;
-  text-align: center;
-  flex-shrink: 0;
-  color: var(--text-secondary);
-}
-
-.sidebar-nav-item:hover {
-  background-color: var(--primary-light);
-  color: var(--primary-color) !important;
-}
-
-.sidebar-nav-item:hover i {
-  color: var(--primary-color);
-}
-
-.sidebar-nav-item.active {
-  background-color: var(--primary-light);
-  color: var(--primary-color) !important;
-  font-weight: 500;
-}
-
-.sidebar-nav-item.active i {
-  color: var(--primary-color);
-}
-
-/* ===== Notification Badge ===== */
-.sidebar-notif-badge {
-  background-color: #ef4444;
-  color: #fff;
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: auto;
-  line-height: 1;
-}
-
-/* ===== Divider ===== */
-.sidebar-divider {
-  height: 1px;
-  background: var(--bg-main);
-  margin: 6px 16px;
-}
-
-/* ===== Team Section ===== */
-.sidebar-team-section {
+  padding: 16px 14px 12px;
   position: relative;
 }
 
-.sidebar-team-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.15s ease;
-}
-
-.sidebar-team-header:hover {
-  background: var(--bg-hover);
-}
-
-.sidebar-team-info {
+.saas-header-btn {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
   cursor: pointer;
-  width: 100%;
+  transition: background-color 0.2s;
+  flex-grow: 1;
+  justify-content: space-between;
 }
 
-.sidebar-team-avatar {
-  width: 24px;
-  height: 24px;
+.saas-header-avatar {
+  width: 36px;
+  height: 36px;
   border-radius: 6px;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid var(--saas-border);
 }
 
-.sidebar-team-name {
-  font-size: var(--fs-base);
-  font-weight: 600;
-  color: var(--text-main);
+.saas-header-title {
+  font-size: 0.9rem;
+  color: var(--saas-text-dark);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
-  flex: 1;
+  max-width: 120px;
 }
 
-/* ===== Team Dropdown ===== */
-.team-dropdown {
+.saas-header-chevron {
+  font-size: 0.7rem;
+  color: var(--saas-text-muted);
+}
+
+.saas-header-sidebar-toggle {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--saas-text-muted);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.saas-header-sidebar-toggle:hover {
+  background-color: var(--saas-hover);
+  border-color: var(--saas-border);
+  color: var(--saas-text-dark);
+}
+
+.saas-user-dropdown-wrapper {
   position: absolute;
   top: 100%;
-  left: 12px;
-  right: 12px;
-  background: var(--bg-main);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: 8px 0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  z-index: 999;
-  animation: teamDropdownIn 0.15s ease-out;
+  left: 14px;
+  right: 14px;
+  z-index: 1050;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
-@keyframes teamDropdownIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ================= 2. Command / Search Box ================= */
+.saas-command-box {
+  padding: 0 14px 12px;
 }
 
-.team-dropdown-item {
+.saas-search-wrapper {
   display: flex;
   align-items: center;
+  background-color: var(--saas-hover);
+  border-radius: 8px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
   gap: 10px;
-  padding: 8px 12px;
+}
+
+.saas-search-wrapper:focus-within {
+  border-color: var(--saas-border);
+  background-color: var(--saas-bg);
+}
+
+.saas-search-icon {
+  color: var(--saas-text-muted);
+  font-size: 0.85rem;
+  margin-right: 8px;
+}
+
+.saas-search-input {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--saas-text-dark);
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.saas-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.saas-search-shortcut {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ================= 3. Main Navigation ================= */
+.saas-scroll-area {
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 8px 16px;
+}
+
+.saas-scroll-area::-webkit-scrollbar {
+  width: 3px;
+}
+.saas-scroll-area::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 10px;
+}
+
+.saas-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.saas-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--saas-text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all 0.15s ease-in-out;
   cursor: pointer;
-  transition: background 0.12s ease;
 }
 
-.team-dropdown-item:hover {
-  background: var(--primary-light);
+.saas-nav-item:hover {
+  background-color: var(--saas-hover);
+  color: var(--saas-text-dark);
 }
 
-.team-dropdown-item.selected {
-  background: var(--primary-light);
+.saas-nav-item.active {
+  background-color: var(--primary-light);
+  color: var(--brand-orange);
 }
 
-.team-dropdown-check {
-  width: 18px;
+.saas-nav-icon {
+  font-size: 1rem;
+  width: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  color: var(--primary-color);
-  font-size: var(--fs-base);
+  margin-right: 10px;
+  color: inherit;
 }
 
-.team-dropdown-name {
-  font-size: var(--fs-sm);
-  color: var(--text-main);
-  flex: 1;
+.saas-nav-text {
+  flex-grow: 1;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-
-.team-dropdown-divider {
-  height: 1px;
-  background: var(--border-light);
-  margin: 6px 12px;
+.saas-nav-right-icon {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-left: 6px;
 }
 
-.team-dropdown-create {
-  color: var(--text-muted);
+/* ================= Badges ================= */
+.saas-badge {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: auto;
 }
 
-.team-dropdown-create i {
-  color: var(--text-muted);
+.saas-nav-item:hover .saas-badge,
+.saas-nav-item.active .saas-badge {
+  color: var(--saas-text-dark);
 }
 
-.team-dropdown-create:hover {
-  color: var(--primary-color);
+/* ================= 4. Section Divider & Header ================= */
+.saas-divider {
+  border-top: 1px solid var(--saas-border);
+  margin: 16px 8px;
+  opacity: 1;
 }
 
-.team-dropdown .sidebar-team-avatar {
-  width: 22px;
-  height: 22px;
-  font-size: var(--fs-xs);
+.saas-section {
+  display: flex;
+  flex-direction: column;
 }
 
-
-/* ===== Starred Section ===== */
-.sidebar-starred-section {
-  flex: 1;
-  padding: 4px 0;
-  overflow-y: auto;
-}
-
-.sidebar-starred-toggle {
+.saas-section-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  padding: 6px 16px;
+  padding: 6px 8px 10px;
   cursor: pointer;
-  width: 100%;
-  text-align: left;
-  font-family: inherit;
 }
 
-.sidebar-starred-toggle:hover {
-  color: var(--text-main);
+.saas-section-header:hover .saas-section-actions i {
+  opacity: 1;
 }
 
-.sidebar-starred-list {
-  padding-top: 0;
+.saas-section-toggle {
+  font-size: 0.65rem;
+  color: #9ca3af;
+  width: 16px;
+  display: flex;
+  align-items: center;
 }
 
+.saas-section-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
 
+.saas-section-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.saas-section-actions i {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  padding: 2px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  opacity: 0; /* ซ่อนไว้ก่อน จะโชว์ตอน hover */
+}
+
+.saas-section-actions i:hover {
+  background-color: var(--saas-border);
+  color: var(--saas-text-dark);
+}

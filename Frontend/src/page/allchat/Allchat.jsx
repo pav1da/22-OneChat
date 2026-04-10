@@ -250,38 +250,94 @@ const AllChat = () => {
     const style = STATUS_STYLE[customer.status] || STATUS_STYLE["ยังไม่เริ่ม"];
     const lastTime = getLastMsgTime(customer.id);
 
+    // Mock หรือข้อมูลจริง (รองรับ Array เผื่อ API ส่งมา)
+    const staffs = customer.staff || [];
+    const tags = customer.tags || [];
+
     return (
       <div
         className={`user-card ${isActive ? "active-card" : ""}`}
         onClick={() => handleCardClick(customer.id)}
       >
-        <div className="position-relative" style={{ flexShrink: 0 }}>
-          <img
-            src={customer.img}
-            className="rounded-circle user-card-avatar"
-            alt={customer.name}
-          />
-          {(unreadCounts[customer.id] || 0) > 0 && (
-            <span className="allchat-unread-badge">
-              {unreadCounts[customer.id] > 99 ? "99+" : unreadCounts[customer.id]}
-            </span>
-          )}
-        </div>
-        <div className="user-card-info">
-          <div className="user-card-top">
-            <span className="user-card-name">{customer.name}</span>
-            <span
-              className="user-card-status"
-              style={{ backgroundColor: style.bg, color: style.color }}
-            >
-              {customer.status}
-            </span>
+        <div className="user-card-main">
+          <div className="position-relative" style={{ flexShrink: 0 }}>
+            <img
+              src={customer.img}
+              className="rounded-circle user-card-avatar"
+              alt={customer.name}
+            />
+            {(unreadCounts[customer.id] || 0) > 0 && (
+              <span className="allchat-unread-badge">
+                {unreadCounts[customer.id] > 99 ? "99+" : unreadCounts[customer.id]}
+              </span>
+            )}
           </div>
-          <div className="user-card-bottom">
-            <p className="user-card-last">{customer.last}</p>
-            {lastTime && <span className="user-card-time">{formatTime(lastTime)}</span>}
+          <div className="user-card-info">
+            <div className="user-card-top">
+              <span className="user-card-name">{customer.name}</span>
+              <span
+                className="user-card-status"
+                style={{ backgroundColor: style.bg, color: style.color }}
+              >
+                {customer.status}
+              </span>
+            </div>
+            <div className="user-card-bottom">
+              <p className="user-card-last">{customer.last}</p>
+              {lastTime && <span className="user-card-time">{formatTime(lastTime)}</span>}
+            </div>
           </div>
         </div>
+
+        {/* Bottom Section */}
+        {/* {(staffs.length > 0 || tags.length > 0) && ( */}
+          <div className="user-card-footer">
+            <div className="staff-group">
+              <img src="" alt="" style={{backgroundColor: "black", width: "20px", height: "20px", borderRadius: "50%"}}/>
+              {/* {staffs.length > 0 &&
+                staffs.map((staff, i) => (
+                  <img
+                    key={i}
+                    src={staff.avatar || staff.img || staff}
+                    alt="staff"
+                    title={staff.name || "Staff"}
+                    className="staff-avatar"
+                  />
+                ))} */}
+            </div>
+            <div className="tag-group">
+              {/* Static mocks added by user */}
+              <span className="tag-badge badge-red">Urgent</span>
+              <span className="tag-badge badge-purple">VIP</span>
+              <span className="tag-badge badge-green">Active</span>
+              {/* Mock a long tag rendering as dot */}
+              <span className="tag-badge badge-gray tag-dot" title="Demo - Do not delete"></span>
+
+              {/* Dynamic Map Logic For Future Use */}
+              {/* {tags.length > 0 &&
+                tags.map((tag, i) => {
+                  const tagLabel = typeof tag === "string" ? tag : tag.label;
+                  const type = tagLabel ? tagLabel.toLowerCase() : "";
+                  let badgeClass = "badge-gray";
+                  if (type.includes("urgent")) badgeClass = "badge-red";
+                  else if (type.includes("vip")) badgeClass = "badge-purple";
+                  else if (type.includes("active")) badgeClass = "badge-green";
+
+                  const isLong = tagLabel.length > 12;
+
+                  return (
+                    <span 
+                      key={i} 
+                      className={`tag-badge ${badgeClass} ${isLong ? 'tag-dot' : ''}`}
+                      title={tagLabel}
+                    >
+                      {!isLong && tagLabel}
+                    </span>
+                  );
+                })} */}
+            </div>
+          </div>
+        {/* )} */}
       </div>
     );
   };

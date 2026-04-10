@@ -7,8 +7,18 @@ import "./inbox.css";
 
 // ===== Timestamp helpers =====
 const THAI_MONTHS = [
-  "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
-  "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.",
+  "ม.ค.",
+  "ก.พ.",
+  "มี.ค.",
+  "เม.ย.",
+  "พ.ค.",
+  "มิ.ย.",
+  "ก.ค.",
+  "ส.ค.",
+  "ก.ย.",
+  "ต.ค.",
+  "พ.ย.",
+  "ธ.ค.",
 ];
 
 /** แปลง timestamp เป็น Date object (รองรับทั้ง ISO string และ MySQL datetime) */
@@ -25,7 +35,11 @@ const toDate = (ts) => {
 const formatTime = (ts) => {
   const d = toDate(ts);
   if (!d) return "";
-  return d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", hour12: false });
+  return d.toLocaleTimeString("th-TH", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 };
 
 /** Format วันที่แบบไทย เช่น "10 เม.ย. 2026" */
@@ -80,7 +94,8 @@ const isFirstInGroup = (currentMsg, prevMsg) => {
  * ตรวจว่าข้อความนี้เป็นข้อความ "สุดท้าย" ของกลุ่มหรือไม่
  * (เหมือน shouldShowTime — ถ้าข้อความถัดไปเป็นคนละ sender หรือห่าง > 5 นาที)
  */
-const isLastInGroup = (currentMsg, nextMsg) => shouldShowTime(currentMsg, nextMsg);
+const isLastInGroup = (currentMsg, nextMsg) =>
+  shouldShowTime(currentMsg, nextMsg);
 
 const EMOJI_REGEX =
   /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji}\u200D\p{Emoji}|\uFE0F|\u200D|\s)+$/u;
@@ -187,8 +202,14 @@ const Inbox = ({ currentUser }) => {
   const [newTagText, setNewTagText] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
   const TAG_COLORS = [
-    "#ef4444", "#f97316", "#eab308", "#22c55e",
-    "#3b82f6", "#8b5cf6", "#ec4899", "#6b7280",
+    "#ef4444",
+    "#f97316",
+    "#eab308",
+    "#22c55e",
+    "#3b82f6",
+    "#8b5cf6",
+    "#ec4899",
+    "#6b7280",
   ];
   const [selectedTagColor, setSelectedTagColor] = useState(TAG_COLORS[0]);
 
@@ -561,7 +582,7 @@ const Inbox = ({ currentUser }) => {
       {/* ========== CENTER — Chat Area ========== */}
       <div className="chat-section">
         {/* Top bar */}
-        <div className="d-flex gap-3 custom-top-chat mx-1">
+        <div className="d-flex gap-3 custom-top-chat">
           <div className="d-flex gap-3 align-items-center">
             {selectedCustomer && (
               <>
@@ -578,7 +599,7 @@ const Inbox = ({ currentUser }) => {
                   <span
                     style={{ fontSize: "13px", color: "var(--text-secondary)" }}
                   >
-                    {selectedCustomer.app}
+                    {selectedCustomer.app} {/* ขึ้นชื่อแอปและร้านที่ลูกค้าทักมา เช่น ลูกค้าทักมาทางไลน์ ก็จะขึ้นว่า LINE : wanna read */}
                   </span>
                 </div>
               </>
@@ -642,8 +663,10 @@ const Inbox = ({ currentUser }) => {
           )}
           {chatMessages.map((msg, idx) => {
             const prevMsg = idx > 0 ? chatMessages[idx - 1] : null;
-            const nextMsg = idx < chatMessages.length - 1 ? chatMessages[idx + 1] : null;
-            const showDayDivider = !prevMsg || isDifferentDay(prevMsg.created_at, msg.created_at);
+            const nextMsg =
+              idx < chatMessages.length - 1 ? chatMessages[idx + 1] : null;
+            const showDayDivider =
+              !prevMsg || isDifferentDay(prevMsg.created_at, msg.created_at);
             const showTime = shouldShowTime(msg, nextMsg);
             const timeStr = formatTime(msg.created_at);
             const firstInGroup = showDayDivider || isFirstInGroup(msg, prevMsg);
@@ -656,21 +679,25 @@ const Inbox = ({ currentUser }) => {
               "msg-wrapper",
               !firstInGroup ? "msg-grouped" : "",
               lastInGroup ? "msg-group-last" : "",
-            ].filter(Boolean).join(" ");
+            ]
+              .filter(Boolean)
+              .join(" ");
 
             return (
               <div key={msg.id} className={wrapperCls}>
                 {/* Day divider */}
                 {showDayDivider && msg.created_at && (
                   <div className="day-divider">
-                    <span className="day-divider-label">{formatDateThai(msg.created_at)}</span>
+                    <span className="day-divider-label">
+                      {formatDateThai(msg.created_at)}
+                    </span>
                   </div>
                 )}
 
                 <div className={`message ${msg.sender === "own" ? "own" : ""}`}>
                   {/* Customer avatar หรือ spacer */}
-                  {msg.sender === "customer" && (
-                    showAvatar ? (
+                  {msg.sender === "customer" &&
+                    (showAvatar ? (
                       <img
                         src={selectedCustomer?.img || undefined}
                         alt="Customer"
@@ -679,8 +706,7 @@ const Inbox = ({ currentUser }) => {
                       />
                     ) : (
                       <div className="avatar-spacer" />
-                    )
-                  )}
+                    ))}
 
                   {/* Timestamp ฝั่งซ้ายของ bubble (สำหรับ own) */}
                   {msg.sender === "own" && showTime && timeStr && (
@@ -742,8 +768,8 @@ const Inbox = ({ currentUser }) => {
                   )}
 
                   {/* Own avatar หรือ spacer */}
-                  {msg.sender === "own" && (
-                    showAvatar ? (
+                  {msg.sender === "own" &&
+                    (showAvatar ? (
                       <img
                         src={currentUser?.image || undefined}
                         alt="Admin"
@@ -752,8 +778,7 @@ const Inbox = ({ currentUser }) => {
                       />
                     ) : (
                       <div className="avatar-spacer" />
-                    )
-                  )}
+                    ))}
                 </div>
               </div>
             );
@@ -815,35 +840,13 @@ const Inbox = ({ currentUser }) => {
         )}
 
         {/* Input bar */}
-        <div className="flex-shrink-0 pt-3">
+        <div className="flex-shrink-0 custom-bottom-chat-wrapper">
           <form onSubmit={handleSendMessage}>
-            <div className="d-flex flex-row p-1 pe-3 gap-1 align-items-center custom-bottom-chat">
-              <div className="d-flex ps-2" style={{ position: "relative" }}>
-                <button
-                  type="button"
-                  className={`icon-btn${showEmoji ? " active" : ""}`}
-                  aria-label="emoji"
-                  onClick={() => setShowEmoji((v) => !v)}
-                >
-                  <i
-                    className="bi bi-emoji-smile fs-4"
-                    style={{ lineHeight: 1 }}
-                  ></i>
-                </button>
-                {showEmoji && (
-                  <EmojiPicker
-                    onSelect={(emoji) => {
-                      setNewMessage((prev) => prev + emoji);
-                      msgRef.current?.focus();
-                    }}
-                    onClose={() => setShowEmoji(false)}
-                  />
-                )}
-              </div>
-
+            <div className="chat-input-container">
+              {/* ช่องพิมพ์ข้อความ */}
               <textarea
                 rows={1}
-                placeholder="พิมพ์ข้อความ"
+                placeholder='พิมพ์ข้อความ...'
                 ref={msgRef}
                 value={newMessage}
                 onChange={(e) => {
@@ -853,49 +856,97 @@ const Inbox = ({ currentUser }) => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) handleSendMessage(e);
                 }}
-                className="w-100 pt-2 custom-text-input message-input"
-                style={{
-                  overflow: "hidden",
-                  resize: "none",
-                  minHeight: "40px",
-                  maxHeight: "120px",
-                }}
+                className="chat-textarea"
               />
 
-              <div className="d-flex ps-2 gap-1">
-                <button type="button" className="icon-btn" aria-label="mic">
-                  <i className="bi bi-mic fs-4" style={{ lineHeight: 1 }}></i>
-                </button>
-                <button
-                  type="button"
-                  className={`icon-btn${showImagePanel ? " active" : ""}`}
-                  aria-label="image"
-                  onClick={() =>
-                    showImagePanel
-                      ? handleCloseImagePanel()
-                      : fileInputRef.current?.click()
-                  }
+              {/* แถบเครื่องมือด้านล่าง */}
+              <div className="chat-toolbar">
+                <div
+                  className="chat-toolbar-left"
+                  style={{ position: "relative" }}
                 >
-                  <i className="bi bi-image fs-4" style={{ lineHeight: 1 }}></i>
-                </button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  hidden
-                  ref={fileInputRef}
-                  onChange={handleUploadImage}
-                />
-                <button
-                  type="submit"
-                  className="icon-btn send-btn"
-                  aria-label="send"
-                >
-                  <i
-                    className="bi bi-send-fill fs-5"
-                    style={{ lineHeight: 1 }}
-                  ></i>
-                </button>
+                  {/* ไอคอนแนบไฟล์ / รูปภาพ */}
+                  <button
+                    type="button"
+                    className={`icon-btn${showImagePanel ? " active" : ""}`}
+                    aria-label="picture"
+                    title="Picture"
+                    onClick={() =>
+                      showImagePanel
+                        ? handleCloseImagePanel()
+                        : fileInputRef.current?.click()
+                    }
+                  >
+                    <i className="bi bi-image fs-5"></i>
+                  </button>
+
+                  {/* ไอคอน Emoji */}
+                  <button
+                    type="button"
+                    className={`icon-btn${showEmoji ? " active" : ""}`}
+                    aria-label="emoji"
+                    onClick={() => setShowEmoji((v) => !v)}
+                    title="Emoji"
+                  >
+                    <i className="bi bi-emoji-smile fs-5"></i>
+                  </button>
+
+                  {/* กล่องเลือก Emoji */}
+                  {showEmoji && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "100%",
+                        left: "0",
+                        zIndex: 100,
+                        marginBottom: "10px",
+                      }}
+                    >
+                      <EmojiPicker
+                        onSelect={(emoji) => {
+                          setNewMessage((prev) => prev + emoji);
+                          msgRef.current?.focus();
+                        }}
+                        onClose={() => setShowEmoji(false)}
+                      />
+                    </div>
+                  )}
+
+                  {/* ไอคอน Template / Saved Replies */}
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="template"
+                    title="Template"
+                  >
+                    <i className="bi bi-window fs-5"></i>
+                  </button>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    hidden
+                    ref={fileInputRef}
+                    onChange={handleUploadImage}
+                  />
+                </div>
+
+                <div className="chat-toolbar-right">
+                  {/* ปุ่มส่งข้อความ */}
+                  <button
+                    type="submit"
+                    className="icon-btn send-btn"
+                    aria-label="send"
+                    // ปิดปุ่มส่งถ้าไม่มีข้อความและไม่ได้เลือกรูป
+                    disabled={
+                      !newMessage.trim() &&
+                      panelFiles.filter((f) => f.selected).length === 0
+                    }
+                  >
+                    <i className="bi bi-send fs-5"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </form>
@@ -1001,9 +1052,10 @@ const Inbox = ({ currentUser }) => {
                     </button>
                   </span>
                 ))}
-                {(tagsMap[selectedChatId] || []).length === 0 && !showTagInput && (
-                  <span className="detail-tags-empty">ยังไม่มีแท็ก</span>
-                )}
+                {(tagsMap[selectedChatId] || []).length === 0 &&
+                  !showTagInput && (
+                    <span className="detail-tags-empty">ยังไม่มีแท็ก</span>
+                  )}
               </div>
 
               {/* Add tag form */}

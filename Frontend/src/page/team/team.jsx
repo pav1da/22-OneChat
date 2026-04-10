@@ -272,7 +272,7 @@ const Teams = () => {
   );
 
   return (
-    <div className="teams-container px-4">
+    <div className="teams-container">
       {/* ===== Header ===== */}
       <div className="teams-header">
         <h1 className="teams-title">ทีม</h1>

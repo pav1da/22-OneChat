@@ -122,7 +122,7 @@ const Member = ({ currentUser }) => {
 
   // ================== 5. RENDER UI ==================
   return (
-    <div className="member-container px-4" onClick={() => setActivePopupId(null)}>
+    <div className="member-container" onClick={() => setActivePopupId(null)}>
       {/* Search & Sort controls */}
       <div className="member-controls">
         <div className="member-controls-left">
