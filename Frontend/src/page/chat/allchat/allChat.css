@@ -38,17 +38,15 @@
   align-items: center;
   gap: 10px;
   padding: 0 16px;
-  border: 1px solid var(--border-light);
-  border-radius: 20px;
+  border: 1px solid #d1d1d1; /* Updated border color to match user preference */
+  border-radius: 10px;
   transition: all 0.25s ease;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
   min-width: 200px;
 }
 
 /* รูปร่างของกล่องครอบเวลาคลิกโฟกัสที่ช่องค้นหาเปลี่ยนสีขอบและแสดงเงา */
 .sidebar-search:focus-within {
-  border-color: var(--border-light);
-  background: var(--bg-main);
+  background: var(--primary-light);
 }
 
 /* ไอคอนแว่นขยายในช่องค้นหา */
@@ -203,26 +201,6 @@
   display: flex;
   align-items: center;
   flex: 1;
-}
-
-.staff-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid var(--bg-main);
-  margin-left: -6px;
-  object-fit: cover;
-  position: relative;
-  transition: transform 0.2s ease, z-index 0s;
-}
-
-.staff-avatar:first-child {
-  margin-left: 0;
-}
-
-.staff-avatar:hover {
-  transform: translateY(-2px);
-  z-index: 10;
 }
 
 .tag-group {
@@ -522,40 +500,45 @@
 
 /* ===== กลุ่มปุ่มตัวกรอง (Filter Tabs) ===== */
 .nav-search {
-  background-color: var(--bg-main);
-  border: 1px solid var(--border-light);
+  background-color: #ffffff;
+  border: 0px;
   border-radius: 10px;
   padding: 6px 16px;
-  font-size: var(--fs-sm);
-  color: var(--text-secondary);
+  font-size: var(--fs-sm, 14px);
+  color: #6b7280;
   transition: all 0.2s ease;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   white-space: nowrap;
 }
 
 .nav-search:hover {
-  background-color: var(--primary-light);
-  color: var(--primary-color);
-  border-color: var(--primary-light);
+  background-color: #d4d4d4;
+  color: #374151;
 }
 
 .nav-search-active {
-  background-color: var(--primary-color) !important;
-  color: #fff !important;
-  border-color: var(--primary-color) !important;
+  background-color: var(--primary-light) !important; 
+  color: var(--primary-color) !important;
+}
+
+.nav-search-active:hover {
+  background-color: var(--primary-light) !important;
 }
 
 .tab-count {
-  font-size: var(--fs-xs);
-  padding: 1px 7px;
-  border-radius: 8px;
-  font-weight: 600;
+  font-size: var(--fs-sm, 14px);
+  padding: 0;
+  border-radius: 0;
+  font-weight: 700;
 }
 .nav-search-active .tab-count {
-  color: var(--text-inverse);
+  color: var(--primary-color);
+}
+.nav-search:not(.nav-search-active) .tab-count {
+  color: #4b5563;
 }
 
 /* ===== Mini message timestamp ===== */
@@ -653,12 +636,8 @@
     font-size: 9px;
     padding: 2px 6px;
   }
-  
-  .staff-avatar {
-    width: 20px;
-    height: 20px;
-  }
 }
+
 
 @media (max-width: 480px) {
   .user-card-footer {

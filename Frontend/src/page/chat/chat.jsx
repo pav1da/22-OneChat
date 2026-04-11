@@ -1,9 +1,9 @@
 import { useRef, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useChat } from "../../context/ChatContext";
-import ChatList from "./chatList/ChatList";
+import ChatList from "./chatlist/ChatList";
 import EmojiPicker from "../../components/EmojiPicker";
-import "./inbox.css";
+import "./chat.css";
 
 // ===== Timestamp helpers =====
 const THAI_MONTHS = [
