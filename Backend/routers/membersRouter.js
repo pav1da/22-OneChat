@@ -232,4 +232,85 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
+const authorize = require("../middleware/auth.js");
+const User = require("../models/user.js");
+
+// ============================================================
+//  PUT /api/members/:id — แก้ไข member (admin/manager)
+// ============================================================
+
+/**
+ * @swagger
+ * /api/members/{id}:
+ *   put:
+ *     summary: แก้ไขข้อมูลสมาชิก (Admin/Manager)
+ *     description: อัปเดต display_name และ/หรือ password ของสมาชิก (username เปลี่ยนไม่ได้)
+ *     tags: [Members]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: "รหัสพนักงาน (emp_id)"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               display_name:
+ *                 type: string
+ *                 example: "ชื่อแสดงใหม่"
+ *               password:
+ *                 type: string
+ *                 example: "newpassword123"
+ *     responses:
+ *       200:
+ *         description: แก้ไขสำเร็จ
+ *       400:
+ *         description: ไม่มีข้อมูลที่จะแก้ไข
+ *       403:
+ *         description: ไม่มีสิทธิ์ (ต้องเป็น admin หรือ manager)
+ *       404:
+ *         description: ไม่พบสมาชิก
+ *       500:
+ *         description: Server error
+ */
+router.put("/:id", auth, async (req, res) => {
+  try {
+    // ตรวจสอบสิทธิ์: ต้องเป็น admin หรือ manager
+    if (!["admin", "manager"].includes(req.user.role)) {
+      return res.status(403).json({ message: "คุณไม่มีสิทธิ์แก้ไขข้อมูลสมาชิก" });
+    }
+
+    const { id } = req.params;
+    const { display_name, password } = req.body;
+
+    // ตรวจสอบว่ามีข้อมูลที่จะแก้ไขหรือไม่
+    if (display_name === undefined && !password) {
+      return res.status(400).json({ message: "กรุณาระบุข้อมูลที่ต้องการแก้ไข" });
+    }
+
+    // ตรวจสอบว่า member มีอยู่จริง
+    const member = await User.findById(id);
+    if (!member) {
+      return res.status(404).json({ message: "ไม่พบสมาชิก" });
+    }
+
+    // อัปเดตข้อมูล
+    await User.updateMemberByAdmin(id, { display_name, password });
+
+    // ดึงข้อมูลที่อัปเดตแล้วส่งกลับ
+    const updated = await User.findById(id);
+    res.json({ message: "แก้ไขข้อมูลสมาชิกสำเร็จ", member: updated });
+  } catch (err) {
+    console.error("UpdateMember error:", err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการแก้ไขข้อมูลสมาชิก" });
+  }
+});
+
 module.exports = router;

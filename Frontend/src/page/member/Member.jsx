@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "react-bootstrap";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Button, Modal, Form } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./member.css";
 // นำเข้า useSocket จาก SocketContext เพื่อใช้ตรวจสอบสถานะ online/offline ของ user
@@ -28,12 +28,20 @@ const Member = ({ currentUser }) => {
 
   const [activePopupId, setActivePopupId] = useState(null);
 
+  // ===== Edit Modal State =====
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [editDisplayName, setEditDisplayName] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+
   // ===== Socket.IO: ดึงฟังก์ชันเช็คสถานะ online จาก SocketContext =====
   const { isUserOnline } = useSocket();
 
   // ===== Role-based permission =====
   const currentUserRole = currentUser?.role || "";
   const canManage = ["admin", "manager"].includes(currentUserRole);
+  const isAdmin = currentUserRole === "admin";
 
   // ================== 2. INITIALIZATION (FROM API) ==================
   useEffect(() => {
@@ -49,6 +57,7 @@ const Member = ({ currentUser }) => {
           const mapped = users.map((u) => ({
             id: u.emp_id,
             name: u.username || u.name,
+            displayName: u.display_name || "",
             role: u.role || "staff",
             teams: u.teams || [], // array of { team_id, team_name, role_in_team }
             color: "#607D8B",
@@ -66,19 +75,31 @@ const Member = ({ currentUser }) => {
   }, []);
 
   // ================== 3. LOGIC (SORT & SEARCH) ==================
-  const getProcessedMembers = () => {
+  // ใช้ useMemo เพื่อไม่ให้ re-sort/re-filter ทุก render (ป้องกัน UI กระพริบ)
+  const { onlineUsers } = useSocket();
+
+  const displayMembers = useMemo(() => {
     let result = [...allMembers];
 
     // Search
     if (searchTerm) {
+      const q = searchTerm.toLowerCase();
       result = result.filter((member) =>
-        member.name.toLowerCase().includes(searchTerm.toLowerCase()),
+        member.name.toLowerCase().includes(q) ||
+        (member.displayName && member.displayName.toLowerCase().includes(q)),
       );
     }
 
-    // Sort
-    if (isSorted) {
-      result.sort((a, b) => {
+    // === เรียง user ออนไลน์ไว้ข้างบนเสมอ ===
+    result.sort((a, b) => {
+      const onlineA = onlineUsers.has(a.id) ? 1 : 0;
+      const onlineB = onlineUsers.has(b.id) ? 1 : 0;
+
+      // ออนไลน์ก่อน
+      if (onlineA !== onlineB) return onlineB - onlineA;
+
+      // ถ้าเปิดเรียงลำดับ → เรียงตามชื่อ
+      if (isSorted) {
         const nameA = a.name;
         const nameB = b.name;
 
@@ -89,13 +110,13 @@ const Member = ({ currentUser }) => {
         if (!isEngA && isEngB) return 1;
 
         return nameA.localeCompare(nameB, "th");
-      });
-    }
+      }
+
+      return 0;
+    });
 
     return result;
-  };
-
-  const displayMembers = getProcessedMembers();
+  }, [allMembers, searchTerm, isSorted, onlineUsers]);
 
   // ================== 4. HELPER FUNCTIONS ==================
   const handleDeleteUser = async (userId) => {
@@ -118,6 +139,61 @@ const Member = ({ currentUser }) => {
       }
       setActivePopupId(null);
     }
+  };
+
+  // ===== เปิด Edit Modal =====
+  const handleOpenEdit = (member) => {
+    setEditingMember(member);
+    setEditDisplayName(member.displayName || "");
+    setEditPassword("");
+    setShowEditModal(true);
+    setActivePopupId(null);
+  };
+
+  // ===== บันทึกการแก้ไข =====
+  const handleSaveEdit = async () => {
+    if (!editingMember) return;
+    setEditSaving(true);
+    try {
+      const token = sessionStorage.getItem("token");
+      const body = {};
+      // ส่ง display_name เสมอ (อาจเป็นค่าว่าง)
+      body.display_name = editDisplayName.trim();
+      // ส่ง password เฉพาะเมื่อกรอก
+      if (editPassword.trim()) {
+        body.password = editPassword.trim();
+      }
+
+      const res = await fetch(`/api/members/${editingMember.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // อัปเดต state ในฝั่ง frontend
+        setAllMembers((prev) =>
+          prev.map((m) =>
+            m.id === editingMember.id
+              ? { ...m, displayName: body.display_name }
+              : m,
+          ),
+        );
+        setShowEditModal(false);
+        setEditingMember(null);
+      } else {
+        const data = await res.json();
+        alert(data.message || "แก้ไขไม่สำเร็จ");
+      }
+    } catch (err) {
+      console.error("Edit error:", err);
+      alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+    }
+    setEditSaving(false);
   };
 
   // ================== 5. RENDER UI ==================
@@ -183,7 +259,12 @@ const Member = ({ currentUser }) => {
                   )}
                   <span className={`avatar-status-dot ${online ? "dot-online" : "dot-offline"}`}></span>
                 </div>
-                <span>{member.name}</span>
+                <div className="member-name-group">
+                  <span className="member-username">{member.name}</span>
+                  {member.displayName && (
+                    <span className="member-display-name">{member.displayName}</span>
+                  )}
+                </div>
               </div>
 
               {/* ทีม — แสดงเป็น badge pills (รองรับหลายทีม) */}
@@ -231,14 +312,25 @@ const Member = ({ currentUser }) => {
                     </Button>
 
                     {activePopupId === `member-${member.id}` && (
-                      <div className="action-popup">
+                      <div className="action-popup" onClick={(e) => e.stopPropagation()}>
+                        {/* ปุ่มแก้ไข — admin/manager */}
                         <div
-                          className="action-item"
-                          onClick={() => handleDeleteUser(member.id)}
+                          className="action-item action-item-edit"
+                          onClick={(e) => { e.stopPropagation(); handleOpenEdit(member); }}
                         >
-                          <i className="bi bi-trash me-2"></i>
-                          ลบ
+                          <i className="bi bi-pencil-square me-2"></i>
+                          แก้ไข
                         </div>
+                        {/* ปุ่มลบ — เฉพาะ admin เท่านั้น */}
+                        {isAdmin && (
+                          <div
+                            className="action-item action-item-delete"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteUser(member.id); }}
+                          >
+                            <i className="bi bi-trash me-2"></i>
+                            ลบ
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -252,6 +344,103 @@ const Member = ({ currentUser }) => {
           <div className="text-center py-5 text-muted">ไม่พบข้อมูลสมาชิก</div>
         )}
       </div>
+
+      {/* ===== Edit Member Modal ===== */}
+      <Modal
+        show={showEditModal}
+        onHide={() => { setShowEditModal(false); setEditingMember(null); }}
+        centered
+        className="edit-member-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <i className="bi bi-pencil-square me-2"></i>
+            แก้ไขข้อมูลสมาชิก
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {editingMember && (
+            <Form onSubmit={(e) => { e.preventDefault(); handleSaveEdit(); }}>
+              {/* Username — read-only */}
+              <Form.Group className="mb-3">
+                <Form.Label className="edit-form-label">
+                  <i className="bi bi-person-fill me-1"></i>
+                  Username
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  value={editingMember.name}
+                  disabled
+                  className="edit-input-disabled"
+                />
+                <Form.Text className="text-muted">
+                  ไม่สามารถเปลี่ยน username ได้
+                </Form.Text>
+              </Form.Group>
+
+              {/* Display Name — editable */}
+              <Form.Group className="mb-3">
+                <Form.Label className="edit-form-label">
+                  <i className="bi bi-card-text me-1"></i>
+                  ชื่อที่แสดง (Display Name)
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  value={editDisplayName}
+                  onChange={(e) => setEditDisplayName(e.target.value)}
+                  placeholder="กรอกชื่อที่ต้องการแสดง"
+                  className="edit-input"
+                />
+              </Form.Group>
+
+              {/* Password — editable (optional) */}
+              <Form.Group className="mb-3">
+                <Form.Label className="edit-form-label">
+                  <i className="bi bi-lock-fill me-1"></i>
+                  รหัสผ่านใหม่
+                </Form.Label>
+                <Form.Control
+                  type="password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  placeholder="กรอกเฉพาะเมื่อต้องการเปลี่ยน"
+                  className="edit-input"
+                />
+                <Form.Text className="text-muted">
+                  เว้นว่างถ้าไม่ต้องการเปลี่ยนรหัสผ่าน
+                </Form.Text>
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => { setShowEditModal(false); setEditingMember(null); }}
+            className="btn-cancel"
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSaveEdit}
+            disabled={editSaving}
+            className="btn-save"
+          >
+            {editSaving ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-1"></span>
+                กำลังบันทึก...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-check-lg me-1"></i>
+                บันทึก
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
