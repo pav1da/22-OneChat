@@ -198,5 +198,25 @@ router.put('/:id/status', auth, async (req, res) => {
     res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
   }
 });
+// PUT /api/customers/:id/assign — กำหนดผู้รับผิดชอบ
+router.put('/:id/assign', auth, async (req, res) => {
+  try {
+    const { emp_id } = req.body;
+    // emp_id = null → ยกเลิกการ assign
+    const success = await Customer.updateAssignedTo(req.params.id, emp_id ?? null);
+    if (!success) return res.status(404).json({ message: 'ไม่พบลูกค้า' });
+
+    // Broadcast ให้ทุก client อัปเดต real-time
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('customer-assigned', { cus_id: Number(req.params.id), assigned_to: emp_id ?? null });
+    }
+
+    res.json({ message: 'อัปเดตผู้รับผิดชอบสำเร็จ' });
+  } catch (err) {
+    console.error('Update assigned_to error:', err);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+  }
+});
 
 module.exports = router;

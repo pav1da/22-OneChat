@@ -171,6 +171,7 @@ const Inbox = ({ currentUser }) => {
     sendImageMessage,
     updateCustomerStatus,
     updateCustomerName,
+    updateCustomerAssign,
     unreadCounts,
     markAsRead,
     STATUS,
@@ -195,7 +196,6 @@ const Inbox = ({ currentUser }) => {
 
   // Members list for "ผู้รับผิดชอบ" dropdown
   const [members, setMembers] = useState([]);
-  const [assignedMap, setAssignedMap] = useState({}); // { customerId: { emp_id, username } }
 
   // Tags state
   const [tagsMap, setTagsMap] = useState({}); // { customerId: [{ text, color }] }
@@ -383,23 +383,16 @@ const Inbox = ({ currentUser }) => {
 
   // ---------- Assignment handler ----------
   const handleAssignChange = (customerId, empId) => {
-    const member = members.find((m) => m.emp_id === Number(empId));
-    if (member) {
-      setAssignedMap((prev) => ({
-        ...prev,
-        [customerId]: { emp_id: member.emp_id, username: member.username },
-      }));
-    }
+    const numEmpId = empId ? Number(empId) : null;
+    updateCustomerAssign(customerId, numEmpId);
   };
 
   const getAssignedUser = (customerId) => {
-    if (assignedMap[customerId]) return assignedMap[customerId];
-    // Default: current user
-    if (currentUser)
-      return {
-        emp_id: currentUser.emp_id,
-        username: currentUser.username || currentUser.name,
-      };
+    const cust = customer.find((c) => c.id === customerId);
+    if (cust?.assigned_to) {
+      const member = members.find((m) => m.emp_id === cust.assigned_to);
+      if (member) return { emp_id: member.emp_id, username: member.username };
+    }
     return null;
   };
 
@@ -512,10 +505,11 @@ const Inbox = ({ currentUser }) => {
     setEditingNoteId(null);
     setEditingText("");
     try {
+      const editedBy = currentUser?.username || currentUser?.name || 'unknown';
       await fetch(`/api/notes/${id}`, {
         method: "PUT",
         headers: getHeaders(),
-        body: JSON.stringify({ text: editingText }),
+        body: JSON.stringify({ text: editingText, edited_by: editedBy }),
       });
     } catch (err) {
       console.error("Edit note error:", err);
@@ -597,9 +591,15 @@ const Inbox = ({ currentUser }) => {
                     {selectedCustomer.name}
                   </span>
                   <span
+                    className="d-flex align-items-center gap-1"
                     style={{ fontSize: "13px", color: "var(--text-secondary)" }}
                   >
-                    {selectedCustomer.app} {/* ขึ้นชื่อแอปและร้านที่ลูกค้าทักมา เช่น ลูกค้าทักมาทางไลน์ ก็จะขึ้นว่า LINE : wanna read */}
+                    {selectedCustomer.platform === "line" ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="#06C755"><path d="M12 2C6.48 2 2 5.88 2 10.54c0 4.24 3.76 7.78 8.84 8.44.34.07.81.22.93.52.1.27.07.68.03.95l-.15.91c-.05.27-.22 1.06.93.58s6.19-3.65 8.44-6.25C22.97 13.42 22 12.06 22 10.54 22 5.88 17.52 2 12 2z"/></svg>
+                    ) : selectedCustomer.platform ? (
+                      <i className="bi bi-messenger" style={{ color: "#0084FF", fontSize: "13px" }}></i>
+                    ) : null}
+                    {selectedCustomer.channel_name || selectedCustomer.app}
                   </span>
                 </div>
               </>
@@ -1012,6 +1012,7 @@ const Inbox = ({ currentUser }) => {
                     handleAssignChange(selectedChatId, e.target.value)
                   }
                 >
+                  <option value="">ยังไม่ได้กำหนด</option>
                   {members.map((m) => (
                     <option key={m.emp_id} value={m.emp_id}>
                       {m.username} ({m.role})
@@ -1020,6 +1021,33 @@ const Inbox = ({ currentUser }) => {
                 </select>
               </div>
             </div>
+
+            {/* Chat Source */}
+            {selectedCustomer.platform && (
+              <div className="w-100 px-2 mt-3">
+                <div className="d-flex align-items-center gap-1 mb-1">
+                  <span style={{ fontSize: "0.85rem", fontWeight: 500 }}>แหล่งที่มา</span>
+                </div>
+                <div
+                  className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                  style={{ backgroundColor: "#f9fafb", border: "1px solid #f3f4f6" }}
+                >
+                  {selectedCustomer.platform === "line" ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#06C755"><path d="M12 2C6.48 2 2 5.88 2 10.54c0 4.24 3.76 7.78 8.84 8.44.34.07.81.22.93.52.1.27.07.68.03.95l-.15.91c-.05.27-.22 1.06.93.58s6.19-3.65 8.44-6.25C22.97 13.42 22 12.06 22 10.54 22 5.88 17.52 2 12 2z"/></svg>
+                  ) : (
+                    <i className="bi bi-messenger" style={{ color: "#0084FF", fontSize: "18px" }}></i>
+                  )}
+                  <div style={{ lineHeight: 1.3 }}>
+                    <div style={{ fontSize: "0.8rem", fontWeight: 600 }}>
+                      {selectedCustomer.channel_name || selectedCustomer.app}
+                    </div>
+                    <div style={{ fontSize: "0.7rem", color: "#9ca3af" }}>
+                      {selectedCustomer.platform === "line" ? "LINE" : "Facebook"} Messaging
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Tags */}
             <div className="detail-tags w-100 px-2 mt-3">

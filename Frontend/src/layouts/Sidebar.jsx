@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Nav, Form } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
 import UserProfileDropdown from "../components/UserProfileDropdown";
+import { useChat } from "../context/ChatContext";
 import { io } from "socket.io-client";
 import axios from "axios";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -45,12 +46,35 @@ const Sidebar = ({ onLogout, currentUser }) => {
   const location = useLocation();
   const isActivePath = (path) => location.pathname.startsWith(path);
 
+  // ดึง unreadCounts + customers จาก ChatContext (real-time จาก Socket.IO)
+  const { unreadCounts, customers } = useChat();
+
   // State
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifUnreadCount, setNotifUnreadCount] = useState(0);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(true);
 
   const userDropdownRef = useRef(null);
+
+  // === คำนวณ badge สำหรับ My Chat และ All Chat ===
+  // All Chat = ผลรวม unread ทั้งหมดจากทุกลูกค้า
+  // My Chat = เฉพาะลูกค้าที่ assigned_to === currentUser.emp_id
+  const allChatUnread = useMemo(() => {
+    return Object.values(unreadCounts).reduce((sum, count) => sum + count, 0);
+  }, [unreadCounts]);
+
+  const myChatUnread = useMemo(() => {
+    const myEmpId = currentUser?.emp_id;
+    if (!myEmpId) return 0;
+    // หา customer IDs ที่ assign ให้ฉัน
+    const myCustomerIds = new Set(
+      customers.filter((c) => c.assigned_to === myEmpId).map((c) => c.id),
+    );
+    // รวม unread เฉพาะลูกค้าที่ assign ให้ฉัน
+    return Object.entries(unreadCounts).reduce((sum, [cusId, count]) => {
+      return myCustomerIds.has(Number(cusId)) ? sum + count : sum;
+    }, 0);
+  }, [unreadCounts, customers, currentUser?.emp_id]);
 
   // User Info
   const userImage =
@@ -76,7 +100,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ดึงจำนวน notification + real-time update
+  // ดึงจำนวน notification (bell icon) + real-time update
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     if (token) {
@@ -84,13 +108,13 @@ const Sidebar = ({ onLogout, currentUser }) => {
         .get("/api/notifications/unread-count", {
           headers: { Authorization: `Bearer ${token}` },
         })
-        .then((res) => setUnreadCount(res.data?.count || 0))
+        .then((res) => setNotifUnreadCount(res.data?.count || 0))
         .catch(() => {});
     }
 
     const socket = io();
     socket.on("new-message", (msg) => {
-      if (msg.sender === "customer") setUnreadCount((prev) => prev + 1);
+      if (msg.sender === "customer") setNotifUnreadCount((prev) => prev + 1);
     });
     return () => socket.disconnect();
   }, []);
@@ -152,14 +176,14 @@ const Sidebar = ({ onLogout, currentUser }) => {
               icon="bi bi-person"
               label="ข้อความของฉัน"
               isActive={isActivePath("/mychat")}
-              badge={99} /* จำนวนข้อความของฉัน */
+              badge={myChatUnread} /* จำนวน unread ของฉัน (real-time) */
             />
             <SidebarItem
               to="/allchat"
               icon="bi bi-chat"
               label="ทั้งหมด"
               isActive={isActivePath("/allchat")}
-              badge={unreadCount} /* จำนวนข้อความทั้งหมด */
+              badge={allChatUnread} /* จำนวน unread ทั้งหมด (real-time) */
             />
             <SidebarItem
               to="/notes"
@@ -196,9 +220,9 @@ const Sidebar = ({ onLogout, currentUser }) => {
                     to="/notification"
                     icon="bi bi-bell"
                     label="Notification"
-                    badge={unreadCount}
+                    badge={notifUnreadCount}
                     isActive={isActivePath("/notification")}
-                    onClick={() => setUnreadCount(0)}
+                    onClick={() => setNotifUnreadCount(0)}
                   />
                   <SidebarItem
                     to="/member"

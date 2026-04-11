@@ -35,7 +35,38 @@ const Channel = {
 
     deleteById: async (id) => {
         await pool.query('DELETE FROM channels WHERE id=?', [id]);
+    },
+
+    // ดึงชื่อ bot จาก LINE API แล้วอัปเดต channel_name อัตโนมัติ
+    syncLineBotNames: async () => {
+        try {
+            const [rows] = await pool.query(
+                `SELECT id, access_token, channel_name FROM channels WHERE platform = 'line' AND access_token IS NOT NULL AND access_token != ''`
+            );
+            for (const ch of rows) {
+                try {
+                    const res = await fetch('https://api.line.me/v2/bot/info', {
+                        headers: { Authorization: `Bearer ${ch.access_token}` },
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const botName = data.displayName || data.basicId || null;
+                        if (botName && botName !== ch.channel_name) {
+                            await pool.query('UPDATE channels SET channel_name = ?, updated_at = NOW() WHERE id = ?', [botName, ch.id]);
+                            console.log(`[Channel] Synced LINE bot name: "${botName}" (id=${ch.id})`);
+                        }
+                    }
+                } catch (err) {
+                    console.error(`[Channel] Failed to fetch bot info for channel id=${ch.id}:`, err.message);
+                }
+            }
+        } catch (err) {
+            console.error('[Channel] syncLineBotNames error:', err.message);
+        }
     }
 };
+
+// Auto-sync LINE bot names on startup
+Channel.syncLineBotNames();
 
 module.exports = Channel;

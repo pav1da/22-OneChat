@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Container } from "react-bootstrap";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { Container, Dropdown, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../../context/ChatContext";
 import EmojiPicker from "../../components/EmojiPicker";
@@ -51,13 +51,14 @@ const formatTime = (dateStr) => {
   return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" }) + " " + time;
 };
 
-// === Filter tabs config ===
 const FILTER_TABS = [
   { key: "all", label: "ทั้งหมด" },
   { key: "not_started", label: "ยังไม่เริ่ม" },
   { key: "in_progress", label: "กำลังดำเนินการ" },
   { key: "done", label: "เสร็จสิ้น" },
 ];
+
+const AVAILABLE_TAGS = ["Urgent", "VIP", "Active", "Follow up"];
 
 // === Status badge config (fixed colors) ===
 const STATUS_STYLE = {
@@ -178,6 +179,24 @@ const AllChat = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
 
+  // === New Filter States ===
+  const [members, setMembers] = useState([]);
+  const [sortOrder, setSortOrder] = useState("latest"); // "latest" | "oldest"
+  const [filterAssignee, setFilterAssignee] = useState("all"); // "all" | "unassigned" | emp_id
+  const [filterTags, setFilterTags] = useState([]);
+
+  // Fetch members to show assignee info
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const res = await fetch("/api/users", { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) setMembers(await res.json());
+      } catch (err) {}
+    };
+    fetchMembers();
+  }, []);
+
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
@@ -191,20 +210,48 @@ const AllChat = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // === Filter logic ===
-  const filteredCustomers = customers.filter((c) => {
-    // Filter by status tab
-    if (activeFilter === "not_started" && c.status !== STATUS.NOT_STARTED) return false;
-    if (activeFilter === "in_progress" && c.status !== STATUS.IN_PROGRESS) return false;
-    if (activeFilter === "done" && c.status !== STATUS.DONE) return false;
+  // === Get last message time for a customer ===
+  const getLastMsgTime = useCallback((customerId) => {
+    const msgs = messages[customerId];
+    if (!msgs || msgs.length === 0) return 0;
+    const timeStr = msgs[msgs.length - 1].created_at;
+    return timeStr ? new Date(timeStr).getTime() : 0;
+  }, [messages]);
 
-    // Filter by search text
-    if (searchText) {
-      const q = searchText.toLowerCase();
-      return c.name.toLowerCase().includes(q) || (c.last && c.last.toLowerCase().includes(q));
-    }
-    return true;
-  });
+  // === Filter logic ===
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((c) => {
+      // 1. Status tab filter
+      if (activeFilter === "not_started" && c.status !== STATUS.NOT_STARTED) return false;
+      if (activeFilter === "in_progress" && c.status !== STATUS.IN_PROGRESS) return false;
+      if (activeFilter === "done" && c.status !== STATUS.DONE) return false;
+
+      // 2. Assignee Filter
+      if (filterAssignee !== "all") {
+        if (filterAssignee === "unassigned" && c.assigned_to) return false;
+        if (filterAssignee !== "unassigned" && c.assigned_to !== Number(filterAssignee)) return false;
+      }
+
+      // 3. Tag Filter (c.tags array must contain ALL selected tags)
+      if (filterTags.length > 0) {
+        const cTags = c.tags || [];
+        const hasAllTags = filterTags.every(t => cTags.includes(t));
+        if (!hasAllTags) return false;
+      }
+
+      // 4. Search text
+      if (searchText) {
+        const q = searchText.toLowerCase();
+        return c.name.toLowerCase().includes(q) || (c.last && c.last.toLowerCase().includes(q));
+      }
+      return true;
+    }).sort((a, b) => {
+      // 5. Sorting
+      const timeA = getLastMsgTime(a.id);
+      const timeB = getLastMsgTime(b.id);
+      return sortOrder === "latest" ? timeB - timeA : timeA - timeB;
+    });
+  }, [customers, activeFilter, filterAssignee, filterTags, searchText, sortOrder, getLastMsgTime, STATUS]);
 
   // === Count per status (for tab badges) ===
   const statusCounts = {
@@ -239,19 +286,13 @@ const AllChat = () => {
     [sendMessage],
   );
 
-  // === Get last message time for a customer ===
-  const getLastMsgTime = (customerId) => {
-    const msgs = messages[customerId];
-    if (!msgs || msgs.length === 0) return null;
-    return msgs[msgs.length - 1].created_at || null;
-  };
-
   const renderUserCard = (customer, isActive) => {
     const style = STATUS_STYLE[customer.status] || STATUS_STYLE["ยังไม่เริ่ม"];
     const lastTime = getLastMsgTime(customer.id);
+    const assignedMember = members.find(m => m.emp_id === customer.assigned_to);
 
-    // Mock หรือข้อมูลจริง (รองรับ Array เผื่อ API ส่งมา)
-    const staffs = customer.staff || [];
+    // DYNAMIC TAGS (with a fallback map if 'tags' is undefined to hide the empty mockup)
+    // สำหรับการทดสอบ ถ้ายังไม่มี array tags ให้ถือว่าเป็น array ว่าง
     const tags = customer.tags || [];
 
     return (
@@ -286,58 +327,70 @@ const AllChat = () => {
               <p className="user-card-last">{customer.last}</p>
               {lastTime && <span className="user-card-time">{formatTime(lastTime)}</span>}
             </div>
+            {customer.platform && (
+              <div className="d-flex align-items-center gap-1 mt-1" style={{ fontSize: "0.65rem", color: "#6b7280" }}>
+                {customer.platform === "line" ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#06C755"><path d="M12 2C6.48 2 2 5.88 2 10.54c0 4.24 3.76 7.78 8.84 8.44.34.07.81.22.93.52.1.27.07.68.03.95l-.15.91c-.05.27-.22 1.06.93.58s6.19-3.65 8.44-6.25C22.97 13.42 22 12.06 22 10.54 22 5.88 17.52 2 12 2z"/></svg>
+                ) : (
+                  <i className="bi bi-messenger" style={{ color: "#0084FF", fontSize: "12px" }}></i>
+                )}
+                <span>{customer.channel_name || customer.app}</span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Bottom Section */}
-        {/* {(staffs.length > 0 || tags.length > 0) && ( */}
-          <div className="user-card-footer">
-            <div className="staff-group">
-              <img src="" alt="" style={{backgroundColor: "black", width: "20px", height: "20px", borderRadius: "50%"}}/>
-              {/* {staffs.length > 0 &&
-                staffs.map((staff, i) => (
-                  <img
-                    key={i}
-                    src={staff.avatar || staff.img || staff}
-                    alt="staff"
-                    title={staff.name || "Staff"}
-                    className="staff-avatar"
-                  />
-                ))} */}
-            </div>
-            <div className="tag-group">
-              {/* Static mocks added by user */}
+        <div className="user-card-footer">
+          <div className="staff-group d-flex align-items-center gap-1">
+            {assignedMember ? (
+              <>
+                <img 
+                  src={assignedMember.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(assignedMember.username)}&background=random&size=40`} 
+                  alt={assignedMember.username} 
+                  className="border"
+                  style={{ width: "20px", height: "20px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+                />
+                <span style={{ fontSize: "0.7rem", color: "#374151", fontWeight: 500, whiteSpace: "nowrap" }}>
+                  {assignedMember.username}
+                </span>
+              </>
+            ) : (
+              <>
+                <div 
+                  className="border d-flex align-items-center justify-content-center text-muted" 
+                  style={{ width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#f3f4f6", fontSize: "10px", flexShrink: 0 }}
+                >
+                  <i className="bi bi-person"></i>
+                </div>
+                <span style={{ fontSize: "0.7rem", color: "#9ca3af", whiteSpace: "nowrap" }}>
+                  ยังไม่กำหนด
+                </span>
+              </>
+            )}
+          </div>
+          <div className="tag-group">
+              {/* Static mock — เหมือน Inbox, รอระบบ tags จาก DB */}
               <span className="tag-badge badge-red">Urgent</span>
               <span className="tag-badge badge-purple">VIP</span>
               <span className="tag-badge badge-green">Active</span>
-              {/* Mock a long tag rendering as dot */}
-              <span className="tag-badge badge-gray tag-dot" title="Demo - Do not delete"></span>
 
-              {/* Dynamic Map Logic For Future Use */}
-              {/* {tags.length > 0 &&
-                tags.map((tag, i) => {
-                  const tagLabel = typeof tag === "string" ? tag : tag.label;
-                  const type = tagLabel ? tagLabel.toLowerCase() : "";
-                  let badgeClass = "badge-gray";
-                  if (type.includes("urgent")) badgeClass = "badge-red";
-                  else if (type.includes("vip")) badgeClass = "badge-purple";
-                  else if (type.includes("active")) badgeClass = "badge-green";
-
-                  const isLong = tagLabel.length > 12;
-
-                  return (
-                    <span 
-                      key={i} 
-                      className={`tag-badge ${badgeClass} ${isLong ? 'tag-dot' : ''}`}
-                      title={tagLabel}
-                    >
-                      {!isLong && tagLabel}
-                    </span>
-                  );
-                })} */}
+              {/* Dynamic tags — เปิดใช้เมื่อมี customer.tags จาก API */}
+              {/* {tags.map((tag, i) => {
+                const type = tag.toLowerCase();
+                let badgeClass = "badge-gray";
+                if (type.includes("urgent")) badgeClass = "badge-red";
+                else if (type.includes("vip")) badgeClass = "badge-purple";
+                else if (type.includes("active")) badgeClass = "badge-green";
+                const isLong = tag.length > 12;
+                return (
+                  <span key={i} className={`tag-badge ${badgeClass} ${isLong ? 'tag-dot' : ''}`} title={tag}>
+                    {!isLong && tag}
+                  </span>
+                );
+              })} */}
             </div>
-          </div>
-        {/* )} */}
+        </div>
       </div>
     );
   };
@@ -345,29 +398,102 @@ const AllChat = () => {
   return (
     <div className="kanit-regular d-flex flex-column allChat">
       {/* Header Section */}
-      <div className="allchat-toolbar">
-        <div className="filter-tabs">
-          {FILTER_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              className={`nav-search ${activeFilter === tab.key ? "nav-search-active" : ""}`}
-              onClick={() => setActiveFilter(tab.key)}
-            >
-              {tab.label}
-              {statusCounts[tab.key] > 0 && (
-                <span className="tab-count">{statusCounts[tab.key]}</span>
-              )}
-            </button>
-          ))}
+      <div className="allchat-toolbar d-flex flex-column gap-2 mb-3">
+        {/* Top Row: Tabs + Search */}
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div className="filter-tabs">
+            {FILTER_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                className={`nav-search ${activeFilter === tab.key ? "nav-search-active" : ""}`}
+                onClick={() => setActiveFilter(tab.key)}
+              >
+                {tab.label}
+                {statusCounts[tab.key] > 0 && (
+                  <span className="tab-count">{statusCounts[tab.key]}</span>
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="sidebar-search">
+            <i className="bi bi-search"></i>
+            <input
+              type="text"
+              placeholder="ค้นหา (ชื่อ/ข้อความ)"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="sidebar-search">
-          <i className="bi bi-search"></i>
-          <input
-            type="text"
-            placeholder="ค้นหา"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
+
+        {/* Bottom Row: Additional Filters */}
+        <div className="d-flex align-items-center flex-wrap gap-2">
+          <select 
+            className="form-select form-select-sm w-auto rounded-pill px-3 shadow-none border-light-subtle" 
+            style={{ fontSize: "0.85rem", cursor: "pointer" }}
+            value={sortOrder} 
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value="latest">จัดเรียง: ล่าสุด</option>
+            <option value="oldest">จัดเรียง: เก่าสุด</option>
+          </select>
+
+          <select 
+            className="form-select form-select-sm w-auto rounded-pill px-3 shadow-none border-light-subtle"
+            style={{ fontSize: "0.85rem", cursor: "pointer" }}
+            value={filterAssignee} 
+            onChange={(e) => setFilterAssignee(e.target.value)}
+          >
+            <option value="all">ผู้รับผิดชอบ: ทั้งหมด</option>
+            <option value="unassigned">ผู้รับผิดชอบ: ยังไม่ได้กำหนด</option>
+            {members.map(m => (
+               <option key={m.emp_id} value={m.emp_id}>{m.username}</option>
+            ))}
+          </select>
+
+          <Dropdown>
+            <Dropdown.Toggle 
+              variant="light" 
+              size="sm" 
+              className="rounded-pill border-light-subtle shadow-none d-flex align-items-center gap-1 bg-white"
+              style={{ fontSize: "0.85rem", letterSpacing: "0.2px" }}
+            >
+              <i className="bi bi-tags"></i>
+              แท็ก {filterTags.length > 0 ? `(${filterTags.length})` : ""}
+            </Dropdown.Toggle>
+            <Dropdown.Menu className="p-2 border-0 shadow-sm rounded-3">
+              {AVAILABLE_TAGS.map(tag => (
+                <Form.Check 
+                  key={tag}
+                  type="checkbox"
+                  id={`tag-${tag}`}
+                  label={tag}
+                  className="mb-1"
+                  style={{ fontSize: "0.85rem", cursor: "pointer" }}
+                  checked={filterTags.includes(tag)}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    if (e.target.checked) setFilterTags([...filterTags, tag]);
+                    else setFilterTags(filterTags.filter(t => t !== tag));
+                  }}
+                />
+              ))}
+              {filterTags.length > 0 && (
+                <>
+                  <Dropdown.Divider />
+                  <div className="text-center">
+                    <button 
+                      className="btn btn-link text-danger text-decoration-none p-0" 
+                      style={{ fontSize: "0.75rem" }}
+                      onClick={(e) => { e.stopPropagation(); setFilterTags([]); }}
+                    >
+                      ล้างแท็กทั้งหมด
+                    </button>
+                  </div>
+                </>
+              )}
+            </Dropdown.Menu>
+          </Dropdown>
         </div>
       </div>
 

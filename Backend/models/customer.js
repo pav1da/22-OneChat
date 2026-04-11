@@ -1,15 +1,19 @@
 const pool = require('../config/db.js');
 
-const COLS = 'cus_id, cus_name, displayname AS display_name, platform, platform_id, channel_id, cus_picture, status, updated_at';
+const COLS = `c.cus_id, c.cus_name, c.displayname AS display_name, c.platform, c.platform_id, c.channel_id, c.cus_picture, c.status, c.assigned_to, c.updated_at, ch.channel_name`;
 
 const Customer = {
   findAll: async () => {
-    const [rows] = await pool.query(`SELECT ${COLS} FROM customers ORDER BY updated_at DESC`);
+    const [rows] = await pool.query(
+      `SELECT ${COLS} FROM customers c LEFT JOIN channels ch ON c.channel_id = ch.channel_id ORDER BY c.updated_at DESC`
+    );
     return rows;
   },
 
   findById: async (id) => {
-    const [rows] = await pool.query(`SELECT ${COLS} FROM customers WHERE cus_id = ?`, [id]);
+    const [rows] = await pool.query(
+      `SELECT ${COLS} FROM customers c LEFT JOIN channels ch ON c.channel_id = ch.channel_id WHERE c.cus_id = ?`, [id]
+    );
     return rows[0] || null;
   },
 
@@ -20,6 +24,11 @@ const Customer = {
 
   updateStatus: async (id, status) => {
     const [r] = await pool.query('UPDATE customers SET status = ? WHERE cus_id = ?', [status, id]);
+    return r.affectedRows > 0;
+  },
+
+  updateAssignedTo: async (id, empId) => {
+    const [r] = await pool.query('UPDATE customers SET assigned_to = ? WHERE cus_id = ?', [empId, id]);
     return r.affectedRows > 0;
   },
 };

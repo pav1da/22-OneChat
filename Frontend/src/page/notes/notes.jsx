@@ -13,7 +13,7 @@ import {
 import { io } from "socket.io-client";
 import "./notes.css";
 
-function Dashboard() {
+function Dashboard({ user }) {
   const navigate = useNavigate();
 
   // state สำหรับควบคุม Modal เปิด/ปิด
@@ -98,13 +98,14 @@ function Dashboard() {
         const token = sessionStorage.getItem("token");
         if (editingId) {
           // โหมดแก้ไข
+          const currentUsername = user?.username || user?.name || 'unknown';
           await fetch(`/api/notes/${editingId}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ text: newNote.content }),
+            body: JSON.stringify({ text: newNote.content, edited_by: currentUsername }),
           });
         } else {
           // สร้างใหม่
@@ -284,6 +285,23 @@ function Dashboard() {
                       >
                         <i className="bi bi-clock me-1"></i>
                         {formatDateTime(note.created_at)}
+                      </div>
+                    )}
+                    {note.edited_by && (
+                      <div
+                        style={{
+                          fontSize: "0.6rem",
+                          color: "#d97706",
+                          marginTop: "1px",
+                        }}
+                      >
+                        <i className="bi bi-pencil me-1"></i>
+                        แก้ไขโดย: {note.edited_by}
+                        {note.updated_at && (
+                          <span style={{ color: "var(--text-secondary)", marginLeft: "4px" }}>
+                            · {formatDateTime(note.updated_at)}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>

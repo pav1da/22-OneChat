@@ -27,6 +27,19 @@ const getHeaders = () => ({
   Authorization: `Bearer ${getToken()}`,
 });
 
+// Helper: แปลง LINE emoji markers ใน last message ให้อ่านง่าย
+const LINE_EMOJI_RE = /\[line-emoji:[^\]]+\]/g;
+const sanitizeLastText = (text) => {
+  if (!text) return text;
+  // ถ้าไม่มี LINE emoji marker เลย → คืนค่าเดิม
+  if (!text.includes("[line-emoji:")) return text;
+  // แทนที่ marker ด้วย "(อีโมจิ)"
+  const replaced = text.replace(LINE_EMOJI_RE, "(อีโมจิ)").trim();
+  // ถ้าผลลัพธ์เป็นแค่ "(อีโมจิ)" ซ้ำๆ → ย่อเป็นอันเดียว
+  if (/^\(อีโมจิ\)(\s*\(อีโมจิ\))*$/.test(replaced)) return "(อีโมจิ)";
+  return replaced;
+};
+
 export const ChatProvider = ({ children }) => {
   const [messages, setMessages] = useState({});
   const [customers, setCustomers] = useState([]);
@@ -63,7 +76,9 @@ export const ChatProvider = ({ children }) => {
               : "",
             platform: c.platform,
             platform_id: c.platform_id,
+            channel_name: c.channel_name || null,
             status: c.status || STATUS.NOT_STARTED,
+            assigned_to: c.assigned_to || null,
             last: "",
           }));
           setCustomers(mapped);
@@ -79,7 +94,7 @@ export const ChatProvider = ({ children }) => {
               const msgs = msgData[c.id];
               if (msgs && msgs.length > 0) {
                 const lastMsg = msgs[msgs.length - 1];
-                return { ...c, last: lastMsg.text || "(รูปภาพ)" };
+                return { ...c, last: sanitizeLastText(lastMsg.text) || "(รูปภาพ)" };
               }
               return c;
             }),
@@ -111,7 +126,7 @@ export const ChatProvider = ({ children }) => {
 
       // อัปเดต last message + ย้ายลูกค้าขึ้นบนสุด
       const lastText =
-        msg.text ||
+        sanitizeLastText(msg.text) ||
         (msg.image && msg.image.includes("stickershop")
           ? "(สติกเกอร์)"
           : "(รูปภาพ)");
@@ -171,11 +186,21 @@ export const ChatProvider = ({ children }) => {
             platform: cust.platform,
             platform_id: cust.platform_id,
             status: cust.status || STATUS.NOT_STARTED,
+            assigned_to: cust.assigned_to || null,
             last: cust.first_message || "",
           },
           ...prev,
         ];
       });
+    });
+
+    // อัปเดต assigned_to แบบ real-time (จาก client อื่น)
+    socket.on("customer-assigned", ({ cus_id, assigned_to }) => {
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === cus_id ? { ...c, assigned_to } : c,
+        ),
+      );
     });
 
     return () => socket.disconnect();
@@ -302,6 +327,25 @@ export const ChatProvider = ({ children }) => {
     }
   }, []);
 
+  // ---------- อัปเดตผู้รับผิดชอบ (assigned_to) ----------
+  const updateCustomerAssign = useCallback(async (customerId, empId) => {
+    // อัปเดต UI ทันที (optimistic)
+    setCustomers((prev) =>
+      prev.map((c) =>
+        c.id === customerId ? { ...c, assigned_to: empId } : c,
+      ),
+    );
+    try {
+      await fetch(`/api/customers/${customerId}/assign`, {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ emp_id: empId }),
+      });
+    } catch (err) {
+      console.error("Update assigned_to error:", err);
+    }
+  }, []);
+
   // ---------- อัปเดตชื่อลูกค้า ----------
   const updateCustomerName = useCallback(async (customerId, newName) => {
     setCustomers((prev) =>
@@ -335,6 +379,7 @@ export const ChatProvider = ({ children }) => {
         sendImageMessage,
         updateCustomerStatus,
         updateCustomerName,
+        updateCustomerAssign,
         markAsRead,
         STATUS,
       }}

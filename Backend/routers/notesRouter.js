@@ -239,10 +239,10 @@ router.post('/', auth, async (req, res) => {
 // PUT /api/notes/:id — แก้ไขโน้ต
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, edited_by } = req.body;
     if (!text) return res.status(400).json({ message: 'กรุณาระบุข้อความ' });
 
-    const success = await Note.update(req.params.id, text);
+    const success = await Note.update(req.params.id, text, edited_by);
     if (!success) return res.status(404).json({ message: 'ไม่พบโน้ต' });
 
     // ดึงข้อมูลโน้ตที่อัปเดตแล้ว (พร้อม customer info) เพื่อ broadcast
