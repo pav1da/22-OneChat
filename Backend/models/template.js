@@ -114,7 +114,7 @@ const Template = {
         return result.insertId;
     },
 
-    // ค้นหา Template ทั้งหมด (ไม่ดึง content เพราะมี base64 ขนาดใหญ่ ทำให้ sort buffer ล้น)
+    // ค้นหา Template ทั้งหมด 
     findAll: async () => {
         const [rows] = await pool.query('SELECT id, name, type, created_by, created_at, updated_at FROM templates ORDER BY created_at DESC');
         return rows;
@@ -126,7 +126,7 @@ const Template = {
         return rows[0] || null;
     },
 
-    // ค้นหา Template ตามประเภท (ไม่ดึง content เพราะมี base64 ขนาดใหญ่)
+    // ค้นหา Template ตามประเภท 
     findByType: async (type) => {
         const [rows] = await pool.query('SELECT id, name, type, created_by, created_at, updated_at FROM templates WHERE type = ? ORDER BY created_at DESC', [type]);
         return rows;
