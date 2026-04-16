@@ -252,6 +252,8 @@
   margin: 0;
   font-size: var(--fs-sm);
   line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .message .texts p.own {
   background-color: var(--bg-bubble-admin);

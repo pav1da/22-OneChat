@@ -17,7 +17,7 @@ const transformRow = (row) => {
     customer_id: row.customer_id,
     sender: row.sender || 'customer',
     message_type: row.message_type,
-    text: row.message_type === 'text' ? row.message_text : null,
+    text: (row.message_type === 'text' || row.message_type === 'carousel') ? row.message_text : null,
     image: row.message_type === 'image' ? imageUrl
          : row.message_type === 'sticker' ? row.message_text
          : null,

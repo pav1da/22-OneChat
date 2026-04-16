@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import "./TemplatePicker.css";
 
-const TemplatePicker = ({ onSelectText, onSelectImage, onClose }) => {
+const TemplatePicker = ({ onSelectText, onSelectImage, onSelectCarousel, onClose }) => {
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
@@ -155,38 +155,48 @@ const TemplatePicker = ({ onSelectText, onSelectImage, onClose }) => {
     // Handle select
     const handleSelect = async (template) => {
         saveRecent(template.id);
+        
+        let content = null;
+        try {
+            content = typeof template.content === "string" ? JSON.parse(template.content) : template.content;
+        } catch { }
+
         if (template.type === "ข้อความ") {
-            // ข้อความมีอยู่ใน content แล้ว
             const text = getTextContent(template) || "";
-            console.log("[TemplatePicker] text selected:", text.substring(0, 50));
             onSelectText(String(text));
             onClose();
         } else if (template.type === "รูปภาพ") {
-            // รูปภาพไม่มี content ใน list → fetch เต็มๆ ตาม ID
-            try {
-                const token = sessionStorage.getItem("token");
-                const res = await fetch(`/api/templates/${template.id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                const full = data.data || data;
-                const imageUrl = getImageUrl(full);
-                console.log("[TemplatePicker] image url length:", imageUrl?.length || 0);
-                if (imageUrl) {
-                    onSelectImage(imageUrl);
-                    onClose();
-                } else {
-                    alert("ไม่พบรูปภาพใน Template นี้");
+            // Carousel type: multi-card format (has content.type === 'carousel' with cards[])
+            if (content && content.type === "carousel" && Array.isArray(content.cards) && content.cards.length >= 1) {
+                if (typeof onSelectCarousel === "function") {
+                    onSelectCarousel(content.cards);
                 }
-            } catch (err) {
-                console.error("[TemplatePicker] fetch image error:", err);
-                alert("โหลดรูปไม่สำเร็จ: " + err.message);
+                onClose();
+            } else if (content && content.image) {
+                // Single card format (backward compat): convert to 1-card carousel so Flex Message renders tags/labels!
+                if (typeof onSelectCarousel === "function") {
+                    const singleCard = {
+                        image: content.image,
+                        message: content.message || "",
+                        tag: content.tag || "",
+                        isEndCard: false
+                    };
+                    onSelectCarousel([singleCard]);
+                }
+                onClose();
+            } else {
+                // Fallback for extremely old legacy templates with missing content properties
+                const imageUrl = `/api/templates/${template.id}/image`;
+                if (typeof onSelectImage === "function") {
+                    onSelectImage(imageUrl);
+                }
+                onClose();
             }
         }
     };
 
     const FILTERS = ["ทั้งหมด", "ข้อความ", "รูปภาพ"];
+    const [previewItem, setPreviewItem] = useState(null);
 
     return (
         <div className="tp-overlay">
@@ -194,158 +204,146 @@ const TemplatePicker = ({ onSelectText, onSelectImage, onClose }) => {
                 {/* Header */}
                 <div className="tp-header">
                     <div className="tp-header-title">
-                        <i className="bi bi-window"></i>
-                        <span>เลือก Template</span>
+                        <span>เลือกคอนเทนต์</span>
                     </div>
                     <button className="tp-close" onClick={onClose}>
                         <i className="bi bi-x-lg"></i>
                     </button>
                 </div>
 
-                {/* Search */}
-                <div className="tp-search-bar">
-                    <i className="bi bi-search tp-search-icon"></i>
-                    <input
-                        type="text"
-                        className="tp-search-input"
-                        placeholder="ค้นหา Template..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        autoFocus
-                    />
-                    {search && (
-                        <button className="tp-search-clear" onClick={() => setSearch("")}>
-                            <i className="bi bi-x"></i>
-                        </button>
-                    )}
-                </div>
-
-                {/* Filter tabs */}
-                <div className="tp-filter-tabs">
-                    {FILTERS.map((f) => (
-                        <button
-                            key={f}
-                            className={`tp-filter-tab${filter === f ? " active" : ""}`}
-                            onClick={() => setFilter(f)}
-                        >
-                            {f === "ข้อความ" && <i className="bi bi-chat-text me-1"></i>}
-                            {f === "รูปภาพ" && <i className="bi bi-image me-1"></i>}
-                            {f}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Content */}
-                <div className="tp-content">
-                    {loading ? (
-                        <div className="tp-loading">
-                            <div className="tp-spinner"></div>
-                            <span>กำลังโหลด...</span>
-                        </div>
-                    ) : filtered.length === 0 ? (
-                        <div className="tp-empty">
-                            <i className="bi bi-inbox"></i>
-                            <span>ไม่พบ Template</span>
-                        </div>
-                    ) : (
-                        filtered.map((template) => {
-                            const isPinned = pinned.includes(template.id);
-                            const isRecent = recentUsed.includes(template.id);
-                            const isText = template.type === "ข้อความ";
-                            const isImage = template.type === "รูปภาพ";
-
-                            return (
-                                <div
-                                    key={template.id}
-                                    className="tp-item"
-                                    onClick={() => handleSelect(template)}
+                <div className="tp-body">
+                    {/* Left Column: List + Search */}
+                    <div className="tp-left">
+                        {/* Filter tabs (styled as underline tabs in LINE OA but keeping our classes) */}
+                        <div className="tp-filter-tabs">
+                            {FILTERS.map((f) => (
+                                <button
+                                    key={f}
+                                    className={`tp-filter-tab${filter === f ? " active" : ""}`}
+                                    onClick={() => setFilter(f)}
                                 >
-                                    {/* Thumbnail / Icon */}
-                                    <div className="tp-item-thumb">
-                                        {isImage ? (
-                                            getImageUrl(template) ? (
-                                                <img
-                                                    src={getImageUrl(template)}
-                                                    alt={template.name}
-                                                    className="tp-thumb-img"
-                                                />
-                                            ) : (
-                                                <div className="tp-thumb-placeholder">
-                                                    <i className="bi bi-image"></i>
-                                                </div>
-                                            )
-                                        ) : (
-                                            <div className="tp-thumb-text-icon">
-                                                <i className="bi bi-chat-text"></i>
-                                            </div>
-                                        )}
-                                    </div>
+                                    {f === "ข้อความ" && <i className="bi bi-chat-text me-1"></i>}
+                                    {f === "รูปภาพ" && <i className="bi bi-image me-1"></i>}
+                                    {f}
+                                </button>
+                            ))}
+                        </div>
 
-                                    {/* Info */}
-                                    <div className="tp-item-info">
-                                        <div className="tp-item-name">
-                                            {isPinned && (
-                                                <i className="bi bi-pin-fill tp-pin-icon"></i>
-                                            )}
-                                            {isRecent && !isPinned && (
-                                                <i className="bi bi-clock-history tp-recent-icon"></i>
-                                            )}
-                                            {template.name}
-                                        </div>
-                                        <div className="tp-item-meta">
-                                            <span
-                                                className={`tp-type-badge ${isText ? "text" : "image"}`}
-                                            >
-                                                {template.type}
-                                            </span>
-                                            {isText && (
-                                                <span className="tp-item-preview">
-                                                    {getTextContent(template)?.substring(0, 60)}
-                                                    {getTextContent(template)?.length > 60 ? "..." : ""}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
+                        {/* Search */}
+                        <div className="tp-search-bar">
+                            <i className="bi bi-search tp-search-icon"></i>
+                            <input
+                                type="text"
+                                className="tp-search-input"
+                                placeholder="ค้นหาด้วยชื่อ..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                autoFocus
+                            />
+                            {search && (
+                                <button className="tp-search-clear" onClick={() => setSearch("")}>
+                                    <i className="bi bi-x"></i>
+                                </button>
+                            )}
+                        </div>
 
-                                    {/* Actions */}
-                                    <div className="tp-item-actions">
-                                        <button
-                                            className={`tp-pin-btn${isPinned ? " active" : ""}`}
-                                            onClick={(e) => togglePin(template.id, e)}
-                                            title={isPinned ? "เลิกปักหมุด" : "ปักหมุด"}
-                                        >
-                                            <i
-                                                className={`bi ${isPinned ? "bi-pin-fill" : "bi-pin"}`}
-                                            ></i>
-                                        </button>
-                                        {isText ? (
-                                            <button
-                                                className="tp-send-btn"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleSelect(template);
-                                                }}
-                                                title="ใช้ Template"
-                                            >
-                                                <i className="bi bi-pencil-square"></i>
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className="tp-send-btn image"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleSelect(template);
-                                                }}
-                                                title="ส่งรูปทันที"
-                                            >
-                                                <i className="bi bi-send"></i>
-                                            </button>
-                                        )}
-                                    </div>
+                        {/* Content */}
+                        <div className="tp-content">
+                            {loading ? (
+                                <div className="tp-loading">
+                                    <div className="tp-spinner"></div>
+                                    <span>กำลังโหลด...</span>
                                 </div>
-                            );
-                        })
-                    )}
+                            ) : filtered.length === 0 ? (
+                                <div className="tp-empty">
+                                    <i className="bi bi-inbox"></i>
+                                    <span>ไม่พบ Template</span>
+                                </div>
+                            ) : (
+                                filtered.map((template) => {
+                                    const isPinned = pinned.includes(template.id);
+                                    const isRecent = recentUsed.includes(template.id);
+                                    const isText = template.type === "ข้อความ";
+                                    const isImage = template.type === "รูปภาพ";
+                                    const isSelected = previewItem && previewItem.id === template.id;
+
+                                    return (
+                                        <div
+                                            key={template.id}
+                                            className={`tp-item${isSelected ? " selected" : ""}`}
+                                            onClick={() => setPreviewItem(template)}
+                                        >
+                                            <div className="tp-item-info">
+                                                <div className="tp-item-name">
+                                                    {isPinned && <i className="bi bi-star-fill tp-pin-icon"></i>}
+                                                    {isRecent && !isPinned && <i className="bi bi-clock-history tp-recent-icon"></i>}
+                                                    {template.name}
+                                                </div>
+                                                <div className="tp-item-meta">
+                                                    {isText && (
+                                                        <span className="tp-item-preview-text">
+                                                            {getTextContent(template)?.substring(0, 40) || template.type}
+                                                            {getTextContent(template)?.length > 40 ? "..." : ""}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Action for pin removed from hover to keep it simple, or keep it on right side */}
+                                            <div className="tp-item-actions">
+                                                <button
+                                                    className={`tp-pin-btn${isPinned ? " active" : ""}`}
+                                                    onClick={(e) => togglePin(template.id, e)}
+                                                >
+                                                    <i className={`bi ${isPinned ? "bi-star-fill" : "bi-star"}`}></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column: Preview */}
+                    <div className="tp-right">
+                        <div className="tp-preview-header">
+                            ดูตัวอย่าง
+                            <i className="bi bi-question-circle"></i>
+                        </div>
+                        <div className="tp-preview-container">
+                            {!previewItem ? (
+                                <div className="tp-preview-empty">เลือกเทมเพลตเพื่อดูตัวอย่าง</div>
+                            ) : previewItem.type === "รูปภาพ" ? (
+                                <div className="tp-preview-image-box">
+                                    <img 
+                                        src={`/api/templates/${previewItem.id}/image`} 
+                                        alt="preview"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.parentElement.innerHTML = '<div class="tp-preview-no-image">ไม่มีรูปภาพ</div>';
+                                        }}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="tp-preview-chat-bubble">
+                                    <div className="tp-bubble-text">{getTextContent(previewItem)}</div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="tp-footer">
+                    <button className="tp-btn-cancel" onClick={onClose}>ยกเลิก</button>
+                    <button 
+                        className="tp-btn-submit" 
+                        disabled={!previewItem} 
+                        onClick={() => handleSelect(previewItem)}
+                    >
+                        เลือก
+                    </button>
                 </div>
             </div>
         </div>

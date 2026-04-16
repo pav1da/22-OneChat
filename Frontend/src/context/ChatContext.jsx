@@ -311,6 +311,111 @@ export const ChatProvider = ({ children }) => {
     }
   }, []);
 
+  // ---------- ส่งข้อความแบบ Carousel (Multiple Cards) ----------
+  const sendCarouselMessage = useCallback(async (customerId, cards) => {
+    try {
+      if (!cards || cards.length === 0) return;
+
+      // 1. ตรวจสอบและอัปโหลด base64 image เป็น URL ก่อน
+      const processedCards = await Promise.all(
+        cards.map(async (c) => {
+          // End cards have no image — skip upload entirely
+          if (c.isEndCard) {
+            return {
+              image: null,
+              message: c.message ? c.message.trim() : "ดูรายละเอียด",
+              tag: c.tag || "",
+              isEndCard: true,
+            };
+          }
+
+          let finalUrl = c.image;
+          // ถ้าเป็น base64 ให้แปลงและอัปโหลดผ่าน endpoint /api/messages/upload-image
+          if (finalUrl && finalUrl.startsWith("data:")) {
+            try {
+              const [header, b64] = finalUrl.split(",");
+              const mime = header.match(/:(.*?);/)?.[1] || "image/jpeg";
+              const binary = atob(b64);
+              const bytes = new Uint8Array(binary.length);
+              for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+              }
+              const blob = new Blob([bytes], { type: mime });
+              const ext = mime.split("/")[1] || "jpg";
+              const file = new File([blob], `carousel_card.${ext}`, { type: mime });
+
+              const formData = new FormData();
+              formData.append("image", file);
+
+              const uploadRes = await fetch("/api/messages/upload-image", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${getToken()}` },
+                body: formData,
+              });
+
+              if (uploadRes.ok) {
+                const { url } = await uploadRes.json();
+                finalUrl = url;
+              }
+            } catch (err) {
+              console.error("Failed to parse/upload base64 carousel card:", err);
+            }
+          }
+          return {
+            image: finalUrl,
+            message: c.message ? c.message.trim() : "",
+            tag: c.tag || "",
+            isEndCard: false,
+          };
+        })
+      );
+
+      const cardsJson = JSON.stringify(processedCards);
+
+      // --- จุดที่ 1: Optimistic Update ---
+      const newMsg = {
+        id: Date.now(),
+        sender: "own",
+        message_type: "carousel",
+        text: cardsJson,
+        created_at: new Date().toISOString(),
+      };
+
+      setMessages((prev) => ({
+        ...prev,
+        [customerId]: [...(prev[customerId] || []), newMsg],
+      }));
+
+      // อัปเดต sidebar
+      setCustomers((prev) => {
+        const updated = prev.map((c) =>
+          c.id === customerId ? { ...c, last: "📋 Carousel Message" } : c
+        );
+        const idx = updated.findIndex((c) => c.id === customerId);
+        if (idx > 0) {
+          const [cust] = updated.splice(idx, 1);
+          updated.unshift(cust);
+        }
+        return updated;
+      });
+
+      // --- จุดที่ 2: ส่งข้อมูลลง DB ---
+      await fetch("/api/messages", {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          customer_id: customerId,
+          sender: "own",
+          message_type: "carousel",
+          message_text: cardsJson,
+          socket_id: socketRef.current?.id || null,
+        }),
+      });
+    } catch (err) {
+      console.error("Send carousel error:", err);
+    }
+  }, []);
+
   // ---------- อ่านแล้ว (clear unread) ----------
   const markAsRead = useCallback((customerId) => {
     activeCustomerIdRef.current = customerId; // อัปเดตว่ากำลังดูแชทไหนอยู่
@@ -388,6 +493,7 @@ export const ChatProvider = ({ children }) => {
         unreadCounts,
         sendMessage,
         sendImageMessage,
+        sendCarouselMessage,
         updateCustomerStatus,
         updateCustomerName,
         updateCustomerAssign,

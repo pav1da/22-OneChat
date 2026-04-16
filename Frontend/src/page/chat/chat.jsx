@@ -170,6 +170,7 @@ const Inbox = ({ currentUser }) => {
         customers: customer,
         sendMessage,
         sendImageMessage,
+        sendCarouselMessage,
         updateCustomerStatus,
         updateCustomerName,
         updateCustomerAssign,
@@ -715,7 +716,55 @@ const Inbox = ({ currentUser }) => {
                                         <span className="msg-time msg-time-left">{timeStr}</span>
                                     )}
 
-                                    {msg.message_type === "sticker" ? (
+                                    {msg.message_type === "carousel" ? (
+                                        <div className="chat-carousel-wrapper" style={{
+                                            display: 'flex',
+                                            overflowX: 'auto',
+                                            gap: '12px',
+                                            maxWidth: '300px',
+                                            paddingBottom: '8px',
+                                            scrollbarWidth: 'none'
+                                        }}>
+                                            {(() => {
+                                                try {
+                                                    const cards = JSON.parse(msg.text);
+                                                    return cards.map((c, i) => (
+                                                        <div key={i} className="carousel-card" style={{
+                                                            flex: '0 0 150px',
+                                                            backgroundColor: 'var(--bg-surface)',
+                                                            borderRadius: '12px',
+                                                            overflow: 'hidden',
+                                                            border: '1px solid var(--border-light)'
+                                                        }}>
+                                                            {c.isEndCard ? (
+                                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '120px' }}>
+                                                                    <span style={{ color: '#42659a', fontWeight: '500', fontSize: '0.9rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div style={{ position: 'relative', width: '100%', height: '150px' }}>
+                                                                     {c.image && (
+                                                                         <img src={c.image} alt="carousel-card" style={{
+                                                                             width: '100%', height: '100%', objectFit: 'cover'
+                                                                         }} onClick={() => window.open(c.image, "_blank")} />
+                                                                     )}
+                                                                     {c.tag && (
+                                                                         <div style={{ position: 'absolute', top: '8px', left: '8px', backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.7rem' }}>
+                                                                             {c.tag}
+                                                                         </div>
+                                                                     )}
+                                                                     {c.message && (
+                                                                         <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.65)', color: 'white', padding: '4px 12px', borderRadius: '16px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                                                                             {c.message}
+                                                                         </div>
+                                                                     )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ));
+                                                } catch(e) { return <span>Invalid Carousel Data</span>; }
+                                            })()}
+                                        </div>
+                                    ) : msg.message_type === "sticker" ? (
                                         <div className="sticker">
                                             <img
                                                 src={msg.image}
@@ -746,15 +795,15 @@ const Inbox = ({ currentUser }) => {
                                                 onClick={() => window.open(msg.image, "_blank")}
                                             />
                                         </div>
-                                    ) : isLineEmojiOnly(msg.text) ? (
+                                    ) : isLineEmojiOnly(msg.text) && msg.message_type !== 'carousel' ? (
                                         <div className="emoji-only">
                                             <span>{renderTextWithLineEmoji(msg.text, 40)}</span>
                                         </div>
-                                    ) : isEmojiOnly(msg.text) ? (
+                                    ) : isEmojiOnly(msg.text) && msg.message_type !== 'carousel' ? (
                                         <div className="emoji-only">
                                             <span>{msg.text}</span>
                                         </div>
-                                    ) : (
+                                    ) : msg.message_type !== 'carousel' ? (
                                         <div className="texts">
                                             <p className={msg.sender === "own" ? "own" : ""}>
                                                 {hasLineEmoji(msg.text)
@@ -762,7 +811,7 @@ const Inbox = ({ currentUser }) => {
                                                     : msg.text}
                                             </p>
                                         </div>
-                                    )}
+                                    ) : null}
 
                                     {/* Timestamp ฝั่งขวาของ bubble (สำหรับ customer) */}
                                     {msg.sender === "customer" && showTime && timeStr && (
@@ -955,6 +1004,16 @@ const Inbox = ({ currentUser }) => {
                                                 } catch (err) {
                                                     console.error("Send template image error:", err);
                                                     alert("ส่งรูปไม่ได้: " + err.message);
+                                                }
+                                            }}
+                                            onSelectCarousel={async (cards) => {
+                                                if (!selectedChatId) return;
+                                                try {
+                                                    await sendCarouselMessage(selectedChatId, cards);
+                                                    endRef.current?.scrollIntoView({ behavior: "smooth" });
+                                                } catch (err) {
+                                                    console.error("Send carousel error:", err);
+                                                    alert("ส่ง Carousel ไม่สำเร็จ: " + err.message);
                                                 }
                                             }}
                                             onClose={() => setShowTemplatePicker(false)}

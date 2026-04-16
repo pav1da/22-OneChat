@@ -33,7 +33,7 @@ const ChatList = ({
               <div className="chatlist-card-main">
                 <div className="position-relative" style={{ flexShrink: 0 }}>
                   <img
-                    src={cus.img}
+                    src={cus.img || undefined}
                     alt={cus.name}
                     className="chatlist-avatar"
                   />
@@ -72,9 +72,8 @@ const ChatList = ({
               {/* Bottom Section */}
               <div className="chatlist-card-footer">
                 <div className="staff-group">
-                  <img
-                    src=""
-                    alt="staff"
+                  {/* Staff placeholder — replace with dynamic map when data is available */}
+                  <div
                     style={{ backgroundColor: "black" }}
                     className="staff-avatar"
                   />

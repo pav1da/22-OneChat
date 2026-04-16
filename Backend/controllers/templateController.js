@@ -2,7 +2,7 @@ const Template = require('../models/template.js');
 const Log = require('../models/log.js');
 
 // ช่วยแปลง user id ชั่วคราว (หรือจะรับจาก req.user ถ้ามี auth)
-const getUsername = (req) => req.user?.username || req.body.username || 'Admin';
+const getUsername = (req) => req.user?.username || req.body?.username || 'Admin';
 
 // สร้าง Template ใหม่
 exports.createTemplate = async (req, res) => {
@@ -64,8 +64,10 @@ exports.getTemplateImage = async (req, res) => {
             ? JSON.parse(template.content)
             : template.content;
 
+        // Resolve image data — supports single image, images[], and carousel cards[]
         const imageData = content?.image ||
             (Array.isArray(content?.images) && content.images[0]) ||
+            (Array.isArray(content?.cards) && content.cards[0]?.image) ||
             '';
 
         if (!imageData || !String(imageData).startsWith('data:')) {

@@ -7,6 +7,16 @@
   --saas-active-bg: #f3f4f6; /* Gray background for active item */
 }
 
+/* Dark mode support */
+[data-theme="dark"] {
+  --saas-border: var(--border-medium);
+  --saas-bg: var(--bg-surface);
+  --saas-hover: var(--bg-hover);
+  --saas-text-dark: var(--text-main);
+  --saas-text-muted: var(--text-muted);
+  --saas-active-bg: var(--bg-hover);
+}
+
 /* ================= Wrapper (Floating Sidebar Style) ================= */
 .saas-sidebar-container {
   height: 100vh;
