@@ -42,6 +42,49 @@ exports.getAllTemplates = async (req, res) => {
     }
 };
 
+// ดึง Template สำหรับ TemplatePicker (ไม่รวม base64 รูป)
+exports.getTemplatesForPicker = async (req, res) => {
+    try {
+        const templates = await Template.findSummaryForPicker();
+        res.status(200).json({ status: 'success', data: templates });
+    } catch (error) {
+        console.error('Error in getTemplatesForPicker:', error.message);
+        res.status(500).json({ status: 'error', message: 'เกิดข้อผิดพลาดในการดึงข้อมูล' });
+    }
+};
+
+// ดึงรูป Template ตาม ID (return เป็น binary image สำหรับ <img src>)
+exports.getTemplateImage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const template = await Template.findById(id);
+        if (!template) return res.status(404).json({ error: 'Not found' });
+
+        const content = typeof template.content === 'string'
+            ? JSON.parse(template.content)
+            : template.content;
+
+        const imageData = content?.image ||
+            (Array.isArray(content?.images) && content.images[0]) ||
+            '';
+
+        if (!imageData || !String(imageData).startsWith('data:')) {
+            return res.status(404).json({ error: 'No image in template' });
+        }
+
+        const [header, base64] = String(imageData).split(',');
+        const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
+        const buffer = Buffer.from(base64, 'base64');
+
+        res.set('Content-Type', mime);
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.send(buffer);
+    } catch (err) {
+        console.error('Error in getTemplateImage:', err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // ดึง Template ตาม ID
 exports.getTemplateById = async (req, res) => {
     try {

@@ -116,7 +116,19 @@ const Template = {
 
     // ค้นหา Template ทั้งหมด (ไม่ดึง content เพราะมี base64 ขนาดใหญ่ ทำให้ sort buffer ล้น)
     findAll: async () => {
-        const [rows] = await pool.query('SELECT id, name, type, created_by, created_at, updated_at FROM templates ORDER BY created_at DESC');
+        const [rows] = await pool.query('SELECT id, name, type, created_by, created_at, updated_at FROM templates ORDER BY id DESC');
+        return rows;
+    },
+
+    // ดึงสำหรับ TemplatePicker: เอา content เฉพาะ type=ข้อความ (ไม่เอา base64 รูป)
+    findSummaryForPicker: async () => {
+        const [rows] = await pool.query(`
+            SELECT id, name, type,
+                CASE WHEN type = 'ข้อความ' THEN content ELSE NULL END AS content,
+                created_at
+            FROM templates
+            ORDER BY id DESC
+        `);
         return rows;
     },
 

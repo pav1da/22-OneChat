@@ -23,7 +23,7 @@ const Cardmessage = () => {
   const fetchItems = async () => {
     try {
       const token = sessionStorage.getItem('token');
-      const response = await fetch("/api/templates", {
+      const response = await fetch("/api/templates/picker", {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) {
@@ -33,12 +33,24 @@ const Cardmessage = () => {
       }
       const resData = await response.json();
       if (resData.status === "success") {
-        const backendItems = resData.data.map((item) => ({
-          id: item.id,
-          type: item.type,
-          title: item.name,
-          created: new Date(item.created_at).toLocaleString(),
-        }));
+        const backendItems = resData.data.map((item) => {
+          // parse content เพื่อเอา message preview
+          let textPreview = "";
+          try {
+            const c = item.content
+              ? (typeof item.content === 'string' ? JSON.parse(item.content) : item.content)
+              : null;
+            textPreview = c?.message || c?.text || "";
+          } catch (e) { textPreview = ""; }
+
+          return {
+            id: item.id,
+            type: item.type,
+            title: item.name,
+            textPreview,
+            created: new Date(item.created_at).toLocaleString(),
+          };
+        });
         setItems(backendItems);
       }
     } catch (error) {
@@ -155,7 +167,7 @@ const Cardmessage = () => {
         {/* หัวข้อ */}
         <Row className="card-table-header">
           <Col className="col-id">ID</Col>
-          <Col className="col-item">รูป/ข้อความ</Col>
+          <Col className="col-item">ตัวอย่าง</Col>
           <Col>ชื่อไอเทม</Col>
           <Col className="col-created">วันสร้าง</Col>
           <Col className="col-type">ประเภท</Col>
@@ -168,14 +180,39 @@ const Cardmessage = () => {
             {/* ID */}
             <Col className="col-id">{item.id}</Col>
 
-            {/* รูป/ข้อความ */}
-            <Col className="col-item">
-              {item.type === "รูปภาพ" ? (
-                <span>🖼️ รูปภาพ</span>
-              ) : (
-                <span>💬 ข้อความ</span>
-              )}
-            </Col>
+          {/* ตัวอย่างเนื้อหา */}
+          <Col className="col-item">
+            {item.type === "รูปภาพ" ? (
+              <img
+                src={`/api/templates/${item.id}/image`}
+                alt={item.title}
+                loading="lazy"
+                style={{
+                  width: 52,
+                  height: 52,
+                  objectFit: "cover",
+                  borderRadius: 6,
+                  border: "1px solid #eee",
+                }}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            ) : (
+              <span
+                style={{
+                  fontSize: "0.8rem",
+                  color: "#555",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                  maxWidth: 180,
+                }}
+                title={item.textPreview}
+              >
+                {item.textPreview || "-"}
+              </span>
+            )}
+          </Col>
 
             {/* ชื่อไอเทม */}
             <Col>{item.title}</Col>

@@ -268,11 +268,10 @@ export const ChatProvider = ({ children }) => {
       const { filename, url } = await uploadRes.json();
 
       // --- จุดที่ 1: Optimistic Update ---
-      // ใช้ url ที่ได้จาก Cloudinary มาแสดงผลทันที
       const newMsg = {
         id: Date.now(),
         sender: "own",
-        message_type: "image", // เพิ่ม type เพื่อให้ Component รู้ว่าเป็นรูป
+        message_type: "image",
         image: url,
         created_at: new Date().toISOString(),
       };
@@ -282,8 +281,20 @@ export const ChatProvider = ({ children }) => {
         [customerId]: [...(prev[customerId] || []), newMsg],
       }));
 
+      // อัปเดต sidebar: แสดง "รูปภาพ" และย้ายขึ้นบนสุด
+      setCustomers((prev) => {
+        const updated = prev.map((c) =>
+          c.id === customerId ? { ...c, last: "📷 รูปภาพ" } : c,
+        );
+        const idx = updated.findIndex((c) => c.id === customerId);
+        if (idx > 0) {
+          const [cust] = updated.splice(idx, 1);
+          updated.unshift(cust);
+        }
+        return updated;
+      });
+
       // --- จุดที่ 2: ส่งข้อมูลลง DB ---
-      // ในระบบใหม่ message_text จะต้องเก็บ URL เต็มๆ เพื่อให้ LINE ดึงรูปไปใช้ได้
       await fetch("/api/messages", {
         method: "POST",
         headers: getHeaders(),
@@ -291,7 +302,7 @@ export const ChatProvider = ({ children }) => {
           customer_id: customerId,
           sender: "own",
           message_type: "image",
-          message_text: url, // ใช้ url แทน filename เดิม
+          message_text: url,
           socket_id: socketRef.current?.id || null,
         }),
       });
