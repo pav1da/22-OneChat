@@ -683,6 +683,260 @@
   color: var(--text-muted);
 }
 
+/* ==================== Modern Tag System ==================== */
+.tag-section {
+  padding: 0 12px;
+  margin-top: 16px;
+}
+
+.tag-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.tag-section-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-heading, #1e293b);
+}
+
+.tag-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1.5px dashed var(--border-medium, #cbd5e1);
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.tag-add-btn:hover {
+  background: var(--bg-hover, #f1f5f9);
+  border-color: #818cf8;
+  color: #818cf8;
+}
+
+/* Tag pills */
+.tag-pills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+  animation: tagFadeIn 0.25s ease-out;
+  transition: all 0.2s;
+}
+
+.tag-pill:hover {
+  filter: brightness(0.95);
+}
+
+.tag-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tag-pill-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 2px;
+  cursor: pointer;
+  opacity: 0.5;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition: opacity 0.15s;
+}
+
+.tag-pill-remove:hover {
+  opacity: 1;
+}
+
+.tag-empty-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted, #94a3b8);
+  font-style: italic;
+}
+
+/* Tag form */
+.tag-form {
+  margin-top: 10px;
+  animation: tagFadeIn 0.2s ease-out;
+}
+
+.tag-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tag-input-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 0.8rem;
+  color: var(--text-muted, #94a3b8);
+  pointer-events: none;
+}
+
+.tag-input {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  border: 1.5px solid var(--border-light, #e2e8f0);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  background: var(--bg-surface, #fff);
+  color: var(--text-main, #334155);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tag-input:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+}
+
+/* Suggestions dropdown */
+.tag-suggestions {
+  margin-top: 6px;
+  background: var(--bg-surface, #fff);
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  animation: tagFadeIn 0.15s ease-out;
+}
+
+.tag-suggestions-label {
+  padding: 6px 12px 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.tag-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  background: transparent;
+  font-size: 0.8rem;
+  color: var(--text-main, #334155);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.tag-suggestion-item:hover {
+  background: var(--bg-hover, #f1f5f9);
+}
+
+.tag-suggestion-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tag-highlight {
+  color: #818cf8;
+  font-weight: 700;
+}
+
+/* Color picker */
+.tag-color-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.tag-color-label {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  margin-right: 4px;
+}
+
+.tag-color-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  padding: 0;
+}
+
+.tag-color-dot:hover {
+  transform: scale(1.15);
+}
+
+.tag-color-dot.active {
+  border-color: var(--text-heading, #1e293b);
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Create button */
+.tag-form-actions {
+  margin-top: 10px;
+}
+
+.tag-btn-create {
+  width: 100%;
+  padding: 7px 0;
+  border: none;
+  border-radius: 8px;
+  background: #818cf8;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.tag-btn-create:hover:not(:disabled) {
+  background: #6366f1;
+}
+
+.tag-btn-create:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@keyframes tagFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 1024px) {
   .detail-panel {

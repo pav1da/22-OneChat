@@ -12,6 +12,8 @@ const ChatList = ({
   selectedChatId,
   onChatSelect,
   unreadCounts = {},
+  tagsMap = {},
+  members = [],
 }) => {
   return (
     <div className="overflow-y-auto flex-grow-1">
@@ -19,10 +21,12 @@ const ChatList = ({
         {customers.map((cus) => {
           const isSelected = cus.id === selectedChatId;
           const unread = unreadCounts[cus.id] || 0;
+          const tags = tagsMap[cus.id] || [];
 
-          // Mock Data if not exist
-          // const staffs = cus.staff || [];
-          // const tags = cus.tags || [];
+          // Find assigned staff member
+          const assignedMember = cus.assigned_to
+            ? members.find((m) => m.emp_id === cus.assigned_to)
+            : null;
 
           return (
             <div
@@ -64,62 +68,55 @@ const ChatList = ({
                   </div>
                   <div className="chatlist-bottom">
                     <p className="chatlist-last">{cus.last}</p>
-                    <span className="chatlist-time">03:47</span> {/* Mock Time like image */}
                   </div>
                 </div>
               </div>
 
-              {/* Bottom Section */}
+              {/* Bottom Section — Real Data */}
               <div className="chatlist-card-footer">
-                <div className="staff-group">
-                  {/* Staff placeholder — replace with dynamic map when data is available */}
-                  <div
-                    style={{ backgroundColor: "black" }}
-                    className="staff-avatar"
-                  />
-                  {/* Dynamic map example */}
-                  {/* {staffs.length > 0 &&
-                    staffs.map((staff, i) => (
-                      <img
-                        key={i}
-                        src={staff.avatar || staff.img || staff}
-                        alt="staff"
-                        title={staff.name || "Staff"}
-                        className="staff-avatar"
-                      />
-                    ))} */}
-                </div>
-                <div className="tag-group">
-                  {/* Static mocks added by user */}
-                  <span className="tag-badge badge-red">Urgent</span>
-                  <span className="tag-badge badge-purple">VIP</span>
-                  <span className="tag-badge badge-green">Active</span>
-                  {/* Mock a long tag rendering as dot */}
-                  <span className="tag-badge badge-gray tag-dot" title="Demo - Do not delete"></span>
-                  
-                  {/* Dynamic map example */}
-                  {/* {tags.length > 0 &&
-                    tags.map((tag, i) => {
-                      const tagLabel = typeof tag === "string" ? tag : tag.label;
-                      const type = tagLabel ? tagLabel.toLowerCase() : "";
-                      let badgeClass = "badge-gray";
-                      if (type.includes("urgent")) badgeClass = "badge-red";
-                      else if (type.includes("vip")) badgeClass = "badge-purple";
-                      else if (type.includes("active")) badgeClass = "badge-green";
-
-                      const isLong = tagLabel.length > 12;
-
-                      return (
-                        <span 
-                          key={i} 
-                          className={`tag-badge ${badgeClass} ${isLong ? 'tag-dot' : ''}`}
-                          title={tagLabel}
-                        >
-                          {!isLong && tagLabel}
-                        </span>
-                      );
-                    })} */}
-                </div>
+                {assignedMember && (
+                  <div className="staff-group">
+                    <div
+                      className="staff-avatar"
+                      style={{ backgroundColor: "#818cf8" }}
+                      title={assignedMember.username}
+                    >
+                      {assignedMember.username?.charAt(0)?.toUpperCase()}
+                    </div>
+                  </div>
+                )}
+                {tags.length > 0 && (
+                  <div className="tag-group">
+                    {tags.slice(0, 3).map((tag, i) => (
+                      <span
+                        key={tag.id || i}
+                        className="tag-badge"
+                        style={{
+                          backgroundColor: tag.color + "22",
+                          color: tag.color,
+                          borderColor: tag.color + "44",
+                        }}
+                        title={tag.text}
+                      >
+                        <span
+                          className="tag-badge-dot"
+                          style={{ backgroundColor: tag.color }}
+                        ></span>
+                        {tag.text.length > 8
+                          ? tag.text.substring(0, 8) + "…"
+                          : tag.text}
+                      </span>
+                    ))}
+                    {tags.length > 3 && (
+                      <span
+                        className="tag-badge tag-badge-more"
+                        title={tags.slice(3).map((t) => t.text).join(", ")}
+                      >
+                        +{tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );

@@ -201,18 +201,13 @@ const Inbox = ({ currentUser }) => {
     const [members, setMembers] = useState([]);
 
     // Tags state
-    const [tagsMap, setTagsMap] = useState({}); // { customerId: [{ text, color }] }
+    const [tagsMap, setTagsMap] = useState({}); // { customerId: [{ id, text, color }] }
+    const [allTags, setAllTags] = useState([]); // all unique tags from DB for suggestions
     const [newTagText, setNewTagText] = useState("");
     const [showTagInput, setShowTagInput] = useState(false);
     const TAG_COLORS = [
-        "#ef4444",
-        "#f97316",
-        "#eab308",
-        "#22c55e",
-        "#3b82f6",
-        "#8b5cf6",
-        "#ec4899",
-        "#6b7280",
+        "#818cf8", "#f472b6", "#fb923c", "#34d399",
+        "#60a5fa", "#a78bfa", "#fbbf24", "#94a3b8",
     ];
     const [selectedTagColor, setSelectedTagColor] = useState(TAG_COLORS[0]);
 
@@ -225,6 +220,33 @@ const Inbox = ({ currentUser }) => {
     const chatMessages = allMessages.slice(-visibleCount);
     const hasMore = allMessages.length > visibleCount;
 
+    // Tag suggestions derived
+    const currentTags = tagsMap[selectedChatId] || [];
+    const currentTagTexts = currentTags.map((t) => t.text.toLowerCase());
+
+    // Unique tag suggestions from all data
+    const tagSuggestions = (() => {
+        const query = newTagText.trim().toLowerCase();
+        // Collect unique tags from ALL customers
+        const uniqueMap = new Map();
+        allTags.forEach((t) => {
+            const key = t.text.toLowerCase();
+            if (!uniqueMap.has(key)) {
+                uniqueMap.set(key, { text: t.text, color: t.color });
+            }
+        });
+        // Filter: must match query AND not already on this customer
+        return [...uniqueMap.values()].filter(
+            (t) => {
+                const lower = t.text.toLowerCase();
+                return (
+                    lower.includes(query) &&
+                    !currentTagTexts.includes(lower)
+                );
+            }
+        );
+    })();
+
     // Clear image panel + reset pagination + close emoji when switching chats
     useEffect(() => {
         panelFiles.forEach((f) => URL.revokeObjectURL(f.url));
@@ -236,7 +258,7 @@ const Inbox = ({ currentUser }) => {
 
     // ---------- Sort logic ----------
     const sortedCustomers = [...customer].sort((a, b) => {
-        if (sortBy === "latest") return 0; // คงลำดับจาก ChatContext (เรียงตามข้อความล่าสุดแล้ว)
+        if (sortBy === "latest") return 0;
         if (sortBy === "name_asc") return a.name.localeCompare(b.name);
         if (sortBy === "name_desc") return b.name.localeCompare(a.name);
         return 0;
@@ -356,10 +378,8 @@ const Inbox = ({ currentUser }) => {
         if (!selectedCustomer) return;
         const trimmed = editName.trim();
         if (trimmed) {
-            // มีชื่อใหม่ → บันทึก
             updateCustomerName(selectedCustomer.id, trimmed);
         } else {
-            // ลบชื่อจนว่าง → กลับไปใช้ cus_name (originalName)
             updateCustomerName(selectedCustomer.id, null);
         }
         setIsEditingName(false);
@@ -399,30 +419,109 @@ const Inbox = ({ currentUser }) => {
         return null;
     };
 
-    // ---------- Tag handlers ----------
-    const handleAddTag = () => {
-        const trimmed = newTagText.trim();
-        if (!trimmed || !selectedChatId) return;
-        setTagsMap((prev) => ({
-            ...prev,
-            [selectedChatId]: [
-                ...(prev[selectedChatId] || []),
-                { text: trimmed, color: selectedTagColor },
-            ],
-        }));
+    // ---------- Load ALL tags on mount (for suggestions + chat list) ----------
+    useEffect(() => {
+        const fetchAllTags = async () => {
+            try {
+                const res = await fetch("/api/tags", {
+                    headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const tags = data.data || [];
+                    setAllTags(tags);
+                    // Group by customer_id for the chat list
+                    const grouped = {};
+                    tags.forEach((t) => {
+                        if (!grouped[t.customer_id]) grouped[t.customer_id] = [];
+                        grouped[t.customer_id].push(t);
+                    });
+                    setTagsMap((prev) => ({ ...grouped, ...prev }));
+                }
+            } catch (err) {
+                console.error("Fetch all tags error:", err);
+            }
+        };
+        fetchAllTags();
+    }, []);
+
+    // ---------- Load tags per customer ----------
+    useEffect(() => {
+        if (!selectedChatId) return;
+        if (tagsMap[selectedChatId]) return;
+        const fetchTags = async () => {
+            try {
+                const res = await fetch(`/api/tags/${selectedChatId}`, {
+                    headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setTagsMap((prev) => ({ ...prev, [selectedChatId]: data }));
+                }
+            } catch (err) {
+                console.error("Fetch tags error:", err);
+            }
+        };
+        fetchTags();
+    }, [selectedChatId]);
+
+    // ---------- Tag handlers (API-backed) ----------
+    const handleAddTag = async (tagText, tagColor) => {
+        const text = (tagText || newTagText).trim();
+        const color = tagColor || selectedTagColor;
+        if (!text || !selectedChatId) return;
+
+        // Duplicate check
+        if (currentTagTexts.includes(text.toLowerCase())) return;
+
+        try {
+            const res = await fetch("/api/tags", {
+                method: "POST",
+                headers: getHeaders(),
+                body: JSON.stringify({ customer_id: selectedChatId, text, color }),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const newTag = { id: data.id, text, color };
+                setTagsMap((prev) => ({
+                    ...prev,
+                    [selectedChatId]: [...(prev[selectedChatId] || []), newTag],
+                }));
+                setAllTags((prev) => [...prev, { ...newTag, customer_id: selectedChatId }]);
+            }
+        } catch (err) {
+            console.error("Add tag error:", err);
+        }
         setNewTagText("");
         setShowTagInput(false);
         setSelectedTagColor(TAG_COLORS[0]);
     };
 
-    const handleRemoveTag = (index) => {
+    const handleSelectSuggestion = (suggestion) => {
+        handleAddTag(suggestion.text, suggestion.color);
+    };
+
+    const handleRemoveTag = async (index) => {
         if (!selectedChatId) return;
+        const tags = tagsMap[selectedChatId] || [];
+        const tagToDelete = tags[index];
+        if (!tagToDelete) return;
+
         setTagsMap((prev) => ({
             ...prev,
             [selectedChatId]: (prev[selectedChatId] || []).filter(
                 (_, i) => i !== index,
             ),
         }));
+
+        try {
+            await fetch(`/api/tags/${tagToDelete.id}`, {
+                method: "DELETE",
+                headers: getHeaders(),
+            });
+        } catch (err) {
+            console.error("Delete tag error:", err);
+        }
     };
 
     // ---------- Helper: get auth headers ----------
@@ -572,6 +671,8 @@ const Inbox = ({ currentUser }) => {
                         selectedChatId={selectedChatId}
                         onChatSelect={handleChatSelect}
                         unreadCounts={unreadCounts}
+                        tagsMap={tagsMap}
+                        members={members}
                     />
                 </div>
             </div>
@@ -1163,87 +1264,137 @@ const Inbox = ({ currentUser }) => {
                         )}
 
                         {/* Tags */}
-                        <div className="detail-tags w-100 px-2 mt-3">
-                            <div className="detail-tags-header d-flex justify-content-between align-items-center">
-                                <span>แท็ก</span>
+                        <div className="tag-section">
+                            <div className="tag-section-header">
+                                <span className="tag-section-title">แท็ก</span>
                                 <button
                                     type="button"
-                                    className="icon-btn"
+                                    className="tag-add-btn"
                                     onClick={() => setShowTagInput(!showTagInput)}
+                                    title={showTagInput ? "ปิด" : "เพิ่มแท็ก"}
                                 >
-                                    <i className="bi bi-plus fs-5"></i>
+                                    <i className={`bi ${showTagInput ? "bi-x-lg" : "bi-plus"}`}></i>
                                 </button>
                             </div>
 
                             {/* Tag pills */}
-                            <div className="detail-tags-list">
-                                {(tagsMap[selectedChatId] || []).map((tag, idx) => (
+                            <div className="tag-pills-wrap">
+                                {currentTags.map((tag, idx) => (
                                     <span
-                                        key={idx}
-                                        className="detail-tag-pill"
-                                        style={{ backgroundColor: tag.color }}
+                                        key={tag.id || idx}
+                                        className="tag-pill"
+                                        style={{ backgroundColor: tag.color + "22", color: tag.color, borderColor: tag.color + "44" }}
                                     >
+                                        <span className="tag-pill-dot" style={{ backgroundColor: tag.color }}></span>
                                         {tag.text}
                                         <button
                                             type="button"
-                                            className="detail-tag-remove"
+                                            className="tag-pill-remove"
                                             onClick={() => handleRemoveTag(idx)}
+                                            style={{ color: tag.color }}
                                         >
                                             <i className="bi bi-x"></i>
                                         </button>
                                     </span>
                                 ))}
-                                {(tagsMap[selectedChatId] || []).length === 0 &&
-                                    !showTagInput && (
-                                        <span className="detail-tags-empty">ยังไม่มีแท็ก</span>
-                                    )}
+                                {currentTags.length === 0 && !showTagInput && (
+                                    <span className="tag-empty-hint">ยังไม่มีแท็ก กด + เพื่อเพิ่ม</span>
+                                )}
                             </div>
 
                             {/* Add tag form */}
                             {showTagInput && (
-                                <div className="detail-tag-form">
-                                    <input
-                                        type="text"
-                                        className="detail-tag-input"
-                                        placeholder="ชื่อแท็ก..."
-                                        value={newTagText}
-                                        onChange={(e) => setNewTagText(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
-                                                e.preventDefault();
-                                                handleAddTag();
-                                            }
-                                        }}
-                                        autoFocus
-                                    />
-                                    <div className="detail-tag-colors">
+                                <div className="tag-form">
+                                    <div className="tag-input-wrap">
+                                        <i className="bi bi-search tag-input-icon"></i>
+                                        <input
+                                            type="text"
+                                            className="tag-input"
+                                            placeholder="ค้นหาหรือสร้างแท็กใหม่..."
+                                            value={newTagText}
+                                            onChange={(e) => setNewTagText(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                    e.preventDefault();
+                                                    handleAddTag();
+                                                }
+                                            }}
+                                            autoFocus
+                                        />
+                                    </div>
+
+                                    {/* Suggestions dropdown */}
+                                    {newTagText.trim() && tagSuggestions.length > 0 && (
+                                        <div className="tag-suggestions">
+                                            <div className="tag-suggestions-label">แท็กที่มีอยู่</div>
+                                            {tagSuggestions.slice(0, 5).map((s, i) => {
+                                                const query = newTagText.trim().toLowerCase();
+                                                const idx2 = s.text.toLowerCase().indexOf(query);
+                                                return (
+                                                    <button
+                                                        key={i}
+                                                        type="button"
+                                                        className="tag-suggestion-item"
+                                                        onClick={() => handleSelectSuggestion(s)}
+                                                    >
+                                                        <span className="tag-suggestion-dot" style={{ backgroundColor: s.color }}></span>
+                                                        <span>
+                                                            {idx2 >= 0 ? (
+                                                                <>
+                                                                    {s.text.substring(0, idx2)}
+                                                                    <strong className="tag-highlight">{s.text.substring(idx2, idx2 + query.length)}</strong>
+                                                                    {s.text.substring(idx2 + query.length)}
+                                                                </>
+                                                            ) : s.text}
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    {/* Quick tags (recently used — show when input is empty) */}
+                                    {!newTagText.trim() && tagSuggestions.length > 0 && (
+                                        <div className="tag-suggestions">
+                                            <div className="tag-suggestions-label">แท็กล่าสุด</div>
+                                            {tagSuggestions.slice(0, 6).map((s, i) => (
+                                                <button
+                                                    key={i}
+                                                    type="button"
+                                                    className="tag-suggestion-item"
+                                                    onClick={() => handleSelectSuggestion(s)}
+                                                >
+                                                    <span className="tag-suggestion-dot" style={{ backgroundColor: s.color }}></span>
+                                                    <span>{s.text}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Color picker */}
+                                    <div className="tag-color-row">
+                                        <span className="tag-color-label">สี:</span>
                                         {TAG_COLORS.map((c) => (
                                             <button
                                                 key={c}
                                                 type="button"
-                                                className={`detail-tag-color-btn${selectedTagColor === c ? " active" : ""}`}
+                                                className={`tag-color-dot${selectedTagColor === c ? " active" : ""}`}
                                                 style={{ backgroundColor: c }}
                                                 onClick={() => setSelectedTagColor(c)}
                                             />
                                         ))}
                                     </div>
-                                    <div className="detail-tag-form-actions">
+
+                                    {/* Action buttons */}
+                                    <div className="tag-form-actions">
                                         <button
                                             type="button"
-                                            className="note-btn note-btn-save"
-                                            onClick={handleAddTag}
+                                            className="tag-btn-create"
+                                            onClick={() => handleAddTag()}
+                                            disabled={!newTagText.trim() || currentTagTexts.includes(newTagText.trim().toLowerCase())}
                                         >
-                                            เพิ่ม
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="note-btn note-btn-cancel"
-                                            onClick={() => {
-                                                setShowTagInput(false);
-                                                setNewTagText("");
-                                            }}
-                                        >
-                                            ยกเลิก
+                                            <i className="bi bi-plus-circle me-1"></i>
+                                            สร้างแท็ก
                                         </button>
                                     </div>
                                 </div>

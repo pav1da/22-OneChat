@@ -200,33 +200,6 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
       {/* Input */}
       <form className="mini-chat-input" onSubmit={handleSubmit}>
         <div style={{ position: "relative", display: "flex", alignItems: "center", gap: '2px' }}>
-          {/* Emoji */}
-          <button
-            type="button"
-            className={`icon-btn mini-emoji-btn${showEmoji ? " active" : ""}`}
-            onClick={() => setShowEmoji((v) => !v)}
-            title="Emoji"
-          >
-            <i className="bi bi-emoji-smile"></i>
-          </button>
-          {showEmoji && (
-            <EmojiPicker
-              onSelect={(emoji) => {
-                setReplyText((prev) => prev + emoji);
-                inputRef.current?.focus();
-              }}
-              onClose={() => setShowEmoji(false)}
-            />
-          )}
-          {/* Image Upload */}
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={() => fileInputRef.current?.click()}
-            title="ส่งรูปภาพ"
-          >
-            <i className="bi bi-image"></i>
-          </button>
           {/* Template Picker */}
           <button
             type="button"
@@ -234,7 +207,7 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
             onClick={() => setShowTemplatePicker((v) => !v)}
             title="Card Template"
           >
-            <i className="bi bi-layout-text-window-reverse"></i>
+            <i className="bi bi-window"></i>
           </button>
         </div>
         <input
@@ -245,9 +218,6 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
           onChange={(e) => setReplyText(e.target.value)}
           onPaste={handlePaste}
         />
-        <button type="submit" className="send-btn" disabled={!replyText.trim()}>
-          <i className="bi bi-send-fill"></i>
-        </button>
       </form>
     </div>
   );

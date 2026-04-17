@@ -6,7 +6,7 @@
   padding: 4px;
 }
 
-/* Card styles similar to Allchat */
+/* Card styles */
 .chatlist-card {
   background-color: var(--bg-main, #ffffff);
   border: 1px solid var(--border-light, #e5e7eb);
@@ -119,7 +119,7 @@
 .staff-group {
   display: flex;
   align-items: center;
-  flex: 1;
+  flex-shrink: 0;
 }
 
 .staff-avatar {
@@ -127,271 +127,54 @@
   height: 22px;
   border-radius: 50%;
   border: 2px solid var(--bg-main, #fff);
-  margin-left: -6px;
   object-fit: cover;
-  transition:
-    transform 0.2s ease,
-    z-index 0s;
-  position: relative;
-}
-
-.staff-avatar:first-child {
-  margin-left: 0;
-}
-
-.staff-avatar:hover {
-  transform: translateY(-2px);
-  z-index: 10;
-}
-
-.tag-group {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-  max-width: 60%;
-  overflow: hidden;
-}
-
-.tag-badge {
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 500;
-  white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-/* Tag Colors */
-.badge-red {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-.badge-purple {
-  background-color: rgba(168, 85, 247, 0.1);
-  color: #a855f7;
-  border: 1px solid rgba(168, 85, 247, 0.2);
-}
-.badge-gray {
-  background-color: rgba(107, 114, 128, 0.1);
-  color: #6b7280;
-  border: 1px solid rgba(107, 114, 128, 0.2);
-}
-.badge-green {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-/* Unread badge */
-.unread-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background-color: #ef4444;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 600;
   color: #fff;
-  font-size: var(--fs-xs, 12px);
-  font-weight: 700;
-  min-width: 20px;
-}
-/* Container list */
-.chatlist-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Card styles similar to Allchat */
-.chatlist-card {
-  background-color: var(--bg-main, #ffffff);
-  border: 1px solid var(--border-light, #e5e7eb);
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  transition:
-    box-shadow 0.2s ease,
-    background-color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.chatlist-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  background-color: var(--bg-surface, #fdfdfd);
-}
-
-.selected-chat-item {
-  border-color: var(--primary-color, #fca5a5) !important;
-  box-shadow: 0 2px 12px rgba(244, 164, 96, 0.15) !important;
-  background-color: var(--bg-surface) !important;
-}
-
-/* Main Top Section */
-.chatlist-card-main {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.chatlist-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.chatlist-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.chatlist-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.chatlist-name {
-  font-size: var(--fs-base, 14px);
-  font-weight: 500;
-  color: var(--text-main, #111);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.chatlist-status {
-  font-size: var(--fs-xs, 12px);
-  padding: 3px 10px;
-  border-radius: 10px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.chatlist-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.chatlist-last {
-  font-size: var(--fs-xs, 12px);
-  color: var(--text-secondary, #666);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.chatlist-time {
-  font-size: var(--fs-xs, 12px);
-  color: var(--text-muted, #999);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* Bottom Section */
-.chatlist-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding-top: 8px;
-  border-top: 1px solid var(--border-light, #e5e7eb);
-}
-
-.staff-group {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.staff-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid var(--bg-main, #fff);
-  margin-left: -6px;
-  object-fit: cover;
-  transition:
-    transform 0.2s ease,
-    z-index 0s;
-  position: relative;
-}
-
-.staff-avatar:first-child {
-  margin-left: 0;
 }
 
 .staff-avatar:hover {
   transform: translateY(-2px);
-  z-index: 10;
 }
 
+/* Tag group in chat list */
 .tag-group {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-wrap: nowrap;
   justify-content: flex-end;
-  max-width: 60%;
+  max-width: 70%;
   overflow: hidden;
 }
 
 .tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 20px;
   font-size: 10px;
   font-weight: 500;
   white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid;
 }
 
-.tag-dot {
-  width: 12px;
-  height: 12px;
-  padding: 0 !important;
-  border-radius: 50% !important;
-  display: inline-block;
+.tag-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  color: transparent !important;
-  overflow: hidden;
 }
 
-/* Tag Colors */
-.badge-red {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-.badge-purple {
-  background-color: rgba(168, 85, 247, 0.1);
-  color: #a855f7;
-  border: 1px solid rgba(168, 85, 247, 0.2);
-}
-.badge-gray {
-  background-color: rgba(107, 114, 128, 0.1);
-  color: #6b7280;
-  border: 1px solid rgba(107, 114, 128, 0.2);
-}
-.badge-green {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+.tag-badge-more {
+  background-color: var(--bg-hover, #f1f5f9) !important;
+  color: var(--text-secondary, #64748b) !important;
+  border-color: var(--border-light, #e2e8f0) !important;
+  font-size: 9px;
 }
 
 /* Unread badge */
@@ -443,10 +226,6 @@
   }
 
   .chatlist-last {
-    font-size: 11px;
-  }
-
-  .chatlist-time {
     font-size: 11px;
   }
 

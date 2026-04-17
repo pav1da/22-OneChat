@@ -32,6 +32,7 @@ const apiKeysRouter = require("./routers/apiKeysRouter.js");
 const channelsRouter = require("./routers/channelsRouter.js");
 const teamRouter = require("./routers/teamRouter.js");
 const membersRouter = require("./routers/membersRouter.js");
+const tagsRouter = require("./routers/tagsRouter.js");
 
 const app = express();
 const server = http.createServer(app);
@@ -172,6 +173,7 @@ app.use("/api/api-keys", apiKeysRouter);
 app.use("/api/channels", channelsRouter);
 app.use("/api/teams", teamRouter);
 app.use("/api/members", membersRouter);
+app.use("/api/tags", tagsRouter);
 
 // ===== Facebook API =====
 const auth = require("./middleware/auth.js");
