@@ -27,6 +27,10 @@ const Teams = () => {
   const [renamingTeam, setRenamingTeam] = useState(null);
   const [renameValue, setRenameValue] = useState("");
 
+  // Modal: ยืนยันลบทีม
+  const [showDeleteTeamModal, setShowDeleteTeamModal] = useState(false);
+  const [teamToDelete, setTeamToDelete] = useState(null);
+
   // Modal: เพิ่มสมาชิก
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [addMemberTeamId, setAddMemberTeamId] = useState(null);
@@ -176,21 +180,24 @@ const Teams = () => {
   };
 
   // ================== DELETE TEAM ==================
-  const handleDeleteTeam = async (team) => {
-    if (!window.confirm(`ต้องการลบทีม "${team.team_name}" ใช่หรือไม่?`)) return;
+  const confirmDeleteTeam = async () => {
+    if (!teamToDelete) return;
     try {
-      const res = await fetch(`/api/teams/${team.team_id}`, {
+      const res = await fetch(`/api/teams/${teamToDelete.team_id}`, {
         method: "DELETE",
         headers: authHeaders(),
       });
       if (res.ok) {
-        setTeams((prev) => prev.filter((t) => t.team_id !== team.team_id));
+        setTeams((prev) => prev.filter((t) => t.team_id !== teamToDelete.team_id));
       } else {
         const data = await res.json();
         alert(data.message || "ลบทีมไม่สำเร็จ");
       }
     } catch (err) {
       console.error("Delete team error:", err);
+    } finally {
+      setShowDeleteTeamModal(false);
+      setTeamToDelete(null);
     }
   };
 
@@ -441,7 +448,10 @@ const Teams = () => {
                         <button
                           className="btn-team-action danger icon-btn"
                           title="ลบทีม"
-                          onClick={() => handleDeleteTeam(team)}
+                          onClick={() => {
+                            setTeamToDelete(team);
+                            setShowDeleteTeamModal(true);
+                          }}
                         >
                           <i className="bi bi-trash3"></i>
                         </button>
@@ -738,41 +748,72 @@ const Teams = () => {
           </Modal.Body>
         </Modal>
 
-        {/* Modal: ยืนยันลบสมาชิก */}
-        <Modal
-          show={showConfirmRemove}
-          onHide={() => setShowConfirmRemove(false)}
-          centered
-          size="sm"
-          className="premium-modal danger-modal"
-        >
-          <Modal.Header closeButton className="border-0 pb-0">
-          </Modal.Header>
-          <Modal.Body className="text-center pt-0 pb-4">
-            <div className="icon-circle-danger mx-auto mb-3">
-              <i className="bi bi-exclamation-triangle-fill fs-2 text-danger"></i>
+        {/* Modal: ยืนยันลบทีม */}
+        <Modal show={showDeleteTeamModal} onHide={() => { setShowDeleteTeamModal(false); setTeamToDelete(null); }} centered>
+          <Modal.Body className="text-center p-5">
+            <div className="mb-4">
+              <div className="mx-auto bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style={{ width: "80px", height: "80px" }}>
+                <i className="bi bi-trash text-danger" style={{ fontSize: "2.5rem" }}></i>
+              </div>
             </div>
-            <h5 className="fw-bold mb-2">ยืนยันนำออกจากทีม?</h5>
-            <p className="text-muted mb-0">
-              คุณต้องการนำ <strong>{removingMember?.name}</strong> ออกจากทีมใช่หรือไม่?
+            <h5 className="fw-bold mb-3" style={{ color: "var(--text-heading, #1e293b)" }}>ยืนยันการลบทีม</h5>
+            <p className="mb-4" style={{ color: "var(--text-secondary, #4b5563)", fontSize: "1rem" }}>
+              คุณต้องการลบทีม <strong>{teamToDelete?.team_name}</strong> ใช่หรือไม่?<br/>
+              การกระทำนี้จะไม่สามารถเรียกคืนได้
             </p>
+            <div className="d-flex justify-content-center gap-3">
+              <Button 
+                variant="light" 
+                onClick={() => { setShowDeleteTeamModal(false); setTeamToDelete(null); }} 
+                className="px-4 py-2" 
+                style={{ fontWeight: 600, color: "var(--text-secondary, #4b5563)", border: "1px solid var(--border-medium, #cbd5e1)" }}
+              >
+                ยกเลิก
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={confirmDeleteTeam} 
+                className="px-4 py-2" 
+                style={{ fontWeight: 600 }}
+              >
+                ลบทีม
+              </Button>
+            </div>
           </Modal.Body>
-          <Modal.Footer className="border-0 justify-content-center pb-4 pt-0">
-            <Button
-              variant="light"
-              className="px-4 rounded-pill fw-medium"
-              onClick={() => setShowConfirmRemove(false)}
-            >
-              ยกเลิก
-            </Button>
-            <Button 
-              variant="danger" 
-              className="px-4 rounded-pill fw-medium shadow-sm"
-              onClick={handleConfirmRemoveMember}
-            >
-              นำออกทันที
-            </Button>
-          </Modal.Footer>
+        </Modal>
+
+        {/* Modal: ยืนยันลบสมาชิกออกจากทีม */}
+        <Modal show={showConfirmRemove} onHide={() => setShowConfirmRemove(false)} centered>
+          <Modal.Body className="text-center p-5">
+            <div className="mb-4">
+              <div className="mx-auto bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style={{ width: "80px", height: "80px" }}>
+                <i className="bi bi-trash text-danger" style={{ fontSize: "2.5rem" }}></i>
+              </div>
+            </div>
+            <h5 className="fw-bold mb-3" style={{ color: "var(--text-heading, #1e293b)" }}>ยืนยันนำออกจากทีม?</h5>
+            <p className="mb-4" style={{ color: "var(--text-secondary, #4b5563)", fontSize: "1rem" }}>
+              คุณต้องการนำ <strong>{removingMember?.name}</strong> ออกจากทีมใช่หรือไม่?<br/>
+              การกระทำนี้จะไม่สามารถเรียกคืนได้
+            </p>
+            <div className="d-flex justify-content-center gap-3">
+              <Button 
+                variant="light" 
+                onClick={() => setShowConfirmRemove(false)} 
+                className="px-4 py-2" 
+                style={{ fontWeight: 600, color: "var(--text-secondary, #4b5563)", border: "1px solid var(--border-medium, #cbd5e1)" }}
+              >
+                ยกเลิก
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={handleConfirmRemoveMember} 
+                className="px-4 py-2" 
+                style={{ fontWeight: 600 }}
+              >
+                นำออกทันที
+              </Button>
+            </div>
+          </Modal.Body>
         </Modal>
 
       </div>
