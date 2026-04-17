@@ -7,7 +7,6 @@ import { io } from "socket.io-client";
 import axios from "axios";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Sidebar.css";
-import defaultProfile from "../assets/Image/Admins/pav1da.png";
 
 // ==========================================
 // Component ย่อยสำหรับ Menu Item (SaaS Style)
@@ -81,7 +80,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
     currentUser?.image?.startsWith("/") ||
     currentUser?.image?.startsWith("http")
       ? currentUser.image
-      : defaultProfile;
+      : null;
   const userName = currentUser?.name || "Workspace";
   const userRole = currentUser?.role || "user";
   const isPrivilegedUserLocal = userRole === "manager" || userRole === "admin";
@@ -129,11 +128,17 @@ const Sidebar = ({ onLogout, currentUser }) => {
             onClick={() => setUserDropdownOpen(!userDropdownOpen)}
           >
             <div className="d-flex align-items-center gap-2">
-              <img
-                src={userImage}
-                alt="Profile"
-                className="saas-header-avatar"
-              />
+              {userImage ? (
+                <img
+                  src={userImage}
+                  alt="Profile"
+                  className="saas-header-avatar"
+                />
+              ) : (
+                <div className="saas-header-avatar d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)', fontSize: '0.55rem', fontWeight: '500' }}>
+                  No IMG
+                </div>
+              )}
               <span className="saas-header-title">{userName}</span>
             </div>
             <i className="bi bi-chevron-down saas-header-chevron"></i>

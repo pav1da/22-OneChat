@@ -269,7 +269,9 @@ async function handleEvent(event, io) {
         const msgSql =
           "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', 'sticker', ?)";
         const [result] = await db.query(msgSql, [customerId, stickerUrl]);
-        console.log(`บันทึกสติกเกอร์สำเร็จ! (${stickerUrl.includes('animation') ? 'animated' : 'static'})`);
+        console.log(
+          `บันทึกสติกเกอร์สำเร็จ! (${stickerUrl.includes("animation") ? "animated" : "static"})`,
+        );
 
         // ส่ง real-time ไป Frontend ทันที
         if (io) {

@@ -1,6 +1,7 @@
 const db = require("../config/db.js");
 const Log = require("../models/log.js");
 const Notification = require("../models/notification.js");
+const cloudinary = require("../config/cloudinary.js");
 
 const FB_TOKEN = process.env.FB_TOKEN;
 
@@ -39,7 +40,6 @@ exports.handleWebhook = async (req, res) => {
   const body = req.body;
 
   if (body.object === "page") {
-    // 🚨 ตอบ Facebook ทันทีว่า "ได้รับแล้ว" (ป้องกันส่งซ้ำ)
     res.status(200).send("EVENT_RECEIVED");
 
     const io = req.app.get("io");
@@ -310,23 +310,88 @@ async function findOrCreateFbCustomer(psid) {
     };
   }
 
-  // ดึงชื่อ + รูปโปรไฟล์จาก Facebook Graph API
+  // ===== ดึงชื่อ + รูปโปรไฟล์จาก Facebook =====
   let displayName = `FB User ${psid}`;
+  let fbPictureUrl = "";
   let pictureUrl = "";
+
+  // วิธีที่ 1: ลองดึงจาก Profile API โดยตรง
   try {
     const profileRes = await fetch(
-      `https://graph.facebook.com/${psid}?fields=first_name,last_name,picture.type(large)&access_token=${FB_TOKEN}`
+      `https://graph.facebook.com/${psid}?fields=first_name,last_name,profile_pic&access_token=${FB_TOKEN}`
     );
     if (profileRes.ok) {
       const profile = await profileRes.json();
-      displayName =
-        `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
-        displayName;
-      // Facebook ส่ง picture เป็น object { data: { url: "..." } }
-      pictureUrl = profile.picture?.data?.url || "";
+      if (!profile.error) {
+        displayName =
+          `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+          displayName;
+        fbPictureUrl = profile.profile_pic || "";
+        console.log(`👤 FB Profile (direct): ${displayName}`);
+      }
     }
   } catch (err) {
-    console.error("FB profile fetch error:", err.message);
+    console.error("FB profile direct error:", err.message);
+  }
+
+  // วิธีที่ 2: ถ้ายังเป็นชื่อ default → ดึงจาก Conversations API (ใช้ได้แม้ไม่มี pages_read_engagement)
+  if (displayName === `FB User ${psid}`) {
+    try {
+      console.log("🔄 Fallback: ดึงชื่อจาก Conversations API...");
+      const convRes = await fetch(
+        `https://graph.facebook.com/v19.0/me/conversations?fields=participants&access_token=${FB_TOKEN}`
+      );
+      if (convRes.ok) {
+        const convData = await convRes.json();
+        // ค้นหา PSID ใน participants ของทุก conversation
+        for (const conv of (convData.data || [])) {
+          const participant = conv.participants?.data?.find((p) => p.id === psid);
+          if (participant && participant.name) {
+            displayName = participant.name;
+            console.log(`👤 FB Profile (conversations): ${displayName}`);
+            break;
+          }
+        }
+      }
+    } catch (err) {
+      console.error("FB conversations fallback error:", err.message);
+    }
+  }
+
+  // ===== ดึงรูปโปรไฟล์ + Upload ไป Cloudinary =====
+  // ลอง Facebook CDN redirect URL
+  if (!fbPictureUrl) {
+    try {
+      const picRes = await fetch(
+        `https://graph.facebook.com/${psid}/picture?type=large&redirect=false&access_token=${FB_TOKEN}`
+      );
+      if (picRes.ok) {
+        const picData = await picRes.json();
+        if (picData.data && picData.data.url && !picData.data.is_silhouette) {
+          fbPictureUrl = picData.data.url;
+        }
+      }
+    } catch (err) {
+      // ดึงรูปไม่ได้ — ใช้ fallback avatar
+    }
+  }
+
+  if (fbPictureUrl) {
+    try {
+      const uploadResult = await cloudinary.uploader.upload(fbPictureUrl, {
+        folder: "onechat/fb-profiles",
+        public_id: `fb_${psid}`,
+        overwrite: true,
+        transformation: [
+          { width: 200, height: 200, crop: "fill", gravity: "face" },
+        ],
+      });
+      pictureUrl = uploadResult.secure_url;
+      console.log(`☁️ Upload รูป FB ไป Cloudinary สำเร็จ: ${pictureUrl}`);
+    } catch (uploadErr) {
+      console.error("Cloudinary upload error:", uploadErr.message);
+      pictureUrl = fbPictureUrl; // Fallback
+    }
   }
 
   // ค้นหา channel_id ของ Facebook ที่ active อยู่
@@ -457,3 +522,136 @@ function processLogAndNotification(
     }
   })();
 }
+
+// ===== Sync ประวัติแชทเก่าจาก Facebook =====
+// ดึง conversations ทั้งหมดจาก Facebook Page แล้วบันทึกลง DB
+exports.syncConversationHistory = async (req, res) => {
+  const PAGE_ACCESS_TOKEN = process.env.FB_TOKEN;
+
+  try {
+    // 1. ดึง Page ID ก่อน
+    const meRes = await fetch(
+      `https://graph.facebook.com/v19.0/me?access_token=${PAGE_ACCESS_TOKEN}`
+    );
+    if (!meRes.ok) {
+      const err = await meRes.json();
+      return res.status(400).json({ message: "FB Token ไม่ถูกต้อง", error: err });
+    }
+    const pageInfo = await meRes.json();
+    const pageId = pageInfo.id;
+    console.log(`📄 Facebook Page: ${pageInfo.name} (ID: ${pageId})`);
+
+    // 2. ดึง Conversations ทั้งหมดของ Page
+    let conversations = [];
+    let convUrl = `https://graph.facebook.com/v19.0/${pageId}/conversations?fields=id,participants,updated_time&limit=25&access_token=${PAGE_ACCESS_TOKEN}`;
+
+    while (convUrl) {
+      const convRes = await fetch(convUrl);
+      if (!convRes.ok) {
+        const err = await convRes.json();
+        console.error("FB conversations error:", err);
+        break;
+      }
+      const convData = await convRes.json();
+      conversations = conversations.concat(convData.data || []);
+      convUrl = convData.paging?.next || null;
+    }
+
+    console.log(`💬 พบ ${conversations.length} conversations`);
+
+    let totalNewMessages = 0;
+    let totalNewCustomers = 0;
+
+    // 3. วนแต่ละ conversation → ดึงข้อความ
+    for (const conv of conversations) {
+      // หา participant ที่ไม่ใช่ Page (= ลูกค้า)
+      const customer = conv.participants?.data?.find((p) => p.id !== pageId);
+      if (!customer) continue;
+
+      const senderPsid = customer.id;
+
+      // สร้างหรือค้นหาลูกค้าใน DB
+      const { customerId, isNew } = await findOrCreateFbCustomer(senderPsid);
+      if (isNew) totalNewCustomers++;
+
+      // 4. ดึงข้อความจาก conversation นี้
+      let msgUrl = `https://graph.facebook.com/v19.0/${conv.id}/messages?fields=message,created_time,from,attachments&limit=100&access_token=${PAGE_ACCESS_TOKEN}`;
+
+      while (msgUrl) {
+        const msgRes = await fetch(msgUrl);
+        if (!msgRes.ok) {
+          console.error(`FB messages error (conv: ${conv.id}):`, await msgRes.json());
+          break;
+        }
+        const msgData = await msgRes.json();
+        const fbMessages = msgData.data || [];
+
+        for (const fbMsg of fbMessages) {
+          // ตรวจสอบว่าบันทึกไปแล้วหรือยัง (ใช้ created_time เทียบ)
+          const createdAt = new Date(fbMsg.created_time);
+          const mysqlTime = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, "0")}-${String(createdAt.getDate()).padStart(2, "0")} ${String(createdAt.getHours()).padStart(2, "0")}:${String(createdAt.getMinutes()).padStart(2, "0")}:${String(createdAt.getSeconds()).padStart(2, "0")}`;
+
+          // ระบุว่าเป็นข้อความจากลูกค้าหรือจาก Page
+          const sender = fbMsg.from?.id === pageId ? "own" : "customer";
+
+          // ข้อความ text
+          if (fbMsg.message) {
+            // เช็คว่ามีข้อความซ้ำในเวลาเดียวกันหรือไม่
+            const [existing] = await db.query(
+              "SELECT id FROM chat_messages WHERE customer_id = ? AND message_text = ? AND created_at = ?",
+              [customerId, fbMsg.message, mysqlTime]
+            );
+
+            if (existing.length === 0) {
+              await db.query(
+                "INSERT INTO chat_messages (customer_id, sender, message_type, message_text, created_at) VALUES (?, ?, 'text', ?, ?)",
+                [customerId, sender, fbMsg.message, mysqlTime]
+              );
+              totalNewMessages++;
+            }
+          }
+
+          // รูปภาพ / attachments
+          if (fbMsg.attachments?.data) {
+            for (const att of fbMsg.attachments.data) {
+              if (att.image_data?.url || att.file_url) {
+                const imgUrl = att.image_data?.url || att.file_url;
+                const isSticker = att.type === "sticker";
+                const msgType = isSticker ? "sticker" : "image";
+
+                const [existing] = await db.query(
+                  "SELECT id FROM chat_messages WHERE customer_id = ? AND message_text = ? AND created_at = ?",
+                  [customerId, imgUrl, mysqlTime]
+                );
+
+                if (existing.length === 0) {
+                  await db.query(
+                    "INSERT INTO chat_messages (customer_id, sender, message_type, message_text, created_at) VALUES (?, ?, ?, ?, ?)",
+                    [customerId, sender, msgType, imgUrl, mysqlTime]
+                  );
+                  totalNewMessages++;
+                }
+              }
+            }
+          }
+        }
+
+        // Pagination — ดึงหน้าถัดไป
+        msgUrl = msgData.paging?.next || null;
+      }
+    }
+
+    console.log(`✅ Sync เสร็จ! ลูกค้าใหม่: ${totalNewCustomers}, ข้อความใหม่: ${totalNewMessages}`);
+
+    res.json({
+      message: "Sync ประวัติแชท Facebook สำเร็จ",
+      page: pageInfo.name,
+      conversations: conversations.length,
+      newCustomers: totalNewCustomers,
+      newMessages: totalNewMessages,
+    });
+  } catch (err) {
+    console.error("❌ Sync FB history error:", err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการ sync", error: err.message });
+  }
+};

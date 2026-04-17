@@ -51,6 +51,18 @@ function App() {
         sessionStorage.removeItem("dashboardNotes");
     }, []);
 
+    // ฟัง event เมื่อ user อัปเดตข้อมูล (เช่น เปลี่ยนรูปโปรไฟล์)
+    useEffect(() => {
+        const handleUserUpdated = () => {
+            const savedUser = sessionStorage.getItem("myAppUser");
+            if (savedUser) {
+                setCurrentUser(JSON.parse(savedUser));
+            }
+        };
+        window.addEventListener("user-updated", handleUserUpdated);
+        return () => window.removeEventListener("user-updated", handleUserUpdated);
+    }, []);
+
     const handleLogin = (userFromForm) => {
         setCurrentUser(userFromForm);
         sessionStorage.setItem("myAppUser", JSON.stringify(userFromForm));

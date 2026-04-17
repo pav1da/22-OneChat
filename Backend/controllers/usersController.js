@@ -275,13 +275,35 @@ exports.updateAvatar = async (req, res) => {
             return res.status(400).json({ message: 'กรุณาเลือกไฟล์รูปภาพ' });
         }
 
-        const imageUrl = `/uploads/avatars/${req.file.filename}`;
+        const cloudinary = require('../config/cloudinary.js');
+        const fs = require('fs');
+
+        // Upload ไป Cloudinary
+        const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+            folder: 'onechat/avatars',
+            public_id: `avatar_emp_${req.user.emp_id}`,
+            overwrite: true,
+            transformation: [
+                { width: 200, height: 200, crop: 'fill', gravity: 'face' },
+            ],
+        });
+
+        const imageUrl = uploadResult.secure_url;
+
+        // ลบไฟล์ temp ที่ multer สร้าง
+        fs.unlink(req.file.path, () => {});
 
         // บันทึก URL ลง DB
         await User.updateAvatar(req.user.emp_id, imageUrl);
 
         // บันทึก log + ส่ง real-time event
         await createLogAndEmit(req, { user: req.user.username, avatar: imageUrl, action: 'เปลี่ยนรูปโปรไฟล์', target: '', details: '' });
+
+        // ส่ง event อัปเดต avatar แบบ real-time
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('user-avatar-updated', { emp_id: req.user.emp_id, imageUrl });
+        }
 
         res.json({ message: 'อัปโหลดรูปโปรไฟล์สำเร็จ', imageUrl });
     } catch (err) {

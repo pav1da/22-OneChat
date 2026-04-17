@@ -173,6 +173,10 @@ app.use("/api/channels", channelsRouter);
 app.use("/api/teams", teamRouter);
 app.use("/api/members", membersRouter);
 
+// ===== Facebook API =====
+const auth = require("./middleware/auth.js");
+app.post("/api/facebook/sync-history", auth, fbController.syncConversationHistory);
+
 // เปิดเซิร์ฟเวอร์ (ใช้ server.listen แทน app.listen เพื่อให้ Socket.IO ทำงาน)
 // ดึง Port จาก Railway ถ้าไม่มีให้ใช้ 3000 (สำหรับรันในเครื่อง)
 const PORT = process.env.PORT || 3000;
