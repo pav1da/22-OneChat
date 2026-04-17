@@ -59,7 +59,6 @@ const FILTER_TABS = [
   { key: "done", label: "เสร็จสิ้น" },
 ];
 
-const AVAILABLE_TAGS = ["Urgent", "VIP", "Active", "Follow up"];
 
 // === Status badge config (fixed colors) ===
 const STATUS_STYLE = {
@@ -237,7 +236,11 @@ const AllChat = () => {
   const [members, setMembers] = useState([]);
   const [sortOrder, setSortOrder] = useState("latest"); // "latest" | "oldest"
   const [filterAssignee, setFilterAssignee] = useState("all"); // "all" | "unassigned" | emp_id
-  const [filterTags, setFilterTags] = useState([]);
+  const [filterTags, setFilterTags] = useState([]); // เก็บ tag id ที่เลือก
+
+  // แท็กจริงจาก DB
+  const [globalTags, setGlobalTags] = useState([]);       // แท็กส่วนกลาง (สำหรับ dropdown)
+  const [customerTagsMap, setCustomerTagsMap] = useState({}); // { [cus_id]: [{ id, text, color }] }
 
   // Fetch members to show assignee info
   useEffect(() => {
@@ -250,6 +253,23 @@ const AllChat = () => {
     };
     fetchMembers();
   }, []);
+
+  // Fetch global tags (for dropdown) + all customer-tag map (for cards & filter)
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+
+    fetch('/api/tags', { headers })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setGlobalTags(Array.isArray(data) ? data : []))
+      .catch(() => {});
+
+    fetch('/api/tags/customers/all', { headers })
+      .then(r => r.ok ? r.json() : {})
+      .then(data => setCustomerTagsMap(typeof data === 'object' ? data : {}))
+      .catch(() => {});
+  }, []);
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -286,10 +306,10 @@ const AllChat = () => {
         if (filterAssignee !== "unassigned" && c.assigned_to !== Number(filterAssignee)) return false;
       }
 
-      // 3. Tag Filter (c.tags array must contain ALL selected tags)
+      // 3. Tag Filter — เทียบ tag id จาก customerTagsMap
       if (filterTags.length > 0) {
-        const cTags = c.tags || [];
-        const hasAllTags = filterTags.every(t => cTags.includes(t));
+        const cTagIds = (customerTagsMap[c.id] || []).map(t => t.id);
+        const hasAllTags = filterTags.every(id => cTagIds.includes(id));
         if (!hasAllTags) return false;
       }
 
@@ -305,7 +325,7 @@ const AllChat = () => {
       const timeB = getLastMsgTime(b.id);
       return sortOrder === "latest" ? timeB - timeA : timeA - timeB;
     });
-  }, [customers, activeFilter, filterAssignee, filterTags, searchText, sortOrder, getLastMsgTime, STATUS]);
+  }, [customers, activeFilter, filterAssignee, filterTags, searchText, sortOrder, getLastMsgTime, STATUS, customerTagsMap]);
 
   // === Count per status (for tab badges) ===
   const statusCounts = {
@@ -345,9 +365,8 @@ const AllChat = () => {
     const lastTime = getLastMsgTime(customer.id);
     const assignedMember = members.find(m => m.emp_id === customer.assigned_to);
 
-    // DYNAMIC TAGS (with a fallback map if 'tags' is undefined to hide the empty mockup)
-    // สำหรับการทดสอบ ถ้ายังไม่มี array tags ให้ถือว่าเป็น array ว่าง
-    const tags = customer.tags || [];
+    // Tags ตามจริงจาก DB map
+    const tags = customerTagsMap[customer.id] || [];
 
     return (
       <div
@@ -424,25 +443,16 @@ const AllChat = () => {
             )}
           </div>
           <div className="tag-group">
-              {/* Static mock — เหมือน Inbox, รอระบบ tags จาก DB */}
-              <span className="tag-badge badge-red">Urgent</span>
-              <span className="tag-badge badge-purple">VIP</span>
-              <span className="tag-badge badge-green">Active</span>
-
-              {/* Dynamic tags — เปิดใช้เมื่อมี customer.tags จาก API */}
-              {/* {tags.map((tag, i) => {
-                const type = tag.toLowerCase();
-                let badgeClass = "badge-gray";
-                if (type.includes("urgent")) badgeClass = "badge-red";
-                else if (type.includes("vip")) badgeClass = "badge-purple";
-                else if (type.includes("active")) badgeClass = "badge-green";
-                const isLong = tag.length > 12;
-                return (
-                  <span key={i} className={`tag-badge ${badgeClass} ${isLong ? 'tag-dot' : ''}`} title={tag}>
-                    {!isLong && tag}
-                  </span>
-                );
-              })} */}
+              {tags.map((tag, i) => (
+                <span
+                  key={tag.id || i}
+                  className="tag-badge"
+                  style={{ backgroundColor: tag.color + '22', color: tag.color, border: `1px solid ${tag.color}55`, fontSize: '0.68rem', fontWeight: 600 }}
+                  title={tag.text}
+                >
+                  {tag.text.length > 10 ? tag.text.substring(0, 9) + '…' : tag.text}
+                </span>
+              ))}
             </div>
         </div>
       </div>
@@ -513,19 +523,26 @@ const AllChat = () => {
                 แท็ก {filterTags.length > 0 ? `(${filterTags.length})` : ""}
               </Dropdown.Toggle>
               <Dropdown.Menu className="p-2 border-0 shadow-sm rounded-3">
-                {AVAILABLE_TAGS.map(tag => (
-                  <Form.Check 
-                    key={tag}
+                {globalTags.length === 0 ? (
+                  <div className="text-muted px-2" style={{ fontSize: '0.8rem' }}>ยังไม่มีแท็ก กรุณาเพิ่มในหน้าตั้งค่า</div>
+                ) : globalTags.map(tag => (
+                  <Form.Check
+                    key={tag.id}
                     type="checkbox"
-                    id={`tag-${tag}`}
-                    label={tag}
-                    className="mb-1"
+                    id={`tag-${tag.id}`}
+                    className="mb-1 d-flex align-items-center gap-2"
                     style={{ fontSize: "0.85rem", cursor: "pointer" }}
-                    checked={filterTags.includes(tag)}
+                    checked={filterTags.includes(tag.id)}
+                    label={
+                      <span className="d-flex align-items-center gap-2">
+                        <span style={{ display:'inline-block', width:'10px', height:'10px', borderRadius:'50%', backgroundColor: tag.color, flexShrink:0 }} />
+                        {tag.text}
+                      </span>
+                    }
                     onChange={(e) => {
                       e.stopPropagation();
-                      if (e.target.checked) setFilterTags([...filterTags, tag]);
-                      else setFilterTags(filterTags.filter(t => t !== tag));
+                      if (e.target.checked) setFilterTags([...filterTags, tag.id]);
+                      else setFilterTags(filterTags.filter(id => id !== tag.id));
                     }}
                   />
                 ))}

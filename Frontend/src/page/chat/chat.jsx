@@ -4,6 +4,7 @@ import { useChat } from "../../context/ChatContext";
 import ChatList from "./chatlist/ChatList";
 import EmojiPicker from "../../components/EmojiPicker";
 import TemplatePicker from "../../components/TemplatePicker";
+import { Modal } from "react-bootstrap";
 import "./chat.css";
 
 // ===== Timestamp helpers =====
@@ -428,15 +429,7 @@ const Inbox = ({ currentUser }) => {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    const tags = data.data || [];
-                    setAllTags(tags);
-                    // Group by customer_id for the chat list
-                    const grouped = {};
-                    tags.forEach((t) => {
-                        if (!grouped[t.customer_id]) grouped[t.customer_id] = [];
-                        grouped[t.customer_id].push(t);
-                    });
-                    setTagsMap((prev) => ({ ...grouped, ...prev }));
+                    setAllTags(Array.isArray(data) ? data : []);
                 }
             } catch (err) {
                 console.error("Fetch all tags error:", err);
@@ -451,7 +444,7 @@ const Inbox = ({ currentUser }) => {
         if (tagsMap[selectedChatId]) return;
         const fetchTags = async () => {
             try {
-                const res = await fetch(`/api/tags/${selectedChatId}`, {
+                const res = await fetch(`/api/tags/customer/${selectedChatId}`, {
                     headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
                 });
                 if (res.ok) {
@@ -466,7 +459,7 @@ const Inbox = ({ currentUser }) => {
     }, [selectedChatId]);
 
     // ---------- Tag handlers (API-backed) ----------
-    const handleAddTag = async (tagText, tagColor) => {
+    const handleAddTag = async (tagText, tagColor, tagId = null) => {
         const text = (tagText || newTagText).trim();
         const color = tagColor || selectedTagColor;
         if (!text || !selectedChatId) return;
@@ -474,31 +467,66 @@ const Inbox = ({ currentUser }) => {
         // Duplicate check
         if (currentTagTexts.includes(text.toLowerCase())) return;
 
-        try {
-            const res = await fetch("/api/tags", {
+        // Reset input ทันที (no wait)
+        setNewTagText("");
+        setSelectedTagColor(TAG_COLORS[0]);
+
+        if (tagId) {
+            // แท็กที่มีอยู่ใน DB — รู้ id จริงแล้ว อัปเดต UI ทันทีแล้วหิง API ตาม
+            setTagsMap((prev) => ({
+                ...prev,
+                [selectedChatId]: [...(prev[selectedChatId] || []), { id: tagId, text, color }],
+            }));
+            fetch(`/api/tags/customer/${selectedChatId}`, {
                 method: "POST",
                 headers: getHeaders(),
-                body: JSON.stringify({ customer_id: selectedChatId, text, color }),
+                body: JSON.stringify({ text, color }),
+            }).catch((err) => console.error("Add tag (bg) error:", err));
+            return;
+        }
+
+        // แท็กใหม่ — ใช้ temp id ครองก่อน แล้วค่อยแทนในเมื่อ API ตอบกลับ
+        const tempId = `temp-${Date.now()}`;
+        const optimistic = { id: tempId, text, color };
+        setTagsMap((prev) => ({
+            ...prev,
+            [selectedChatId]: [...(prev[selectedChatId] || []), optimistic],
+        }));
+
+        try {
+            const res = await fetch(`/api/tags/customer/${selectedChatId}`, {
+                method: "POST",
+                headers: getHeaders(),
+                body: JSON.stringify({ text, color }),
             });
             if (res.ok) {
                 const data = await res.json();
-                const newTag = { id: data.id, text, color };
+                const realTag = { id: data.id, text: data.text, color: data.color };
+                // แทน temp ด้วย id จริง
                 setTagsMap((prev) => ({
                     ...prev,
-                    [selectedChatId]: [...(prev[selectedChatId] || []), newTag],
+                    [selectedChatId]: (prev[selectedChatId] || []).map((t) =>
+                        t.id === tempId ? realTag : t
+                    ),
                 }));
-                setAllTags((prev) => [...prev, { ...newTag, customer_id: selectedChatId }]);
+                setAllTags((prev) =>
+                    prev.some((t) => t.id === data.id) ? prev : [...prev, realTag]
+                );
             }
         } catch (err) {
             console.error("Add tag error:", err);
+            // Rollback ถ้า API ล้ม
+            setTagsMap((prev) => ({
+                ...prev,
+                [selectedChatId]: (prev[selectedChatId] || []).filter((t) => t.id !== tempId),
+            }));
         }
-        setNewTagText("");
-        setShowTagInput(false);
-        setSelectedTagColor(TAG_COLORS[0]);
+        // ไม่ปิด Modal อัตโนมัติ
     };
 
     const handleSelectSuggestion = (suggestion) => {
-        handleAddTag(suggestion.text, suggestion.color);
+        // ส่ง id จริงเพื่อ optimistic instant update
+        handleAddTag(suggestion.text, suggestion.color, suggestion.id);
     };
 
     const handleRemoveTag = async (index) => {
@@ -515,7 +543,7 @@ const Inbox = ({ currentUser }) => {
         }));
 
         try {
-            await fetch(`/api/tags/${tagToDelete.id}`, {
+            await fetch(`/api/tags/customer/${selectedChatId}/${tagToDelete.id}`, {
                 method: "DELETE",
                 headers: getHeaders(),
             });
@@ -1302,103 +1330,151 @@ const Inbox = ({ currentUser }) => {
                                 )}
                             </div>
 
-                            {/* Add tag form */}
-                            {showTagInput && (
-                                <div className="tag-form">
-                                    <div className="tag-input-wrap">
-                                        <i className="bi bi-search tag-input-icon"></i>
+                            {/* Add tag form Modal */}
+                            <Modal 
+                                show={showTagInput} 
+                                onHide={() => {
+                                    setShowTagInput(false);
+                                    setNewTagText("");
+                                }} 
+                                centered 
+                                className="kanit-regular"
+                                contentClassName="border-0 shadow-lg rounded-4"
+                            >
+                                <Modal.Header closeButton className="border-bottom-0 pb-0">
+                                    <div className="w-100 text-center">
+                                        <h6 className="m-0 fw-semibold" style={{ color: "var(--text-main)" }}>แก้ไขแท็ก</h6>
+                                    </div>
+                                </Modal.Header>
+                                <Modal.Body className="px-4 py-3">
+                                    {/* แท็กของแชทนี้ (ลบจากตรงนี้ได้เลย) */}
+                                    {currentTags.length > 0 && (
+                                        <div className="mb-3 d-flex flex-wrap gap-2">
+                                            {currentTags.map((tag, idx) => (
+                                                <span
+                                                    key={tag.id || idx}
+                                                    className="px-2 py-1 rounded-pill d-flex align-items-center gap-1"
+                                                    style={{ backgroundColor: tag.color + "15", color: tag.color, border: `1px solid ${tag.color}40`, fontSize: "0.85rem", fontWeight: 500 }}
+                                                >
+                                                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: tag.color }}></span>
+                                                    {tag.text}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveTag(idx)}
+                                                        className="btn btn-link p-0 ms-1 d-flex"
+                                                        style={{ color: tag.color, textDecoration: "none" }}
+                                                    >
+                                                        <i className="bi bi-x" style={{ fontSize: "1rem" }}></i>
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* ช่องค้นหา/เพิ่ม */}
+                                    <div className="position-relative mb-3">
+                                        <i className="bi bi-search position-absolute text-muted" style={{ left: "14px", top: "50%", transform: "translateY(-50%)" }}></i>
                                         <input
                                             type="text"
-                                            className="tag-input"
+                                            className="form-control bg-light border-0"
                                             placeholder="ค้นหาหรือสร้างแท็กใหม่..."
                                             value={newTagText}
                                             onChange={(e) => setNewTagText(e.target.value)}
                                             onKeyDown={(e) => {
                                                 if (e.key === "Enter") {
                                                     e.preventDefault();
-                                                    handleAddTag();
+                                                    if (newTagText.trim() && !currentTagTexts.includes(newTagText.trim().toLowerCase())) {
+                                                        handleAddTag();
+                                                    }
                                                 }
                                             }}
+                                            style={{ paddingLeft: "38px", borderRadius: "10px", fontSize: "0.9rem", boxShadow: "none" }}
                                             autoFocus
                                         />
                                     </div>
 
-                                    {/* Suggestions dropdown */}
-                                    {newTagText.trim() && tagSuggestions.length > 0 && (
-                                        <div className="tag-suggestions">
-                                            <div className="tag-suggestions-label">แท็กที่มีอยู่</div>
-                                            {tagSuggestions.slice(0, 5).map((s, i) => {
-                                                const query = newTagText.trim().toLowerCase();
-                                                const idx2 = s.text.toLowerCase().indexOf(query);
-                                                return (
-                                                    <button
-                                                        key={i}
-                                                        type="button"
-                                                        className="tag-suggestion-item"
-                                                        onClick={() => handleSelectSuggestion(s)}
-                                                    >
-                                                        <span className="tag-suggestion-dot" style={{ backgroundColor: s.color }}></span>
-                                                        <span>
-                                                            {idx2 >= 0 ? (
-                                                                <>
-                                                                    {s.text.substring(0, idx2)}
-                                                                    <strong className="tag-highlight">{s.text.substring(idx2, idx2 + query.length)}</strong>
-                                                                    {s.text.substring(idx2 + query.length)}
-                                                                </>
-                                                            ) : s.text}
-                                                        </span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                                    {/* แนะนำแท็ก */}
+                                    <div className="mb-3">
+                                        {newTagText.trim() && tagSuggestions.length > 0 && (
+                                            <>
+                                                <div className="text-muted mb-2" style={{ fontSize: "0.75rem", fontWeight: 600 }}>แท็กที่มีอยู่</div>
+                                                <div className="d-flex flex-wrap gap-2">
+                                                    {tagSuggestions.map((s, i) => (
+                                                        <button
+                                                            key={i}
+                                                            type="button"
+                                                            className="btn btn-light px-3 py-1 rounded-pill d-flex align-items-center gap-2"
+                                                            style={{ fontSize: "0.85rem", border: "1px solid #f3f4f6", backgroundColor: "#fff" }}
+                                                            onClick={() => handleSelectSuggestion(s)}
+                                                        >
+                                                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: s.color }}></span>
+                                                            <span style={{ color: "#374151" }}>{s.text}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
 
-                                    {/* Quick tags (recently used — show when input is empty) */}
-                                    {!newTagText.trim() && tagSuggestions.length > 0 && (
-                                        <div className="tag-suggestions">
-                                            <div className="tag-suggestions-label">แท็กล่าสุด</div>
-                                            {tagSuggestions.slice(0, 6).map((s, i) => (
+                                        {!newTagText.trim() && tagSuggestions.length > 0 && (
+                                            <>
+                                                <div className="text-muted mb-2 mt-3" style={{ fontSize: "0.75rem", fontWeight: 600 }}>แท็กทั้งหมด</div>
+                                                <div className="d-flex flex-wrap gap-2">
+                                                    {tagSuggestions.map((s, i) => (
+                                                        <button
+                                                            key={i}
+                                                            type="button"
+                                                            className="btn btn-light px-3 py-1 rounded-pill d-flex align-items-center gap-2"
+                                                            style={{ fontSize: "0.85rem", border: "1px solid #f3f4f6", backgroundColor: "#fff" }}
+                                                            onClick={() => handleSelectSuggestion(s)}
+                                                        >
+                                                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: s.color }}></span>
+                                                            <span style={{ color: "#374151" }}>{s.text}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* สร้างแท็กใหม่ (เมื่อพิมพ์และไม่เจอที่ซ้ำ) */}
+                                    {newTagText.trim() && !tagSuggestions.some(s => s.text.toLowerCase() === newTagText.trim().toLowerCase()) && (
+                                        <div className="p-3 bg-light rounded-4 mt-4">
+                                            <div className="d-flex align-items-center mb-3">
+                                                <span className="me-3 text-muted" style={{ fontSize: "0.8rem", fontWeight: 600 }}>สี:</span>
+                                                <ChatTagColorPicker 
+                                                    value={selectedTagColor} 
+                                                    onChange={setSelectedTagColor} 
+                                                    colors={TAG_COLORS} 
+                                                />
+                                            </div>
+
+                                            <div className="d-grid mt-2">
                                                 <button
-                                                    key={i}
                                                     type="button"
-                                                    className="tag-suggestion-item"
-                                                    onClick={() => handleSelectSuggestion(s)}
+                                                    className="btn btn-primary rounded-pill py-2"
+                                                    onClick={() => handleAddTag()}
+                                                    disabled={!newTagText.trim() || currentTagTexts.includes(newTagText.trim().toLowerCase())}
+                                                    style={{ fontSize: "0.95rem", fontWeight: 500, backgroundColor: "var(--primary-color)", border: "none" }}
                                                 >
-                                                    <span className="tag-suggestion-dot" style={{ backgroundColor: s.color }}></span>
-                                                    <span>{s.text}</span>
+                                                    <i className="bi bi-plus-circle me-2"></i> สร้างแท็ก
                                                 </button>
-                                            ))}
+                                            </div>
                                         </div>
                                     )}
-
-                                    {/* Color picker */}
-                                    <div className="tag-color-row">
-                                        <span className="tag-color-label">สี:</span>
-                                        {TAG_COLORS.map((c) => (
-                                            <button
-                                                key={c}
-                                                type="button"
-                                                className={`tag-color-dot${selectedTagColor === c ? " active" : ""}`}
-                                                style={{ backgroundColor: c }}
-                                                onClick={() => setSelectedTagColor(c)}
-                                            />
-                                        ))}
-                                    </div>
-
-                                    {/* Action buttons */}
-                                    <div className="tag-form-actions">
-                                        <button
-                                            type="button"
-                                            className="tag-btn-create"
-                                            onClick={() => handleAddTag()}
-                                            disabled={!newTagText.trim() || currentTagTexts.includes(newTagText.trim().toLowerCase())}
-                                        >
-                                            <i className="bi bi-plus-circle me-1"></i>
-                                            สร้างแท็ก
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                                </Modal.Body>
+                                <Modal.Footer className="border-top-0 pt-0 justify-content-center pb-4">
+                                    <button 
+                                        className="btn btn-light rounded-pill px-5 py-2" 
+                                        style={{ fontSize: "0.95rem", fontWeight: 500, backgroundColor: "#f3f4f6", border: "none", color: "#4b5563" }}
+                                        onClick={() => {
+                                            setShowTagInput(false);
+                                            setNewTagText("");
+                                        }}
+                                    >
+                                        ยกเลิก
+                                    </button>
+                                </Modal.Footer>
+                            </Modal>
                         </div>
 
                         <hr className="detail-divider" />
@@ -1539,6 +1615,92 @@ const Inbox = ({ currentUser }) => {
                         <p>เลือกแชทเพื่อดูข้อมูลลูกค้า</p>
                     </div>
                 )}
+            </div>
+        </div>
+    );
+};
+
+// ------ Component แยกสำหรับเลือกสีเพื่อป้องกันการ Re-render หน้าต่างแชทใหญ่ทั้งหมดเวลาย้ายเมาส์ ------
+const ChatTagColorPicker = ({ value, onChange, colors }) => {
+    const [localColor, setLocalColor] = useState(value || '#000000');
+
+    // Sync from parent if value changes
+    useEffect(() => {
+        if (value && value !== localColor) {
+            setLocalColor(value);
+        }
+    }, [value]);
+
+    // Debounce state up to parent to prevent lag
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (localColor !== value && /^#[0-9A-Fa-f]{6}$/.test(localColor)) {
+                onChange(localColor);
+            }
+        }, 120); 
+        return () => clearTimeout(handler);
+    }, [localColor, value, onChange]);
+
+    return (
+        <div className="d-flex flex-column gap-3 w-100">
+            <div className="d-flex align-items-center gap-3 bg-white p-2 py-3 rounded-3 shadow-sm border border-light" style={{ width: "fit-content" }}>
+                <div 
+                    className="position-relative shadow-sm d-flex justify-content-center align-items-center" 
+                    style={{ 
+                        width: '42px', height: '42px', borderRadius: '50%', backgroundColor: localColor, 
+                        border: '3px solid white', outline: `2px solid ${localColor?.length === 7 ? localColor : '#ccc'}`,
+                        transition: 'all 0.2s',
+                    }}
+                    title="คลิกเพื่อเลือกสี"
+                >
+                    <i className="bi bi-palette text-white" style={{ fontSize: '1.2rem', mixBlendMode: 'difference', pointerEvents: "none" }}></i>
+                    <input 
+                        type="color" 
+                        value={localColor?.length === 7 ? localColor : '#000000'} 
+                        onChange={(e) => setLocalColor(e.target.value)} 
+                        className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
+                        style={{ cursor: 'pointer' }}
+                    />
+                </div>
+                
+                <div style={{ flex: 1, maxWidth: "150px" }}>
+                    <div className="input-group input-group-sm shadow-sm" style={{ borderRadius: "8px", overflow: "hidden" }}>
+                        <span className="input-group-text bg-light border-end-0 text-muted" style={{ fontSize: "0.8rem", fontWeight: 600 }}>HEX</span>
+                        <input
+                            type="text"
+                            className="form-control border-start-0 ps-0 fw-bold"
+                            value={localColor?.toUpperCase() || ""}
+                            onChange={(e) => {
+                                let val = e.target.value.trim();
+                                if (!val.startsWith('#')) val = '#' + val;
+                                if (/^#[0-9A-Fa-f]{0,6}$/.test(val)) {
+                                    setLocalColor(val);
+                                }
+                            }}
+                            style={{ boxShadow: "none", fontSize: "0.9rem", color: "#334155" }}
+                            maxLength={7}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="d-flex flex-wrap gap-2 px-1">
+                {colors.map((c) => (
+                    <button
+                        key={c}
+                        type="button"
+                        className="border-0 p-0 shadow-sm"
+                        style={{ 
+                            width: "30px", height: "30px", borderRadius: "50%", backgroundColor: c,
+                            outline: value === c ? `2px solid ${c}` : "none", outlineOffset: "2px",
+                            transform: value === c ? "scale(1.15)" : "scale(1)", transition: "transform 0.1s"
+                        }}
+                        onClick={() => {
+                           setLocalColor(c);
+                           onChange(c);
+                        }}
+                    />
+                ))}
             </div>
         </div>
     );
