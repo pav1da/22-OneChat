@@ -55,7 +55,7 @@ const authorize = require("../middleware/authorize.js");
  *         username:
  *           type: string
  *           example: "somchai"
- *         name:
+ *         display_name:
  *           type: string
  *           example: "Somchai"
  *         email:
@@ -227,7 +227,7 @@ router.post("/", auth, authorize("admin", "manager"), async (req, res) => {
 router.get("/available-members", auth, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT * FROM EMP ORDER BY name ASC"
+      "SELECT * FROM EMP ORDER BY display_name ASC"
     );
     // ลบ password ออกก่อนส่งกลับ (เหมือน membersRouter)
     const members = rows.map(({ password, ...rest }) => rest);
