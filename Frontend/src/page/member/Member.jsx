@@ -35,6 +35,10 @@ const Member = ({ currentUser }) => {
   const [editPassword, setEditPassword] = useState("");
   const [editSaving, setEditSaving] = useState(false);
 
+  // ===== Delete Modal State =====
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState(null);
+
   // ===== Socket.IO: ดึงฟังก์ชันเช็คสถานะ online จาก SocketContext =====
   const { isUserOnline } = useSocket();
 
@@ -119,25 +123,26 @@ const Member = ({ currentUser }) => {
   }, [allMembers, searchTerm, isSorted, onlineUsers]);
 
   // ================== 4. HELPER FUNCTIONS ==================
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm("ยืนยันการลบสมาชิกนี้ออกจากระบบ?")) {
-      try {
-        const token = sessionStorage.getItem("token");
-        const res = await fetch(`/api/users/${userId}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          setAllMembers((prev) => prev.filter((user) => user.id !== userId));
-        } else {
-          const data = await res.json();
-          alert(data.message || "ลบไม่สำเร็จ");
-        }
-      } catch (err) {
-        console.error("Delete error:", err);
-        alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+  const confirmDeleteUser = async () => {
+    if (!memberToDelete) return;
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch(`/api/users/${memberToDelete.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setAllMembers((prev) => prev.filter((user) => user.id !== memberToDelete.id));
+      } else {
+        const data = await res.json();
+        alert(data.message || "ลบไม่สำเร็จ");
       }
-      setActivePopupId(null);
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+    } finally {
+      setShowDeleteModal(false);
+      setMemberToDelete(null);
     }
   };
 
@@ -321,11 +326,15 @@ const Member = ({ currentUser }) => {
                           <i className="bi bi-pencil-square me-2"></i>
                           แก้ไข
                         </div>
-                        {/* ปุ่มลบ — เฉพาะ admin เท่านั้น */}
                         {isAdmin && (
                           <div
                             className="action-item action-item-delete"
-                            onClick={(e) => { e.stopPropagation(); handleDeleteUser(member.id); }}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              setMemberToDelete(member);
+                              setShowDeleteModal(true);
+                              setActivePopupId(null);
+                            }}
                           >
                             <i className="bi bi-trash me-2"></i>
                             ลบ
@@ -344,6 +353,40 @@ const Member = ({ currentUser }) => {
           <div className="text-center py-5 text-muted">ไม่พบข้อมูลสมาชิก</div>
         )}
       </div>
+
+      {/* ===== Delete Confirmation Modal ===== */}
+      <Modal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setMemberToDelete(null); }} centered>
+        <Modal.Body className="text-center p-5">
+          <div className="mb-4">
+            <div className="mx-auto bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style={{ width: "80px", height: "80px" }}>
+              <i className="bi bi-trash text-danger" style={{ fontSize: "2.5rem" }}></i>
+            </div>
+          </div>
+          <h5 className="fw-bold mb-3" style={{ color: "var(--text-heading, #1e293b)" }}>ยืนยันการลบสมาชิก</h5>
+          <p className="mb-4" style={{ color: "var(--text-secondary, #4b5563)", fontSize: "1rem" }}>
+            คุณต้องการลบ <strong>{memberToDelete?.name} {memberToDelete?.displayName ? `(${memberToDelete.displayName})` : ""}</strong> ออกจากระบบใช่หรือไม่?<br/>
+            การกระทำนี้จะไม่สามารถเรียกคืนได้
+          </p>
+          <div className="d-flex justify-content-center gap-3">
+            <Button 
+              variant="light" 
+              onClick={() => { setShowDeleteModal(false); setMemberToDelete(null); }} 
+              className="px-4 py-2" 
+              style={{ fontWeight: 600, color: "var(--text-secondary, #4b5563)", border: "1px solid var(--border-medium, #cbd5e1)" }}
+            >
+              ยกเลิก
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={confirmDeleteUser} 
+              className="px-4 py-2" 
+              style={{ fontWeight: 600 }}
+            >
+              ลบสมาชิก
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
 
       {/* ===== Edit Member Modal ===== */}
       <Modal
