@@ -8,6 +8,7 @@ const Customer = require("../models/customer.js");
 const Log = require("../models/log.js");
 const cloudinary = require("../config/cloudinary");
 const { lineClient } = require("../controllers/lineController.js");
+const fbController = require("../controllers/FbController.js");
 
 // Multer config for admin-uploaded chat images
 const chatImageStorage = multer.memoryStorage();
@@ -310,10 +311,12 @@ router.post("/", auth, async (req, res) => {
       message_text,
     });
 
-    // ถ้าเป็นข้อความจาก dashboard (own) ให้ส่งไปยัง LINE ด้วย
+    // ถ้าเป็นข้อความจาก dashboard (own) ให้ส่งไปยัง platform ของลูกค้า
     if ((sender || "own") === "own") {
       try {
         const customer = await Customer.findById(customer_id);
+
+        // === ส่งไปยัง LINE ===
         if (customer && customer.platform === "line" && customer.platform_id) {
           const lineMessages = [];
           
@@ -506,8 +509,22 @@ router.post("/", auth, async (req, res) => {
              }
            }
         }
-      } catch (lineErr) {
-        console.error("LINE push message error:", lineErr);
+
+        // === ส่งไปยัง Facebook Messenger ===
+        if (customer && customer.platform === "facebook" && customer.platform_id) {
+          if ((message_type || "text") === "text") {
+            await fbController.sendTextMessage(customer.platform_id, message_text);
+          } else if (message_type === "image") {
+            let imageAbsUrl = message_text;
+            if (!message_text.startsWith("http")) {
+              const backendUrl = (process.env.BACKEND_URL || "http://localhost:3000").replace(/\/$/, "");
+              imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
+            }
+            await fbController.sendImageMessage(customer.platform_id, imageAbsUrl);
+          }
+        }
+      } catch (platformErr) {
+        console.error("Platform push message error:", platformErr);
       }
     }
 

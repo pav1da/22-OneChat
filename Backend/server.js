@@ -128,6 +128,12 @@ app.post("/webhook", (req, res, next) => {
   next();
 }, line.middleware(lineMiddlewareConfig), lineController.handleWebhook);
 
+// ===== FACEBOOK Webhook =====
+const fbController = require("./controllers/FbController.js");
+app.get('/webhook/facebook', fbController.verifyWebhook);
+app.post('/webhook/facebook', express.json(), fbController.handleWebhook);
+
+
 // ===== Middleware =====
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));

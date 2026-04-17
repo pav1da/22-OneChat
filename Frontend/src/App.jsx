@@ -113,7 +113,7 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                     path="/signin"
                     element={
                         currentUser ? (
-                            <Navigate to="/notes" />
+                            <Navigate to="/allchat" />
                         ) : (
                             <SignInPage onLogin={handleLogin} />
                         )

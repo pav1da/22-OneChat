@@ -249,15 +249,27 @@ async function handleEvent(event, io) {
         });
       }
 
-      // Sticker (สติกเกอร์)
+      // Sticker (สติกเกอร์) — ลอง animated (APNG) ก่อน, fallback เป็น static
       else if (event.message.type === "sticker") {
         const stickerId = event.message.stickerId;
-        const stickerUrl = `https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png`;
+        const animatedUrl = `https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker_animation.png`;
+        const staticUrl = `https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png`;
+
+        // ตรวจสอบว่ามี animated version ไหม
+        let stickerUrl = staticUrl;
+        try {
+          const checkRes = await fetch(animatedUrl, { method: "HEAD" });
+          if (checkRes.ok) {
+            stickerUrl = animatedUrl;
+          }
+        } catch (e) {
+          // ใช้ static fallback
+        }
 
         const msgSql =
           "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', 'sticker', ?)";
         const [result] = await db.query(msgSql, [customerId, stickerUrl]);
-        console.log(`บันทึกสติกเกอร์สำเร็จ!`);
+        console.log(`บันทึกสติกเกอร์สำเร็จ! (${stickerUrl.includes('animation') ? 'animated' : 'static'})`);
 
         // ส่ง real-time ไป Frontend ทันที
         if (io) {

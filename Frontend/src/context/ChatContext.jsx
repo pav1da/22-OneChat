@@ -70,7 +70,7 @@ export const ChatProvider = ({ children }) => {
             id: c.cus_id,
             name: c.display_name || c.cus_name || `Customer #${c.cus_id}`,
             originalName: c.cus_name || `Customer #${c.cus_id}`,
-            img: c.cus_picture || "",
+            img: c.cus_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.cus_name || 'User')}&background=random&size=200`,
             app: c.platform
               ? `${c.platform === "line" ? "Line" : "Facebook"}`
               : "",
@@ -181,7 +181,7 @@ export const ChatProvider = ({ children }) => {
             name:
               cust.display_name || cust.cus_name || `Customer #${cust.cus_id}`,
             originalName: cust.cus_name || `Customer #${cust.cus_id}`,
-            img: cust.cus_picture || "",
+            img: cust.cus_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(cust.cus_name || 'User')}&background=random&size=200`,
             app: cust.platform === "line" ? "Line" : "Facebook",
             platform: cust.platform,
             platform_id: cust.platform_id,
