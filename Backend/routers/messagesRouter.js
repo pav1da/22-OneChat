@@ -349,7 +349,7 @@ router.post("/", auth, async (req, res) => {
                          const endLabelSafe = endLabel.length > 20 ? endLabel.substring(0, 20) : endLabel;
                          return {
                              type: "bubble",
-                             size: "kilo",
+                             size: "mega",
                              action: {
                                  type: "message",
                                  label: endLabelSafe,
@@ -406,20 +406,21 @@ router.post("/", auth, async (req, res) => {
                              type: "box",
                              layout: "vertical",
                              position: "absolute",
-                             offsetTop: "12px",
-                             offsetStart: "12px",
+                             offsetTop: "16px",
+                             offsetStart: "16px",
                              backgroundColor: "#00000088",
-                             paddingAll: "4px",
-                             paddingStart: "10px",
-                             paddingEnd: "10px",
+                             paddingAll: "6px",
+                             paddingStart: "14px",
+                             paddingEnd: "14px",
                              cornerRadius: "20px",
                              contents: [
                                  {
                                      type: "text",
                                      text: c.tag,
                                      color: "#ffffff",
-                                     size: "xs",
-                                     align: "center"
+                                     size: "sm",
+                                     align: "center",
+                                     weight: "bold"
                                  }
                              ]
                          });
@@ -431,7 +432,7 @@ router.post("/", auth, async (req, res) => {
                              type: "box",
                              layout: "horizontal",
                              position: "absolute",
-                             offsetBottom: "12px",
+                             offsetBottom: "16px",
                              offsetStart: "0px",
                              offsetEnd: "0px",
                              justifyContent: "center",
@@ -440,16 +441,16 @@ router.post("/", auth, async (req, res) => {
                                      type: "box",
                                      layout: "vertical",
                                      backgroundColor: "#000000A6",
-                                     paddingAll: "4px",
-                                     paddingStart: "16px",
-                                     paddingEnd: "16px",
+                                     paddingAll: "6px",
+                                     paddingStart: "20px",
+                                     paddingEnd: "20px",
                                      cornerRadius: "20px",
                                      contents: [
                                          {
                                              type: "text",
                                              text: c.message,
                                              color: "#ffffff",
-                                             size: "sm",
+                                             size: "md",
                                              align: "center",
                                              weight: "bold"
                                          }
@@ -463,7 +464,7 @@ router.post("/", auth, async (req, res) => {
                      const cardActionLabel = cardActionText.length > 20 ? cardActionText.substring(0, 20) : cardActionText;
                      return {
                          type: "bubble",
-                         size: "kilo",
+                         size: "mega",
                          action: {
                              type: "message",
                              label: cardActionLabel,
@@ -521,6 +522,13 @@ router.post("/", auth, async (req, res) => {
               imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
             }
             await fbController.sendImageMessage(customer.platform_id, imageAbsUrl);
+          } else if (message_type === "carousel") {
+            try {
+              const parsedCards = JSON.parse(message_text);
+              await fbController.sendCarouselMessage(customer.platform_id, parsedCards);
+            } catch (fbCarouselErr) {
+              console.error("FB carousel parse error:", fbCarouselErr.message);
+            }
           }
         }
       } catch (platformErr) {

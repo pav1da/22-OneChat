@@ -11,12 +11,61 @@ import {
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Cropper from "react-easy-crop";
 import "./Cardmessage.css";
+
+// Helper function to crop the image
+const createImage = (url) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', (error) => reject(error));
+    image.setAttribute('crossOrigin', 'anonymous');
+    image.src = url;
+  });
+
+async function getCroppedImg(imageSrc, pixelCrop) {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result);
+      };
+      reader.readAsDataURL(blob);
+    }, 'image/jpeg');
+  });
+}
 
 const Cardmessage = () => {
   const [search, setSearch] = useState("");
   const [show, setShow] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+
+  // Crop State
+  const [imgSrc, setImgSrc] = useState(""); // file for raw image string
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [showCropModal, setShowCropModal] = useState(false);
 
   const [items, setItems] = useState([]);
 
@@ -80,28 +129,6 @@ const Cardmessage = () => {
     setActiveCardIndex(0);
   };
 
-  const handleAddCard = () => {
-    if (cards.length >= 10) return;
-    const newCards = [...cards, { id: Date.now(), image: "", message: "", tag: "", isEndCard: false }];
-    setCards(newCards);
-    setActiveCardIndex(newCards.length - 1);
-  };
-
-  const handleAddEndCard = () => {
-    if (cards.length >= 10) return;
-    const newCards = [...cards, { id: Date.now(), image: "", message: "ดูเพิ่มเติม", tag: "", isEndCard: true }];
-    setCards(newCards);
-    setActiveCardIndex(newCards.length - 1);
-  };
-
-  const handleDeleteCard = (indexToDelete) => {
-    if (cards.length <= 1) return; // ต้องมีอย่างน้อย  1 การ์ด
-    const newCards = cards.filter((_, i) => i !== indexToDelete);
-    setCards(newCards);
-    // ปรับ index หลังลบไม่ให้เกินขอบเขต
-    setActiveCardIndex(prev => Math.min(prev, newCards.length - 1));
-  };
-
   const handleUpdateCard = (field, value) => {
     const updated = [...cards];
     updated[activeCardIndex][field] = value;
@@ -127,18 +154,13 @@ const Cardmessage = () => {
 
     const currentUser = JSON.parse(sessionStorage.getItem('myAppUser') || '{}');
 
-    // Build content: single card → keep old format for backward compat
-    // Multiple cards → carousel format { cards: [...] }
+    // Single cards are now wrapped in carousel payload for LINE Flex compatibility
     let contentPayload;
     if (newItem.type === "รูปภาพ") {
-      if (cards.length === 1) {
-        contentPayload = { image: cards[0].image, message: cards[0].message, tag: cards[0].tag || "" };
-      } else {
-        contentPayload = {
-          type: 'carousel',
-          cards: cards.map(c => ({ image: c.image, message: c.message, tag: c.tag, isEndCard: c.isEndCard }))
-        };
-      }
+      contentPayload = {
+        type: 'carousel',
+        cards: [{ image: cards[0].image, message: cards[0].message, tag: cards[0].tag || "", isEndCard: false }]
+      };
     } else {
       // ข้อความ — always single card, use cards[0].message
       contentPayload = { message: cards[0].message };
@@ -426,12 +448,6 @@ const Cardmessage = () => {
                   </button>
                 )}
               </div>
-              
-              <div className="cm-pagination-dots pb-3 d-flex justify-content-center">
-                {cards.map((c, i) => (
-                  <div key={c.id} className={`cm-dot ${activeCardIndex === i ? 'active' : ''}`} />
-                ))}
-              </div>
             </div>
 
             {/* Right Column: Form Inputs */}
@@ -454,41 +470,10 @@ const Cardmessage = () => {
                   </Form.Text>
                 </Form.Group>
 
-                {/* Tabs UI */}
-                {newItem.type === "รูปภาพ" && (
-                    <div className="cm-tabs-row d-flex align-items-center mb-4">
-                        {cards.map((c, i) => (
-                            <div key={c.id} className="cm-tab-item d-flex align-items-center">
-                                <button 
-                                    className={`cm-tab-btn ${activeCardIndex === i ? 'active' : ''}`}
-                                    onClick={(e) => { e.preventDefault(); setActiveCardIndex(i); }}
-                                >
-                                    {c.isEndCard ? <i className="bi bi-flag-fill" style={{ fontSize: '0.7rem' }} /> : i + 1}
-                                </button>
-                                {cards.length > 1 && (
-                                    <button
-                                        className="cm-tab-delete-btn"
-                                        title="ลบการ์ดนี้"
-                                        onClick={(e) => { e.preventDefault(); handleDeleteCard(i); }}
-                                    >
-                                        <i className="bi bi-x" />
-                                    </button>
-                                )}
-                            </div>
-                        ))}
-                        <button className="cm-tab-btn-add ms-2" onClick={(e) => { e.preventDefault(); handleAddCard(); }}>
-                            เพิ่มการ์ด
-                        </button>
-                        <button className="cm-tab-btn-add-end ms-2" onClick={(e) => { e.preventDefault(); handleAddEndCard(); }}>
-                            เพิ่มการ์ดปิดท้าย
-                        </button>
-                    </div>
-                )}
-
                 {/* ประเภทการ์ด */}
                 <div style={{ backgroundColor: "var(--bg-hover, #f9fafb)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-light, #e5e7eb)" }}>
                     <Form.Group className="mb-0">
-                    <Form.Label className="cm-form-label mb-2">ตั้งค่าการ์ดที่ {activeCardIndex + 1}</Form.Label>
+                    <Form.Label className="cm-form-label mb-2">ตั้งค่าการ์ดเมสเสจ</Form.Label>
                     <div className="d-flex align-items-center mb-3">
                         <span className="me-3" style={{ fontSize: "0.9rem", color: "var(--text-secondary, #4b5563)" }}>ประเภทการ์ด</span>
                         <Form.Select
@@ -504,27 +489,11 @@ const Cardmessage = () => {
                     </div>
                     </Form.Group>
 
-                    {/* ถ้าเป็นการ์ดปิดท้าย ไม่ต้องอัพรูปลง Flex แต่ให้ใส่ Action เเทนได้ */}
-                    {newItem.type === "รูปภาพ" && cards[activeCardIndex]?.isEndCard && (
-                         <div className="mt-4 p-3 bg-white" style={{ borderRadius: "8px", border: "1px dashed #cbd5e1" }}>
-                            <Form.Group className="mb-0">
-                                <Form.Label className="cm-form-label">ป้ายปิดท้าย (Action Label)</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="เช่น ดูเพิ่มเติม"
-                                    className="cm-custom-input"
-                                    value={cards[activeCardIndex]?.message || ""}
-                                    onChange={(e) => handleUpdateCard('message', e.target.value)}
-                                />
-                            </Form.Group>
-                         </div>
-                    )}
-
                     {/* ถ้าเป็นรูปภาพปกติ → อัพโหลดรูป + tag overlay */}
                     {newItem.type === "รูปภาพ" && !cards[activeCardIndex]?.isEndCard && (
                     <>
                     <Form.Group className="mb-0 mt-4 p-3 bg-white" style={{ borderRadius: "8px", border: "1px dashed var(--border-medium, #cbd5e1)" }}>
-                        <Form.Label className="cm-form-label">อัปโหลดรูปภาพ</Form.Label>
+                        <Form.Label className="cm-form-label">อัปโหลดรูปภาพ (ขนาดที่แนะนำ 1:1)</Form.Label>
                         <Form.Control
                         type="file"
                         accept="image/*"
@@ -534,10 +503,12 @@ const Cardmessage = () => {
                             if (!file) return;
 
                             const reader = new FileReader();
-                            reader.onloadend = () => {
-                                handleUpdateCard('image', reader.result);
-                            };
+                            reader.addEventListener('load', () => {
+                                setImgSrc(reader.result?.toString() || '');
+                                setShowCropModal(true);
+                            });
                             reader.readAsDataURL(file);
+                            e.target.value = ''; // Reset input so user can re-select the same file
                         }}
                         />
                         <Form.Label className="cm-form-label">ป้ายทับรูปล่างกลาง (Label)</Form.Label>
@@ -591,6 +562,63 @@ const Cardmessage = () => {
             onClick={handleCreateItem}
           >
             {editingItem ? "บันทึก" : "เพิ่มการ์ดใหม่"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Crop Modal */}
+      <Modal show={showCropModal} onHide={() => setShowCropModal(false)} centered size="lg" backdrop="static">
+        <Modal.Header closeButton className="border-bottom-0 pb-0 pt-3 pe-4">
+          <Modal.Title className="fs-5 fw-bold ms-3" style={{ color: "var(--text-heading, #111827)" }}>
+            ครอบตัดรูปภาพ
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4 d-flex flex-column align-items-center">
+          <div style={{ position: 'relative', width: '100%', height: '400px', backgroundColor: '#333' }}>
+            <Cropper
+              image={imgSrc}
+              crop={crop}
+              zoom={zoom}
+              aspect={1} 
+              onCropChange={setCrop}
+              onCropComplete={(croppedArea, croppedAreaPixels) => {
+                setCroppedAreaPixels(croppedAreaPixels);
+              }}
+              onZoomChange={setZoom}
+            />
+          </div>
+          <div className="w-100 mt-4 d-flex align-items-center">
+             <span className="me-3" style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>ซูม:</span>
+             <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => setZoom(e.target.value)}
+                className="w-100"
+             />
+          </div>
+        </Modal.Body>
+        <Modal.Footer className="border-top-0 pt-0 pb-4 pe-4">
+          <Button variant="light" className="px-4 py-2 me-2" onClick={() => setShowCropModal(false)} style={{ fontWeight: 600, color: "var(--text-secondary, #6b7280)" }}>
+            ยกเลิก
+          </Button>
+          <Button
+            className="px-5 py-2 btn-brand"
+            onClick={async () => {
+              try {
+                const croppedImageBase64 = await getCroppedImg(imgSrc, croppedAreaPixels);
+                handleUpdateCard('image', croppedImageBase64);
+                setShowCropModal(false);
+              } catch (e) {
+                console.error("Cropping failed:", e);
+                alert("เกิดข้อผิดพลาดในการตัดรูปภาพ");
+              }
+            }}
+          >
+            ใช้
           </Button>
         </Modal.Footer>
       </Modal>

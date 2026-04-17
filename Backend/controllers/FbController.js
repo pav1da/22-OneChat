@@ -135,6 +135,47 @@ exports.sendImageMessage = async (recipientPsid, imageUrl) => {
   });
 };
 
+// ===== ส่ง Carousel ไปยัง Facebook Messenger (แบบรูปเต็ม + caption) =====
+exports.sendCarouselMessage = async (recipientPsid, cards) => {
+  try {
+    const normalCards = cards.filter((c) => !c.isEndCard && c.image && c.image.startsWith("https://"));
+    const endCard = cards.find((c) => c.isEndCard);
+
+    if (normalCards.length === 0) {
+      // ถ้ามีแต่ end card ส่งเป็น text แทน
+      if (endCard && endCard.message) {
+        return exports.sendTextMessage(recipientPsid, endCard.message);
+      }
+      return false;
+    }
+
+    // ส่งทีละการ์ด: รูปเต็ม + text caption (ทำให้ลูกค้าเห็นรูปชัดเต็มจอ)
+    for (const c of normalCards.slice(0, 10)) {
+      // 1. ส่งรูปเต็ม
+      await exports.sendImageMessage(recipientPsid, c.image);
+
+      // 2. ถ้ามี tag หรือ message ให้ส่งเป็น text caption ต่อ
+      const captionParts = [];
+      if (c.tag) captionParts.push(`🏷️ ${c.tag}`);
+      if (c.message) captionParts.push(`💬 ${c.message}`);
+      if (captionParts.length > 0) {
+        await exports.sendTextMessage(recipientPsid, captionParts.join("  •  "));
+      }
+    }
+
+    // ส่ง end card เป็น text สุดท้าย (ถ้ามี)
+    if (endCard && endCard.message) {
+      await exports.sendTextMessage(recipientPsid, `➡️ ${endCard.message}`);
+    }
+
+    console.log(`📤 ส่ง Carousel ไปยัง Facebook (PSID: ${recipientPsid}) สำเร็จ (${normalCards.length} การ์ด)`);
+    return true;
+  } catch (err) {
+    console.error("FB sendCarouselMessage error:", err.message);
+    return false;
+  }
+};
+
 // ========== Internal Handlers ==========
 
 // จัดการข้อความ Text

@@ -720,8 +720,8 @@ const Inbox = ({ currentUser }) => {
                                         <div className="chat-carousel-wrapper" style={{
                                             display: 'flex',
                                             overflowX: 'auto',
-                                            gap: '12px',
-                                            maxWidth: '300px',
+                                            gap: '10px',
+                                            maxWidth: '340px',
                                             paddingBottom: '8px',
                                             scrollbarWidth: 'none'
                                         }}>
@@ -730,38 +730,38 @@ const Inbox = ({ currentUser }) => {
                                                     const cards = JSON.parse(msg.text);
                                                     return cards.map((c, i) => (
                                                         <div key={i} className="carousel-card" style={{
-                                                            flex: '0 0 150px',
+                                                            flex: '0 0 300px',
                                                             backgroundColor: 'var(--bg-surface)',
-                                                            borderRadius: '12px',
+                                                            borderRadius: '16px',
                                                             overflow: 'hidden',
-                                                            border: '1px solid var(--border-light)'
+                                                            boxShadow: '0 2px 12px rgba(0,0,0,0.12)'
                                                         }}>
                                                             {c.isEndCard ? (
-                                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '120px' }}>
-                                                                    <span style={{ color: '#42659a', fontWeight: '500', fontSize: '0.9rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
+                                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px' }}>
+                                                                    <span style={{ color: '#42659a', fontWeight: '500', fontSize: '1.1rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
                                                                 </div>
                                                             ) : (
-                                                                <div style={{ position: 'relative', width: '100%', height: '150px' }}>
-                                                                     {c.image && (
-                                                                         <img src={c.image} alt="carousel-card" style={{
-                                                                             width: '100%', height: '100%', objectFit: 'cover'
-                                                                         }} onClick={() => window.open(c.image, "_blank")} />
-                                                                     )}
-                                                                     {c.tag && (
-                                                                         <div style={{ position: 'absolute', top: '8px', left: '8px', backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.7rem' }}>
-                                                                             {c.tag}
-                                                                         </div>
-                                                                     )}
-                                                                     {c.message && (
-                                                                         <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.65)', color: 'white', padding: '4px 12px', borderRadius: '16px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                                                                             {c.message}
-                                                                         </div>
-                                                                     )}
+                                                                <div style={{ position: 'relative', width: '300px', height: '300px' }}>
+                                                                    {c.image && (
+                                                                        <img src={c.image} alt="carousel-card" style={{
+                                                                            width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer', display: 'block'
+                                                                        }} onClick={() => window.open(c.image, "_blank")} />
+                                                                    )}
+                                                                    {c.tag && (
+                                                                        <div style={{ position: 'absolute', top: '14px', left: '14px', backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', padding: '4px 14px', borderRadius: '16px', fontSize: '0.85rem', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                                                            {c.tag}
+                                                                        </div>
+                                                                    )}
+                                                                    {c.message && (
+                                                                        <div style={{ position: 'absolute', bottom: '14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.65)', color: 'white', padding: '6px 18px', borderRadius: '20px', fontSize: '0.95rem', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                                                            {c.message}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             )}
                                                         </div>
                                                     ));
-                                                } catch(e) { return <span>Invalid Carousel Data</span>; }
+                                                } catch (e) { return <span>Invalid Carousel Data</span>; }
                                             })()}
                                         </div>
                                     ) : msg.message_type === "sticker" ? (
@@ -906,6 +906,21 @@ const Inbox = ({ currentUser }) => {
                                 }}
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter" && !e.shiftKey) handleSendMessage(e);
+                                }}
+                                onPaste={(e) => {
+                                    const items = e.clipboardData?.items;
+                                    if (!items) return;
+                                    for (let i = 0; i < items.length; i++) {
+                                        if (items[i].type.indexOf("image") !== -1) {
+                                            e.preventDefault();
+                                            const file = items[i].getAsFile();
+                                            if (!file || !selectedChatId) return;
+                                            const url = URL.createObjectURL(file);
+                                            setPanelFiles((prev) => [...prev, { file, url, selected: true }]);
+                                            setShowImagePanel(true);
+                                            return;
+                                        }
+                                    }
                                 }}
                                 className="chat-textarea"
                             />

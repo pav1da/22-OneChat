@@ -326,7 +326,7 @@
 /* The visual rendering of an Image Template */
 .cm-preview-card {
   width: 280px;
-  height: auto;
+  height: 280px;
   min-height: 280px;
   background: var(--bg-surface, #fff);
   border-radius: 12px;

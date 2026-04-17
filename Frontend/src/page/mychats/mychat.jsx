@@ -117,6 +117,33 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
               <div style={{ background: "transparent", padding: 0 }}>
                 <img src={msg.image} alt="sticker" style={{ width: "80px", height: "80px", objectFit: "contain" }} />
               </div>
+            ) : msg.message_type === "carousel" ? (
+              <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', maxWidth: '260px', scrollbarWidth: 'none' }}>
+                {(() => {
+                  try {
+                    const cards = JSON.parse(msg.text);
+                    return cards.map((c, i) => (
+                      <div key={i} style={{ flex: '0 0 200px', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-surface, #fff)' }}>
+                        {c.isEndCard ? (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px' }}>
+                            <span style={{ color: '#42659a', fontWeight: 500, fontSize: '0.85rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
+                          </div>
+                        ) : (
+                          <div style={{ position: 'relative', width: '200px', height: '200px' }}>
+                            {c.image && <img src={c.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                            {c.tag && (
+                              <div style={{ position: 'absolute', top: '8px', left: '8px', backgroundColor: 'rgba(0,0,0,0.55)', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 500 }}>{c.tag}</div>
+                            )}
+                            {c.message && (
+                              <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.65)', color: '#fff', padding: '3px 12px', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 500, whiteSpace: 'nowrap' }}>{c.message}</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ));
+                  } catch { return <span>Invalid carousel</span>; }
+                })()}
+              </div>
             ) : msg.image ? (
               <img src={msg.image} alt="upload" style={{ maxWidth: "180px", maxHeight: "180px", borderRadius: "8px", display: "block" }} />
             ) : isLineEmojiOnly(msg.text) ? (

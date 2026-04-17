@@ -94,7 +94,14 @@ export const ChatProvider = ({ children }) => {
               const msgs = msgData[c.id];
               if (msgs && msgs.length > 0) {
                 const lastMsg = msgs[msgs.length - 1];
-                return { ...c, last: sanitizeLastText(lastMsg.text) || "(รูปภาพ)" };
+                const lastText = lastMsg.message_type === "carousel"
+                  ? "📋 Card Message"
+                  : lastMsg.message_type === "image"
+                    ? "📷 รูปภาพ"
+                    : lastMsg.message_type === "sticker"
+                      ? "🎨 สติกเกอร์"
+                      : sanitizeLastText(lastMsg.text) || "(รูปภาพ)";
+                return { ...c, last: lastText };
               }
               return c;
             }),
@@ -126,10 +133,16 @@ export const ChatProvider = ({ children }) => {
 
       // อัปเดต last message + ย้ายลูกค้าขึ้นบนสุด
       const lastText =
-        sanitizeLastText(msg.text) ||
-        (msg.image && msg.image.includes("stickershop")
-          ? "(สติกเกอร์)"
-          : "(รูปภาพ)");
+        msg.message_type === "carousel"
+          ? "📋 Card Message"
+          : msg.message_type === "image"
+            ? "📷 รูปภาพ"
+            : msg.message_type === "sticker"
+              ? "🎨 สติกเกอร์"
+              : sanitizeLastText(msg.text) ||
+                (msg.image && msg.image.includes("stickershop")
+                  ? "(สติกเกอร์)"
+                  : "(รูปภาพ)");
       setCustomers((prev) => {
         const updated = prev.map((c) =>
           c.id === cid ? { ...c, last: lastText } : c,

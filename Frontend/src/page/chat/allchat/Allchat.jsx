@@ -3,6 +3,7 @@ import { Container, Dropdown, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../../../context/ChatContext";
 import EmojiPicker from "../../../components/EmojiPicker";
+import TemplatePicker from "../../../components/TemplatePicker";
 import "./allChat.css";
 
 // Helper: ตรวจว่าข้อความเป็น emoji ล้วนหรือไม่
@@ -68,11 +69,13 @@ const STATUS_STYLE = {
 };
 
 // === Mini Chat Panel ===
-const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) => {
+const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, onSendImage, onSendCarousel }) => {
   const [replyText, setReplyText] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (messagesContainerRef.current) {
@@ -86,6 +89,25 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
     if (!trimmed) return;
     onSend(customer.id, trimmed);
     setReplyText("");
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file && onSendImage) onSendImage(customer.id, file);
+    e.target.value = "";
+  };
+
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file && onSendImage) onSendImage(customer.id, file);
+        return;
+      }
+    }
   };
 
   return (
@@ -117,6 +139,33 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
               <div style={{ background: "transparent", padding: 0 }}>
                 <img src={msg.image} alt="sticker" style={{ width: "80px", height: "80px", objectFit: "contain" }} />
               </div>
+            ) : msg.message_type === "carousel" ? (
+              <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', maxWidth: '260px', scrollbarWidth: 'none' }}>
+                {(() => {
+                  try {
+                    const cards = JSON.parse(msg.text);
+                    return cards.map((c, i) => (
+                      <div key={i} style={{ flex: '0 0 200px', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-surface, #fff)' }}>
+                        {c.isEndCard ? (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px' }}>
+                            <span style={{ color: '#42659a', fontWeight: 500, fontSize: '0.85rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
+                          </div>
+                        ) : (
+                          <div style={{ position: 'relative', width: '200px', height: '200px' }}>
+                            {c.image && <img src={c.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                            {c.tag && (
+                              <div style={{ position: 'absolute', top: '8px', left: '8px', backgroundColor: 'rgba(0,0,0,0.55)', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 500 }}>{c.tag}</div>
+                            )}
+                            {c.message && (
+                              <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.65)', color: '#fff', padding: '3px 12px', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 500, whiteSpace: 'nowrap' }}>{c.message}</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ));
+                  } catch { return <span>Invalid carousel</span>; }
+                })()}
+              </div>
             ) : msg.image ? (
               <img src={msg.image} alt="upload" style={{ maxWidth: "180px", maxHeight: "180px", borderRadius: "8px", display: "block" }} />
             ) : isLineEmojiOnly(msg.text) ? (
@@ -133,9 +182,25 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
         ))}
       </div>
 
+      {/* Template Picker Overlay */}
+      {showTemplatePicker && (
+        <div style={{ position: 'absolute', bottom: '60px', left: 0, right: 0, zIndex: 200 }} onClick={(e) => e.stopPropagation()}>
+          <TemplatePicker
+            onSelectText={(text) => { onSend(customer.id, text); setShowTemplatePicker(false); }}
+            onSelectImage={(url) => { /* image templates not common */ setShowTemplatePicker(false); }}
+            onSelectCarousel={(cards) => { if (onSendCarousel) onSendCarousel(customer.id, cards); setShowTemplatePicker(false); }}
+            onClose={() => setShowTemplatePicker(false)}
+          />
+        </div>
+      )}
+
+      {/* Hidden file input */}
+      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
+
       {/* Input */}
       <form className="mini-chat-input" onSubmit={handleSubmit}>
-        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: '2px' }}>
+          {/* Emoji */}
           <button
             type="button"
             className={`icon-btn mini-emoji-btn${showEmoji ? " active" : ""}`}
@@ -153,6 +218,24 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
               onClose={() => setShowEmoji(false)}
             />
           )}
+          {/* Image Upload */}
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => fileInputRef.current?.click()}
+            title="ส่งรูปภาพ"
+          >
+            <i className="bi bi-image"></i>
+          </button>
+          {/* Template Picker */}
+          <button
+            type="button"
+            className={`icon-btn${showTemplatePicker ? " active" : ""}`}
+            onClick={() => setShowTemplatePicker((v) => !v)}
+            title="Card Template"
+          >
+            <i className="bi bi-layout-text-window-reverse"></i>
+          </button>
         </div>
         <input
           ref={inputRef}
@@ -160,6 +243,7 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
           placeholder="พิมพ์ข้อความ..."
           value={replyText}
           onChange={(e) => setReplyText(e.target.value)}
+          onPaste={handlePaste}
         />
         <button type="submit" className="send-btn" disabled={!replyText.trim()}>
           <i className="bi bi-send-fill"></i>
@@ -172,7 +256,7 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend }) 
 // === Main Component ===
 const AllChat = () => {
   const navigate = useNavigate();
-  const { messages, customers, sendMessage, unreadCounts, markAsRead, STATUS } = useChat();
+  const { messages, customers, sendMessage, sendImageMessage, sendCarouselMessage, unreadCounts, markAsRead, STATUS } = useChat();
 
   const [expandedChatIds, setExpandedChatIds] = useState([]);
   const [cols, setCols] = useState(4);
@@ -533,6 +617,8 @@ const AllChat = () => {
                               onOpenFull={handleOpenFullChat}
                               onClose={() => handleCloseMiniChat(customer.id)}
                               onSend={handleSendQuickReply}
+                              onSendImage={sendImageMessage}
+                              onSendCarousel={sendCarouselMessage}
                             />
                           </div>
                         )}

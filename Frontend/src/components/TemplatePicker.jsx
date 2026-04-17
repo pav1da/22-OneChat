@@ -20,6 +20,7 @@ const TemplatePicker = ({ onSelectText, onSelectImage, onSelectCarousel, onClose
             return [];
         }
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const panelRef = useRef(null);
 
     // Fetch templates from API (lightweight — no base64 images)
@@ -154,46 +155,66 @@ const TemplatePicker = ({ onSelectText, onSelectImage, onSelectCarousel, onClose
 
     // Handle select
     const handleSelect = async (template) => {
-        saveRecent(template.id);
-        
-        let content = null;
         try {
-            content = typeof template.content === "string" ? JSON.parse(template.content) : template.content;
-        } catch { }
-
-        if (template.type === "ข้อความ") {
-            const text = getTextContent(template) || "";
-            onSelectText(String(text));
-            onClose();
-        } else if (template.type === "รูปภาพ") {
-            // Carousel type: multi-card format (has content.type === 'carousel' with cards[])
-            if (content && content.type === "carousel" && Array.isArray(content.cards) && content.cards.length >= 1) {
-                if (typeof onSelectCarousel === "function") {
-                    onSelectCarousel(content.cards);
+            setIsSubmitting(true);
+            saveRecent(template.id);
+            
+            // For images, we MUST fetch the full template to get the base64 string, since /picker strips it out.
+            let fullContent = null;
+            if (template.type === "รูปภาพ") {
+                const token = sessionStorage.getItem("token");
+                const res = await fetch(`/api/templates/${template.id}`, { headers: { Authorization: `Bearer ${token}` } });
+                if (res.ok) {
+                    const fullData = await res.json();
+                    if (fullData.data && fullData.data.content) {
+                        fullContent = typeof fullData.data.content === "string" ? JSON.parse(fullData.data.content) : fullData.data.content;
+                    }
                 }
-                onClose();
-            } else if (content && content.image) {
-                // Single card format (backward compat): convert to 1-card carousel so Flex Message renders tags/labels!
-                if (typeof onSelectCarousel === "function") {
-                    const singleCard = {
-                        image: content.image,
-                        message: content.message || "",
-                        tag: content.tag || "",
-                        isEndCard: false
-                    };
-                    onSelectCarousel([singleCard]);
-                }
-                onClose();
             } else {
-                // Fallback for extremely old legacy templates with missing content properties
-                const imageUrl = `/api/templates/${template.id}/image`;
-                if (typeof onSelectImage === "function") {
-                    onSelectImage(imageUrl);
-                }
-                onClose();
+                fullContent = typeof template.content === "string" ? JSON.parse(template.content) : template.content;
             }
+            
+            const contentToUse = fullContent || (typeof template.content === "string" ? JSON.parse(template.content) : template.content) || {};
+
+            if (template.type === "ข้อความ") {
+                const text = getTextContent(template) || "";
+                onSelectText(String(text));
+                onClose();
+            } else if (template.type === "รูปภาพ") {
+                // Carousel type: multi-card format
+                if (contentToUse && contentToUse.type === "carousel" && Array.isArray(contentToUse.cards) && contentToUse.cards.length >= 1) {
+                    if (typeof onSelectCarousel === "function") {
+                        onSelectCarousel(contentToUse.cards);
+                    }
+                    onClose();
+                } else if (contentToUse && contentToUse.image) {
+                    // Single card format (backward compat)
+                    if (typeof onSelectCarousel === "function") {
+                        const singleCard = {
+                            image: contentToUse.image,
+                            message: contentToUse.message || "",
+                            tag: contentToUse.tag || "",
+                            isEndCard: false
+                        };
+                        onSelectCarousel([singleCard]);
+                    }
+                    onClose();
+                } else {
+                    // Fallback for extremely old legacy templates
+                    const imageUrl = `/api/templates/${template.id}/image`;
+                    if (typeof onSelectImage === "function") {
+                        onSelectImage(imageUrl);
+                    }
+                    onClose();
+                }
+            }
+        } catch (err) {
+            console.error("Error formatting template selection:", err);
+            setIsSubmitting(false);
         }
     };
+
+
 
     const FILTERS = ["ทั้งหมด", "ข้อความ", "รูปภาพ"];
     const [previewItem, setPreviewItem] = useState(null);
@@ -314,8 +335,11 @@ const TemplatePicker = ({ onSelectText, onSelectImage, onSelectCarousel, onClose
                         <div className="tp-preview-container">
                             {!previewItem ? (
                                 <div className="tp-preview-empty">เลือกเทมเพลตเพื่อดูตัวอย่าง</div>
-                            ) : previewItem.type === "รูปภาพ" ? (
-                                <div className="tp-preview-image-box">
+                            ) : previewItem.type === "รูปภาพ" ? (() => {
+                                let c = {};
+                                try { c = typeof previewItem.content === "string" ? JSON.parse(previewItem.content) : (previewItem.content || {}); } catch(e){}
+                                return (
+                                <div className="tp-preview-image-box" style={{ position: "relative" }}>
                                     <img 
                                         src={`/api/templates/${previewItem.id}/image`} 
                                         alt="preview"
@@ -323,9 +347,20 @@ const TemplatePicker = ({ onSelectText, onSelectImage, onSelectCarousel, onClose
                                             e.target.style.display = 'none';
                                             e.target.parentElement.innerHTML = '<div class="tp-preview-no-image">ไม่มีรูปภาพ</div>';
                                         }}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
                                     />
+                                    {c.tag && (
+                                        <div style={{ position: 'absolute', top: '12px', left: '12px', backgroundColor: 'rgba(0, 0, 0, 0.55)', color: 'white', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 500, zIndex: 10 }}>
+                                            {c.tag}
+                                        </div>
+                                    )}
+                                    {c.message && (
+                                        <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0, 0, 0, 0.65)', color: 'white', padding: '4px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 500, zIndex: 10, whiteSpace: 'nowrap' }}>
+                                            {c.message}
+                                        </div>
+                                    )}
                                 </div>
-                            ) : (
+                            )})() : (
                                 <div className="tp-preview-chat-bubble">
                                     <div className="tp-bubble-text">{getTextContent(previewItem)}</div>
                                 </div>
@@ -336,13 +371,13 @@ const TemplatePicker = ({ onSelectText, onSelectImage, onSelectCarousel, onClose
 
                 {/* Footer */}
                 <div className="tp-footer">
-                    <button className="tp-btn-cancel" onClick={onClose}>ยกเลิก</button>
+                    <button className="tp-btn-cancel" onClick={onClose} disabled={isSubmitting}>ยกเลิก</button>
                     <button 
                         className="tp-btn-submit" 
-                        disabled={!previewItem} 
+                        disabled={!previewItem || isSubmitting} 
                         onClick={() => handleSelect(previewItem)}
                     >
-                        เลือก
+                        {isSubmitting ? "กำลังโหลด..." : "เลือก"}
                     </button>
                 </div>
             </div>

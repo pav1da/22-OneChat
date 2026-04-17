@@ -275,6 +275,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   animation: slideDown 0.25s ease-out;
+  position: relative;
 }
 
 @keyframes slideDown {
@@ -397,6 +398,7 @@
   font-size: var(--fs-sm);
   line-height: 1.4;
   word-break: break-word;
+  white-space: pre-wrap;
 }
 
 /* สีพื้นหลังและขอบมุมตอนล่างซ้าย ที่ใช้สำหรับข้อความที่ลูกค้าส่งมา */
