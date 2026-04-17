@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./team.css";
@@ -26,6 +26,10 @@ const Teams = () => {
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [renamingTeam, setRenamingTeam] = useState(null);
   const [renameValue, setRenameValue] = useState("");
+
+  // Modal: ยืนยันลบทีม
+  const [showDeleteTeamModal, setShowDeleteTeamModal] = useState(false);
+  const [teamToDelete, setTeamToDelete] = useState(null);
 
   // Modal: เพิ่มสมาชิก
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
@@ -86,6 +90,28 @@ const Teams = () => {
   const filteredTeams = teams.filter((t) =>
     t.team_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // ================== STATS CALCULATION ==================
+  const { totalMembers, onlineMembers } = useMemo(() => {
+    const uniqueMembers = new Map();
+    teams.forEach(t => {
+      (t.members || []).forEach(m => {
+        if (!uniqueMembers.has(m.emp_id)) {
+          uniqueMembers.set(m.emp_id, m);
+        }
+      });
+    });
+    
+    let onlineCount = 0;
+    uniqueMembers.forEach((m, emp_id) => {
+      if (isUserOnline(emp_id)) onlineCount++;
+    });
+
+    return {
+      totalMembers: uniqueMembers.size,
+      onlineMembers: onlineCount
+    };
+  }, [teams, isUserOnline]);
 
   // ================== ACCORDION ==================
   const toggleTeam = (teamId) => {
@@ -154,21 +180,24 @@ const Teams = () => {
   };
 
   // ================== DELETE TEAM ==================
-  const handleDeleteTeam = async (team) => {
-    if (!window.confirm(`ต้องการลบทีม "${team.team_name}" ใช่หรือไม่?`)) return;
+  const confirmDeleteTeam = async () => {
+    if (!teamToDelete) return;
     try {
-      const res = await fetch(`/api/teams/${team.team_id}`, {
+      const res = await fetch(`/api/teams/${teamToDelete.team_id}`, {
         method: "DELETE",
         headers: authHeaders(),
       });
       if (res.ok) {
-        setTeams((prev) => prev.filter((t) => t.team_id !== team.team_id));
+        setTeams((prev) => prev.filter((t) => t.team_id !== teamToDelete.team_id));
       } else {
         const data = await res.json();
         alert(data.message || "ลบทีมไม่สำเร็จ");
       }
     } catch (err) {
       console.error("Delete team error:", err);
+    } finally {
+      setShowDeleteTeamModal(false);
+      setTeamToDelete(null);
     }
   };
 
@@ -266,390 +295,528 @@ const Teams = () => {
 
   const filteredAvailable = availableMembers.filter(
     (m) =>
-      (m.name || m.username || "")
+      (m.display_name || m.username || "")
         .toLowerCase()
         .includes(memberSearch.toLowerCase())
   );
 
   return (
-    <div className="teams-container">
-      {/* ===== Header ===== */}
-      <div className="teams-header">
-        <h1 className="teams-title">ทีม</h1>
-        {canManageTeams && (
-          <button
-            className="btn-create-team"
-            onClick={() => setShowCreateModal(true)}
-          >
-            <i className="bi bi-plus-lg"></i>
-            สร้างทีม
-          </button>
-        )}
-      </div>
-
-      {/* ===== Search ===== */}
-      <div className="teams-search-wrapper">
-        <i className="bi bi-search teams-search-icon"></i>
-        <input
-          className="teams-search-input"
-          type="text"
-          placeholder="ค้นหาทีม..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      {/* ===== Loading ===== */}
-      {loading && (
-        <div className="teams-loading">
-          <div className="skeleton-card"></div>
-          <div className="skeleton-card"></div>
-          <div className="skeleton-card"></div>
-        </div>
-      )}
-
-      {/* ===== Team List ===== */}
-      {!loading && filteredTeams.length === 0 && (
-        <div className="teams-empty">
-          <i className="bi bi-inboxes teams-empty-icon"></i>
-          <span className="teams-empty-text">
-            {searchTerm ? "ไม่พบทีมที่ค้นหา" : "ยังไม่มีทีม — กดสร้างทีมใหม่เลย!"}
-          </span>
-        </div>
-      )}
-
-      <div className="d-flex flex-column pb-5">
-        {filteredTeams.map((team) => {
-          const isOpen = openTeams[team.team_id] || false;
-          const members = team.members || [];
-
-          return (
-            <div key={team.team_id} className="team-card">
-              {/* Team Header */}
-              <div
-                className="team-header"
-                onClick={() => toggleTeam(team.team_id)}
-              >
-                <div className="team-header-left">
-                  <i
-                    className={`bi bi-chevron-right team-chevron ${isOpen ? "open" : ""}`}
-                  ></i>
-                  <div className="team-header-icon">
-                    <i className="bi bi-people-fill"></i>
-                  </div>
-                  <span className="team-name">{team.team_name}</span>
-                  <span className="team-member-count">
-                    {members.length} สมาชิก
-                  </span>
-                </div>
-
-                {canManageTeams && (
-                  <div
-                    className="team-header-actions"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      className="btn-team-action"
-                      title="เปลี่ยนชื่อทีม"
-                      onClick={() => openRenameModal(team)}
-                    >
-                      <i className="bi bi-pencil"></i>
-                    </button>
-                    <button
-                      className="btn-team-action danger"
-                      title="ลบทีม"
-                      onClick={() => handleDeleteTeam(team)}
-                    >
-                      <i className="bi bi-trash"></i>
-                    </button>
-                  </div>
-                )}
+    <div className="teams-page-wrapper">
+      <div className="teams-container">
+        
+        {/* ===== Hero & Stats Section ===== */}
+        <div className="teams-hero-section">
+          <div className="teams-hero-content">
+            <h1 className="teams-title">ทีมทำงาน</h1>
+            <p className="teams-subtitle">สร้างและจัดการทีมของคุณเพื่อการทำงานที่ราบรื่น</p>
+          </div>
+          
+          <div className="teams-stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon-wrapper i-teams">
+                <i className="bi bi-boxes"></i>
               </div>
-
-              {/* Team Members (Accordion) */}
-              <div
-                className={`team-members-area ${isOpen ? "open" : ""}`}
-              >
-                {members.length === 0 && (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "1rem",
-                      color: "#9ca3af",
-                      fontSize: "0.9rem",
-                    }}
-                  >
-                    ยังไม่มีสมาชิกในทีม
-                  </div>
-                )}
-
-                {members.map((member) => {
-                  const online = isUserOnline(member.emp_id);
-                  const displayName = member.name || member.username || "—";
-
-                  return (
-                    <div key={member.emp_id} className="team-member-row">
-                      {/* ชื่อ + avatar */}
-                      <div className="team-member-name">
-                        <div className="avatar-wrapper">
-                          {member.image ? (
-                            <img
-                              src={member.image}
-                              alt={displayName}
-                              className={`member-avatar ${online ? "avatar-online" : "avatar-offline"}`}
-                            />
-                          ) : (
-                            <div
-                              className={`member-avatar-initials ${online ? "avatar-online" : "avatar-offline"}`}
-                              style={{
-                                backgroundColor: getAvatarColor(displayName),
-                              }}
-                            >
-                              {getInitial(displayName)}
-                            </div>
-                          )}
-                          <span
-                            className={`avatar-status-dot ${online ? "dot-online" : "dot-offline"}`}
-                          ></span>
-                        </div>
-                        <span>{displayName}</span>
-                      </div>
-
-                      {/* Role in team */}
-                      <div>
-                        <span
-                          className={`team-role-badge ${
-                            member.role_in_team === "หัวหน้า"
-                              ? "team-role-leader"
-                              : "team-role-member"
-                          }`}
-                        >
-                          {member.role_in_team || "สมาชิก"}
-                        </span>
-                      </div>
-
-                      {/* สถานะ online/offline */}
-                      <div>
-                        <span
-                          className={`status-badge ${online ? "status-online" : "status-offline"}`}
-                        >
-                          <span
-                            className={`status-dot ${online ? "dot-green" : "dot-gray"}`}
-                          ></span>
-                          {online ? "ออนไลน์" : "ออฟไลน์"}
-                        </span>
-                      </div>
-
-                      {/* ปุ่มลบสมาชิก — เฉพาะ admin/manager */}
-                      {canManageTeams && (
-                        <div>
-                          <button
-                            className="btn-remove-member"
-                            title="นำออกจากทีม"
-                            onClick={() =>
-                              openConfirmRemove(team.team_id, member.emp_id, displayName)
-                            }
-                          >
-                            <i className="bi bi-x-lg"></i>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {/* ปุ่มเพิ่มสมาชิก — เฉพาะ admin/manager */}
-                {canManageTeams && (
-                  <button
-                    className="btn-add-member"
-                    onClick={() => openAddMemberModal(team.team_id)}
-                  >
-                    <i className="bi bi-plus-circle"></i>
-                    เพิ่มสมาชิก
-                  </button>
-                )}
+              <div className="stat-info">
+                <h3 className="stat-value">{teams.length}</h3>
+                <span className="stat-label">ทีมทั้งหมด</span>
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* ================= MODALS ================= */}
-
-      {/* Modal: สร้างทีมใหม่ */}
-      <Modal
-        show={showCreateModal}
-        onHide={() => setShowCreateModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-bold">สร้างทีมใหม่</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Label>ชื่อทีม</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="กรอกชื่อทีม"
-            value={newTeamName}
-            onChange={(e) => setNewTeamName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleCreateTeam()}
-            autoFocus
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowCreateModal(false)}
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            variant="warning"
-            className="text-white"
-            onClick={handleCreateTeam}
-            disabled={creating || !newTeamName.trim()}
-          >
-            {creating ? "กำลังสร้าง..." : "สร้างทีม"}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Modal: เปลี่ยนชื่อทีม */}
-      <Modal
-        show={showRenameModal}
-        onHide={() => setShowRenameModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-bold">เปลี่ยนชื่อทีม</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Label>ชื่อทีมใหม่</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="กรอกชื่อทีมใหม่"
-            value={renameValue}
-            onChange={(e) => setRenameValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleRenameTeam()}
-            autoFocus
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowRenameModal(false)}
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleRenameTeam}
-            disabled={!renameValue.trim()}
-          >
-            บันทึก
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Modal: เพิ่มสมาชิก */}
-      <Modal
-        show={showAddMemberModal}
-        onHide={() => setShowAddMemberModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-bold">เพิ่มสมาชิกเข้าทีม</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <input
-            className="modal-search-input"
-            type="text"
-            placeholder="ค้นหาสมาชิก..."
-            value={memberSearch}
-            onChange={(e) => setMemberSearch(e.target.value)}
-          />
-          <div className="add-member-list">
-            {filteredAvailable.length === 0 && (
-              <div className="text-center py-3 text-muted">
-                ไม่พบสมาชิก
+            
+            <div className="stat-card">
+              <div className="stat-icon-wrapper i-members">
+                <i className="bi bi-people"></i>
               </div>
-            )}
-            {filteredAvailable.map((m) => {
-              const alreadyInTeam = currentTeamMemberIds.includes(m.emp_id);
-              const displayName = m.name || m.username || "—";
+              <div className="stat-info">
+                <h3 className="stat-value">{totalMembers}</h3>
+                <span className="stat-label">สมาชิกในทีมรวม</span>
+              </div>
+            </div>
 
-              return (
+            <div className="stat-card">
+              <div className="stat-icon-wrapper i-online">
+                <i className="bi bi-broadcast"></i>
+              </div>
+              <div className="stat-info">
+                <h3 className="stat-value">{onlineMembers}</h3>
+                <span className="stat-label">กำลังออนไลน์</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ===== Toolbar Section ===== */}
+        <div className="teams-toolbar">
+          <div className="teams-search-wrapper">
+            <i className="bi bi-search teams-search-icon"></i>
+            <input
+              className="teams-search-input"
+              type="text"
+              placeholder="ค้นหาทีมที่ต้องการ..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          {canManageTeams && (
+            <button
+              className="btn-create-team interactive-btn"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <i className="bi bi-plus-lg"></i>
+              <span>สร้างทีมใหม่</span>
+            </button>
+          )}
+        </div>
+
+        {/* ===== Loading ===== */}
+        {loading && (
+          <div className="teams-loading">
+            <div className="skeleton-card"></div>
+            <div className="skeleton-card"></div>
+            <div className="skeleton-card"></div>
+          </div>
+        )}
+
+        {/* ===== Team List ===== */}
+        {!loading && filteredTeams.length === 0 && (
+          <div className="teams-empty-state">
+            <div className="empty-illustration">
+              <i className="bi bi-stars"></i>
+            </div>
+            <h3 className="empty-title">ไม่พบทีมที่คุณค้นหา</h3>
+            <p className="empty-desc">
+              {searchTerm ? "ลองค้นหาด้วยคำคีย์เวิร์ดอื่น หรือตรวจสอบตัวสะกด" : "พื้นที่นี้ยังว่างเปล่า เริ่มต้นสร้างทีมแรกของคุณเลย"}
+            </p>
+            {!searchTerm && canManageTeams && (
+               <button
+                 className="btn-create-team interactive-btn empty-action"
+                 onClick={() => setShowCreateModal(true)}
+               >
+                 <i className="bi bi-plus-lg"></i>
+                 สร้างทีมใหม่
+               </button>
+            )}
+          </div>
+        )}
+
+        <div className="teams-cards-container pb-5">
+          {filteredTeams.map((team) => {
+            const isOpen = openTeams[team.team_id] || false;
+            const members = team.members || [];
+            
+            // Calc online in this team
+            const onlineInTeam = members.filter(m => isUserOnline(m.emp_id)).length;
+
+            return (
+              <div key={team.team_id} className={`team-card premium-card ${isOpen ? 'active-card' : ''}`}>
+                {/* Team Header */}
                 <div
-                  key={m.emp_id}
-                  className={`add-member-item ${alreadyInTeam ? "disabled" : ""}`}
-                  onClick={() => !alreadyInTeam && handleAddMember(m.emp_id)}
+                  className="team-header"
+                  onClick={() => toggleTeam(team.team_id)}
                 >
-                  <div className="avatar-wrapper">
-                    {m.image ? (
-                      <img
-                        src={m.image}
-                        alt={displayName}
-                        className="member-avatar avatar-offline"
-                        style={{ width: 34, height: 34 }}
-                      />
-                    ) : (
+                  <div className="team-header-left">
+                    <div className={`team-header-icon gradient-bg-${team.team_id % 5 + 1}`}>
+                      <i className="bi bi-diagram-3-fill"></i>
+                    </div>
+                    <div className="team-meta">
+                      <span className="team-name">{team.team_name}</span>
+                      <div className="team-submeta">
+                        <span className="team-member-count badge-soft">
+                          <i className="bi bi-person-fill"></i> {members.length} สมาชิก
+                        </span>
+                        {onlineInTeam > 0 && (
+                           <span className="team-online-count badge-soft-success">
+                             <span className="pulse-dot"></span> {onlineInTeam} ออนไลน์
+                           </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="team-header-right">
+                    {canManageTeams && (
                       <div
-                        className="member-avatar-initials avatar-offline"
-                        style={{
-                          width: 34,
-                          height: 34,
-                          fontSize: "0.85rem",
-                          backgroundColor: getAvatarColor(displayName),
-                        }}
+                        className="team-header-actions"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {getInitial(displayName)}
+                        <button
+                          className="btn-team-action icon-btn"
+                          title="เปลี่ยนชื่อทีม"
+                          onClick={() => openRenameModal(team)}
+                        >
+                          <i className="bi bi-pencil-square"></i>
+                        </button>
+                        <button
+                          className="btn-team-action danger icon-btn"
+                          title="ลบทีม"
+                          onClick={() => {
+                            setTeamToDelete(team);
+                            setShowDeleteTeamModal(true);
+                          }}
+                        >
+                          <i className="bi bi-trash3"></i>
+                        </button>
+                      </div>
+                    )}
+                    <div className="team-chevron-wrapper">
+                       <i className={`bi bi-chevron-down team-chevron ${isOpen ? "open" : ""}`}></i>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Team Members (Accordion) */}
+                <div
+                  className={`team-members-area ${isOpen ? "open" : ""}`}
+                >
+                  <div className="team-members-inner">
+                    {members.length === 0 && (
+                      <div className="team-members-empty">
+                        <i className="bi bi-person-x"></i>
+                        <p>ยังไม่มีสมาชิกในทีมนี้</p>
+                      </div>
+                    )}
+
+                    <div className="members-grid">
+                      {members.map((member) => {
+                        const online = isUserOnline(member.emp_id);
+                        const displayName = member.display_name || member.username || "—";
+
+                        return (
+                          <div key={member.emp_id} className="team-member-row glass-row">
+                            {/* ชื่อ + avatar */}
+                            <div className="team-member-name">
+                              <div className="avatar-wrapper">
+                                {member.image ? (
+                                  <img
+                                    src={member.image}
+                                    alt={displayName}
+                                    className={`member-avatar ${online ? "avatar-online" : "avatar-offline"}`}
+                                  />
+                                ) : (
+                                  <div
+                                    className={`member-avatar-initials ${online ? "avatar-online" : "avatar-offline"}`}
+                                    style={{
+                                      backgroundColor: getAvatarColor(displayName),
+                                    }}
+                                  >
+                                    {getInitial(displayName)}
+                                  </div>
+                                )}
+                                <span
+                                  className={`avatar-status-dot ${online ? "dot-online" : "dot-offline"}`}
+                                ></span>
+                              </div>
+                              <div className="member-info-col">
+                                <span className="m-name">{displayName}</span>
+                                <span className="m-sub">{member.username && `@${member.username}`}</span>
+                              </div>
+                            </div>
+
+                            <div className="member-role-col">
+                              <span
+                                className={`team-role-badge ${
+                                  member.role_in_team === "หัวหน้า"
+                                    ? "team-role-leader"
+                                    : "team-role-member"
+                                }`}
+                              >
+                                {member.role_in_team === "หัวหน้า" ? <i className="bi bi-star-fill"></i> : null}
+                                {member.role_in_team || "สมาชิก"}
+                              </span>
+                            </div>
+
+                            <div className="member-status-col">
+                              <span
+                                className={`status-pill ${online ? "status-online" : "status-offline"}`}
+                              >
+                                {online ? "ออนไลน์" : "ออฟไลน์"}
+                              </span>
+                            </div>
+
+                            {/* ปุ่มลบสมาชิก — เฉพาะ admin/manager */}
+                            <div className="member-action-col">
+                              {canManageTeams && (
+                                <button
+                                  className="btn-remove-member icon-btn-small"
+                                  title="นำออกจากทีม"
+                                  onClick={() =>
+                                    openConfirmRemove(team.team_id, member.emp_id, displayName)
+                                  }
+                                >
+                                  <i className="bi bi-x-circle-fill"></i>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* ปุ่มเพิ่มสมาชิก — เฉพาะ admin/manager */}
+                    {canManageTeams && (
+                      <div className="add-member-wrapper">
+                        <button
+                          className="btn-add-member dashed-btn"
+                          onClick={() => openAddMemberModal(team.team_id)}
+                        >
+                          <i className="bi bi-person-plus-fill"></i>
+                          <span>เพิ่มคนเข้าทีม</span>
+                        </button>
                       </div>
                     )}
                   </div>
-                  <div>
-                    <div className="add-member-item-name">{displayName}</div>
-                    <div className="add-member-item-role">{m.role}</div>
-                  </div>
-                  {alreadyInTeam && (
-                    <span className="add-member-item-badge">
-                      อยู่ในทีมแล้ว
-                    </span>
-                  )}
                 </div>
-              );
-            })}
-          </div>
-        </Modal.Body>
-      </Modal>
+              </div>
+            );
+          })}
+        </div>
 
-      {/* Modal: ยืนยันลบสมาชิก */}
-      <Modal
-        show={showConfirmRemove}
-        onHide={() => setShowConfirmRemove(false)}
-        centered
-        size="sm"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-bold" style={{ fontSize: "1.1rem" }}>
-            ยืนยันนำออกจากทีม
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          ต้องการนำ <strong>{removingMember?.name}</strong> ออกจากทีมใช่หรือไม่?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowConfirmRemove(false)}
-          >
-            ยกเลิก
-          </Button>
-          <Button variant="danger" onClick={handleConfirmRemoveMember}>
-            <i className="bi bi-trash me-1"></i>
-            นำออก
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        {/* ================= MODALS ================= */}
+
+        {/* Modal: สร้างทีมใหม่ */}
+        <Modal
+          show={showCreateModal}
+          onHide={() => setShowCreateModal(false)}
+          centered
+          className="premium-modal"
+          backdrop="static"
+        >
+          <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="fw-bold modal-title-styled">
+              <i className="bi bi-boxes text-orange me-2"></i>สร้างทีมใหม่
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="pt-2">
+            <p className="text-muted mb-4 small">กำหนดชื่อทีมเพื่อใช้เป็นพื้นที่ทำงานร่วมกัน</p>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">ชื่อทีม <span className="text-danger">*</span></Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="เช่น ทีมการตลาด, ทีมพัฒนา..."
+                className="premium-input"
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateTeam()}
+                autoFocus
+                size="lg"
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer className="border-0 pt-0">
+            <Button
+              variant="light"
+              className="px-4 rounded-pill fw-medium"
+              onClick={() => setShowCreateModal(false)}
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              className="px-4 rounded-pill fw-medium premium-btn-orange"
+              onClick={handleCreateTeam}
+              disabled={creating || !newTeamName.trim()}
+            >
+              {creating ? <><i className="bi bi-hourglass-split me-2"></i>กำลังสร้าง...</> : "บันทึกและสร้างทีม"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Modal: เปลี่ยนชื่อทีม */}
+        <Modal
+          show={showRenameModal}
+          onHide={() => setShowRenameModal(false)}
+          centered
+          className="premium-modal"
+          backdrop="static"
+        >
+          <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="fw-bold modal-title-styled">
+              <i className="bi bi-pencil-square text-orange me-2"></i>เปลี่ยนชื่อทีม
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="pt-2">
+            <p className="text-muted mb-4 small">แก้ไขชื่อทีม <strong>{renamingTeam?.team_name}</strong></p>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">ชื่อทีมใหม่ <span className="text-danger">*</span></Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="กรอกชื่อทีมใหม่"
+                className="premium-input"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleRenameTeam()}
+                autoFocus
+                size="lg"
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer className="border-0 pt-0">
+            <Button
+              variant="light"
+              className="px-4 rounded-pill fw-medium"
+              onClick={() => setShowRenameModal(false)}
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              className="px-4 rounded-pill fw-medium premium-btn-blue"
+              onClick={handleRenameTeam}
+              disabled={!renameValue.trim() || renameValue === renamingTeam?.team_name}
+            >
+              บันทึกการเปลี่ยนแปลง
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Modal: เพิ่มสมาชิก */}
+        <Modal
+          show={showAddMemberModal}
+          onHide={() => setShowAddMemberModal(false)}
+          centered
+          className="premium-modal"
+        >
+          <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="fw-bold modal-title-styled">
+              <i className="bi bi-person-plus text-orange me-2"></i>เพิ่มสมาชิกเข้าทีม
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div className="search-input-wrapper mb-3">
+              <i className="bi bi-search search-icon"></i>
+              <input
+                className="premium-input modal-search w-100"
+                type="text"
+                placeholder="ค้นหาชื่อ หรือ Username..."
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+              />
+            </div>
+            
+            <div className="add-member-list customized-scrollbar">
+              {filteredAvailable.length === 0 && (
+                <div className="empty-state-small text-center py-5">
+                  <i className="bi bi-emoji-frown fs-2 text-muted mb-2 d-block"></i>
+                  <span className="text-muted">ไม่พบสมาชิกที่ค้นหา</span>
+                </div>
+              )}
+              {filteredAvailable.map((m) => {
+                const alreadyInTeam = currentTeamMemberIds.includes(m.emp_id);
+                const displayName = m.display_name || m.username || "—";
+
+                return (
+                  <div
+                    key={m.emp_id}
+                    className={`add-member-item-enhanced ${alreadyInTeam ? "disabled" : ""}`}
+                    onClick={() => !alreadyInTeam && handleAddMember(m.emp_id)}
+                  >
+                    <div className="avatar-wrapper">
+                      {m.image ? (
+                        <img
+                          src={m.image}
+                          alt={displayName}
+                          className="member-avatar avatar-offline"
+                          style={{ width: 40, height: 40 }}
+                        />
+                      ) : (
+                        <div
+                          className="member-avatar-initials avatar-offline"
+                          style={{
+                            width: 40,
+                            height: 40,
+                            fontSize: "1rem",
+                            backgroundColor: getAvatarColor(displayName),
+                          }}
+                        >
+                          {getInitial(displayName)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="member-info-right ms-2 flex-grow-1">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div className="add-member-item-name fw-semibold">{displayName}</div>
+                        {alreadyInTeam && (
+                          <span className="badge bg-light text-secondary rounded-pill border">อยู่ในทีมแล้ว</span>
+                        )}
+                        {!alreadyInTeam && (
+                           <button className="btn btn-sm btn-outline-primary rounded-pill px-3 m-add-btn">เพิ่ม</button>
+                        )}
+                      </div>
+                      <div className="add-member-item-role text-muted small">{m.role || 'Member'}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Modal.Body>
+        </Modal>
+
+        {/* Modal: ยืนยันลบทีม */}
+        <Modal show={showDeleteTeamModal} onHide={() => { setShowDeleteTeamModal(false); setTeamToDelete(null); }} centered>
+          <Modal.Body className="text-center p-5">
+            <div className="mb-4">
+              <div className="mx-auto bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style={{ width: "80px", height: "80px" }}>
+                <i className="bi bi-trash text-danger" style={{ fontSize: "2.5rem" }}></i>
+              </div>
+            </div>
+            <h5 className="fw-bold mb-3" style={{ color: "var(--text-heading, #1e293b)" }}>ยืนยันการลบทีม</h5>
+            <p className="mb-4" style={{ color: "var(--text-secondary, #4b5563)", fontSize: "1rem" }}>
+              คุณต้องการลบทีม <strong>{teamToDelete?.team_name}</strong> ใช่หรือไม่?<br/>
+              การกระทำนี้จะไม่สามารถเรียกคืนได้
+            </p>
+            <div className="d-flex justify-content-center gap-3">
+              <Button 
+                variant="light" 
+                onClick={() => { setShowDeleteTeamModal(false); setTeamToDelete(null); }} 
+                className="px-4 py-2" 
+                style={{ fontWeight: 600, color: "var(--text-secondary, #4b5563)", border: "1px solid var(--border-medium, #cbd5e1)" }}
+              >
+                ยกเลิก
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={confirmDeleteTeam} 
+                className="px-4 py-2" 
+                style={{ fontWeight: 600 }}
+              >
+                ลบทีม
+              </Button>
+            </div>
+          </Modal.Body>
+        </Modal>
+
+        {/* Modal: ยืนยันลบสมาชิกออกจากทีม */}
+        <Modal show={showConfirmRemove} onHide={() => setShowConfirmRemove(false)} centered>
+          <Modal.Body className="text-center p-5">
+            <div className="mb-4">
+              <div className="mx-auto bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style={{ width: "80px", height: "80px" }}>
+                <i className="bi bi-trash text-danger" style={{ fontSize: "2.5rem" }}></i>
+              </div>
+            </div>
+            <h5 className="fw-bold mb-3" style={{ color: "var(--text-heading, #1e293b)" }}>ยืนยันนำออกจากทีม?</h5>
+            <p className="mb-4" style={{ color: "var(--text-secondary, #4b5563)", fontSize: "1rem" }}>
+              คุณต้องการนำ <strong>{removingMember?.name}</strong> ออกจากทีมใช่หรือไม่?<br/>
+              การกระทำนี้จะไม่สามารถเรียกคืนได้
+            </p>
+            <div className="d-flex justify-content-center gap-3">
+              <Button 
+                variant="light" 
+                onClick={() => setShowConfirmRemove(false)} 
+                className="px-4 py-2" 
+                style={{ fontWeight: 600, color: "var(--text-secondary, #4b5563)", border: "1px solid var(--border-medium, #cbd5e1)" }}
+              >
+                ยกเลิก
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={handleConfirmRemoveMember} 
+                className="px-4 py-2" 
+                style={{ fontWeight: 600 }}
+              >
+                นำออกทันที
+              </Button>
+            </div>
+          </Modal.Body>
+        </Modal>
+
+      </div>
     </div>
   );
 };

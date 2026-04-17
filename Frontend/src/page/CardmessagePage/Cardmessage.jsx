@@ -61,6 +61,10 @@ const Cardmessage = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewCardIndex, setPreviewCardIndex] = useState(0);
 
+  // Delete Confirmation State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
   // Crop State
   const [imgSrc, setImgSrc] = useState(""); // file for raw image string
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -178,6 +182,23 @@ const Cardmessage = () => {
     // Sync to newItem so the original logic handles saving Card 1 perfectly without restructuring the DB
     if (activeCardIndex === 0) {
       setNewItem((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    try {
+      const token = sessionStorage.getItem("token");
+      await fetch(`/api/templates/${itemToDelete.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchItems();
+    } catch (error) {
+      console.error("Error deleting template:", error);
+    } finally {
+      setShowDeleteModal(false);
+      setItemToDelete(null);
     }
   };
 
@@ -461,26 +482,9 @@ const Cardmessage = () => {
                         <Dropdown.Divider />
 
                         <Dropdown.Item
-                          onClick={async () => {
-                            if (
-                              window.confirm(
-                                "คุณต้องการลบเทมเพลตนี้ใช่หรือไม่?",
-                              )
-                            ) {
-                              try {
-                                const token = sessionStorage.getItem("token");
-                                await fetch(`/api/templates/${item.id}`, {
-                                  method: "DELETE",
-                                  headers: { Authorization: `Bearer ${token}` },
-                                });
-                                fetchItems();
-                              } catch (error) {
-                                console.error(
-                                  "Error deleting template:",
-                                  error,
-                                );
-                              }
-                            }
+                          onClick={() => {
+                            setItemToDelete(item);
+                            setShowDeleteModal(true);
                           }}
                           className="py-2 px-3 text-danger"
                         >
@@ -980,6 +984,40 @@ const Cardmessage = () => {
               </div>
             </div>
           )}
+        </Modal.Body>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setItemToDelete(null); }} centered>
+        <Modal.Body className="text-center p-5">
+          <div className="mb-4">
+            <div className="mx-auto bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style={{ width: "80px", height: "80px" }}>
+              <i className="bi bi-trash text-danger" style={{ fontSize: "2.5rem" }}></i>
+            </div>
+          </div>
+          <h5 className="fw-bold mb-3" style={{ color: "var(--text-heading, #1e293b)" }}>ยืนยันการลบเทมเพลต</h5>
+          <p className="mb-4" style={{ color: "var(--text-secondary, #4b5563)", fontSize: "1rem" }}>
+            คุณต้องการลบเทมเพลต <strong>{itemToDelete?.title}</strong> ใช่หรือไม่?<br/>
+            การกระทำนี้จะไม่สามารถเรียกคืนได้
+          </p>
+          <div className="d-flex justify-content-center gap-3">
+            <Button 
+              variant="light" 
+              onClick={() => { setShowDeleteModal(false); setItemToDelete(null); }} 
+              className="px-4 py-2" 
+              style={{ fontWeight: 600, color: "var(--text-secondary, #4b5563)", border: "1px solid var(--border-medium, #cbd5e1)" }}
+            >
+              ยกเลิก
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={confirmDelete} 
+              className="px-4 py-2" 
+              style={{ fontWeight: 600 }}
+            >
+              ลบเทมเพลต
+            </Button>
+          </div>
         </Modal.Body>
       </Modal>
 

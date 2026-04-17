@@ -34,6 +34,10 @@ function Dashboard({ user }) {
   // เก็บ ID ของโน้ตที่กำลังถูกแก้ไข (ถ้า null แปลว่ากำลังสร้างใหม่)
   const [editingId, setEditingId] = useState(null);
 
+  // Delete Modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState(null);
+
   // โหลดโน้ตจาก API และตั้งค่า Socket.io
   useEffect(() => {
     const fetchNotes = async () => {
@@ -128,19 +132,20 @@ function Dashboard({ user }) {
       }
     }
   };
-
   // ลบโน้ต
-  const handleDeleteNote = async (id) => {
-    if (window.confirm("ยืนยันการลบโน้ต?")) {
-      try {
-        const token = sessionStorage.getItem("token");
-        await fetch(`/api/notes/${id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } catch (error) {
-        console.error("Error deleting note:", error);
-      }
+  const confirmDeleteNote = async () => {
+    if (!noteToDelete) return;
+    try {
+      const token = sessionStorage.getItem("token");
+      await fetch(`/api/notes/${noteToDelete.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (error) {
+      console.error("Error deleting note:", error);
+    } finally {
+      setShowDeleteModal(false);
+      setNoteToDelete(null);
     }
   };
 
@@ -324,7 +329,10 @@ function Dashboard({ user }) {
                     </Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item
-                      onClick={() => handleDeleteNote(note.id)}
+                      onClick={() => {
+                        setNoteToDelete(note);
+                        setShowDeleteModal(true);
+                      }}
                       className="text-danger"
                     >
                       <i className="bi bi-trash me-2"></i> ลบ
@@ -416,6 +424,40 @@ function Dashboard({ user }) {
             บันทึก
           </Button>
         </Modal.Footer>
+      </Modal>
+
+      {/* ===== Delete Confirmation Modal ===== */}
+      <Modal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setNoteToDelete(null); }} centered>
+        <Modal.Body className="text-center p-5">
+          <div className="mb-4">
+            <div className="mx-auto bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style={{ width: "80px", height: "80px" }}>
+              <i className="bi bi-trash text-danger" style={{ fontSize: "2.5rem" }}></i>
+            </div>
+          </div>
+          <h5 className="fw-bold mb-3" style={{ color: "var(--text-heading, #1e293b)" }}>ยืนยันการลบโน้ต</h5>
+          <p className="mb-4" style={{ color: "var(--text-secondary, #4b5563)", fontSize: "1rem" }}>
+            คุณต้องการลบโน้ตของ <strong>{noteToDelete?.user || "ไม่ระบุ"}</strong> ใช่หรือไม่?<br/>
+            การกระทำนี้จะไม่สามารถเรียกคืนได้
+          </p>
+          <div className="d-flex justify-content-center gap-3">
+            <Button 
+              variant="light" 
+              onClick={() => { setShowDeleteModal(false); setNoteToDelete(null); }} 
+              className="px-4 py-2" 
+              style={{ fontWeight: 600, color: "var(--text-secondary, #4b5563)", border: "1px solid var(--border-medium, #cbd5e1)" }}
+            >
+              ยกเลิก
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={confirmDeleteNote} 
+              className="px-4 py-2" 
+              style={{ fontWeight: 600 }}
+            >
+              ลบโน้ต
+            </Button>
+          </div>
+        </Modal.Body>
       </Modal>
 
       {/* Top controls: left = filter pills, right = compact search */}
