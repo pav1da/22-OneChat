@@ -266,7 +266,7 @@ const Teams = () => {
 
   const filteredAvailable = availableMembers.filter(
     (m) =>
-      (m.name || m.username || "")
+      (m.display_name || m.username || "")
         .toLowerCase()
         .includes(memberSearch.toLowerCase())
   );
@@ -385,7 +385,7 @@ const Teams = () => {
 
                 {members.map((member) => {
                   const online = isUserOnline(member.emp_id);
-                  const displayName = member.name || member.username || "—";
+                  const displayName = member.display_name || member.username || "—";
 
                   return (
                     <div key={member.emp_id} className="team-member-row">
@@ -576,7 +576,7 @@ const Teams = () => {
             )}
             {filteredAvailable.map((m) => {
               const alreadyInTeam = currentTeamMemberIds.includes(m.emp_id);
-              const displayName = m.name || m.username || "—";
+              const displayName = m.display_name || m.username || "—";
 
               return (
                 <div
