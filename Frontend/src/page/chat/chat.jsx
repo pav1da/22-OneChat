@@ -472,7 +472,7 @@ const Inbox = ({ currentUser }) => {
         setSelectedTagColor(TAG_COLORS[0]);
 
         if (tagId) {
-            // แท็กที่มีอยู่ใน DB — รู้ id จริงแล้ว อัปเดต UI ทันทีแล้วหิง API ตาม
+            // แท็กที่มีอยู่ใน DB — รู้ id จริงแล้ว อัปเดต UI ทันทีแล้วยิง API ตาม
             setTagsMap((prev) => ({
                 ...prev,
                 [selectedChatId]: [...(prev[selectedChatId] || []), { id: tagId, text, color }],
@@ -826,7 +826,10 @@ const Inbox = ({ currentUser }) => {
                                     </div>
                                 )}
 
-                                <div className={`message ${msg.sender === "own" ? "own" : ""}`}>
+                                <div 
+                                    className={`message ${msg.sender === "own" ? "own" : ""}`}
+                                    style={msg.message_type === "carousel" ? { maxWidth: '95%' } : {}}
+                                >
                                     {/* Customer avatar หรือ spacer */}
                                     {msg.sender === "customer" &&
                                         (showAvatar ? (
@@ -846,43 +849,73 @@ const Inbox = ({ currentUser }) => {
                                     )}
 
                                     {msg.message_type === "carousel" ? (
-                                        <div className="chat-carousel-wrapper" style={{
-                                            display: 'flex',
-                                            overflowX: 'auto',
-                                            gap: '10px',
-                                            maxWidth: '340px',
-                                            paddingBottom: '8px',
-                                            scrollbarWidth: 'none'
-                                        }}>
+                                        <div 
+                                            className="chat-carousel-wrapper" 
+                                            style={{
+                                                display: 'flex',
+                                                overflowX: 'auto',
+                                                gap: '12px',
+                                                maxWidth: '100%',
+                                                paddingBottom: '12px', /* ให้พื้นที่ scrollbar */
+                                                cursor: 'grab'
+                                            }}
+                                            onMouseDown={(e) => {
+                                                const ele = e.currentTarget;
+                                                ele.dataset.isDown = "true";
+                                                ele.style.cursor = "grabbing";
+                                                ele.dataset.startX = e.pageX - ele.offsetLeft;
+                                                ele.dataset.scrollLeft = ele.scrollLeft;
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                const ele = e.currentTarget;
+                                                ele.dataset.isDown = "false";
+                                                ele.style.cursor = "grab";
+                                            }}
+                                            onMouseUp={(e) => {
+                                                const ele = e.currentTarget;
+                                                ele.dataset.isDown = "false";
+                                                ele.style.cursor = "grab";
+                                            }}
+                                            onMouseMove={(e) => {
+                                                const ele = e.currentTarget;
+                                                if (ele.dataset.isDown !== "true") return;
+                                                e.preventDefault();
+                                                const x = e.pageX - ele.offsetLeft;
+                                                const walk = (x - parseFloat(ele.dataset.startX)) * 1.5; // ความเร็วในการลาก
+                                                ele.scrollLeft = parseFloat(ele.dataset.scrollLeft) - walk;
+                                            }}
+                                        >
                                             {(() => {
                                                 try {
                                                     const cards = JSON.parse(msg.text);
                                                     return cards.map((c, i) => (
                                                         <div key={i} className="carousel-card" style={{
-                                                            flex: '0 0 300px',
+                                                            flex: '0 0 250px',
                                                             backgroundColor: 'var(--bg-surface)',
                                                             borderRadius: '16px',
                                                             overflow: 'hidden',
-                                                            boxShadow: '0 2px 12px rgba(0,0,0,0.12)'
+                                                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                                                         }}>
+                                                            {/* ขนาดภาพ 250x250*/}
                                                             {c.isEndCard ? (
-                                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px' }}>
+                                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '250px' }}>
                                                                     <span style={{ color: '#42659a', fontWeight: '500', fontSize: '1.1rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
                                                                 </div>
                                                             ) : (
-                                                                <div style={{ position: 'relative', width: '300px', height: '300px' }}>
+                                                                <div style={{ position: 'relative', width: '250px', height: '250px' }}>
                                                                     {c.image && (
-                                                                        <img src={c.image} alt="carousel-card" style={{
-                                                                            width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer', display: 'block'
-                                                                        }} onClick={() => window.open(c.image, "_blank")} />
+                                                                        //เลื่อนดูภาพแบบ Carousel สไลด์ผ่านเมาส์/นิ้ว อย่างเดียว 
+                                                                        <img src={c.image} alt="carousel-card" draggable="false" style={{
+                                                                            width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none'
+                                                                        }} />
                                                                     )}
                                                                     {c.tag && (
-                                                                        <div style={{ position: 'absolute', top: '14px', left: '14px', backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', padding: '4px 14px', borderRadius: '16px', fontSize: '0.85rem', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                                                        <div style={{ position: 'absolute', top: '14px', left: '14px', backgroundColor: 'rgba(255, 255, 255, 1)', color: 'gray', padding: '4px 14px', borderRadius: '16px', fontSize: '0.80rem', fontWeight: 500, whiteSpace: 'nowrap', zIndex: 10 , border: '1px solid #888'  }}>
                                                                             {c.tag}
                                                                         </div>
                                                                     )}
                                                                     {c.message && (
-                                                                        <div style={{ position: 'absolute', bottom: '14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.65)', color: 'white', padding: '6px 18px', borderRadius: '20px', fontSize: '0.95rem', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                                                        <div style={{ position: 'absolute', bottom: '14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', padding: '6px 18px', borderRadius: '20px', fontSize: '0.95rem', fontWeight: 500, whiteSpace: 'nowrap',display: 'inline-block', zIndex: 10 }}>
                                                                             {c.message}
                                                                         </div>
                                                                     )}
@@ -1331,13 +1364,13 @@ const Inbox = ({ currentUser }) => {
                             </div>
 
                             {/* Add tag form Modal */}
-                            <Modal 
-                                show={showTagInput} 
+                            <Modal
+                                show={showTagInput}
                                 onHide={() => {
                                     setShowTagInput(false);
                                     setNewTagText("");
-                                }} 
-                                centered 
+                                }}
+                                centered
                                 className="kanit-regular"
                                 contentClassName="border-0 shadow-lg rounded-4"
                             >
@@ -1441,10 +1474,10 @@ const Inbox = ({ currentUser }) => {
                                         <div className="p-3 bg-light rounded-4 mt-4">
                                             <div className="d-flex align-items-center mb-3">
                                                 <span className="me-3 text-muted" style={{ fontSize: "0.8rem", fontWeight: 600 }}>สี:</span>
-                                                <ChatTagColorPicker 
-                                                    value={selectedTagColor} 
-                                                    onChange={setSelectedTagColor} 
-                                                    colors={TAG_COLORS} 
+                                                <ChatTagColorPicker
+                                                    value={selectedTagColor}
+                                                    onChange={setSelectedTagColor}
+                                                    colors={TAG_COLORS}
                                                 />
                                             </div>
 
@@ -1463,8 +1496,8 @@ const Inbox = ({ currentUser }) => {
                                     )}
                                 </Modal.Body>
                                 <Modal.Footer className="border-top-0 pt-0 justify-content-center pb-4">
-                                    <button 
-                                        className="btn btn-light rounded-pill px-5 py-2" 
+                                    <button
+                                        className="btn btn-light rounded-pill px-5 py-2"
                                         style={{ fontSize: "0.95rem", fontWeight: 500, backgroundColor: "#f3f4f6", border: "none", color: "#4b5563" }}
                                         onClick={() => {
                                             setShowTagInput(false);
@@ -1637,32 +1670,32 @@ const ChatTagColorPicker = ({ value, onChange, colors }) => {
             if (localColor !== value && /^#[0-9A-Fa-f]{6}$/.test(localColor)) {
                 onChange(localColor);
             }
-        }, 120); 
+        }, 120);
         return () => clearTimeout(handler);
     }, [localColor, value, onChange]);
 
     return (
         <div className="d-flex flex-column gap-3 w-100">
             <div className="d-flex align-items-center gap-3 bg-white p-2 py-3 rounded-3 shadow-sm border border-light" style={{ width: "fit-content" }}>
-                <div 
-                    className="position-relative shadow-sm d-flex justify-content-center align-items-center" 
-                    style={{ 
-                        width: '42px', height: '42px', borderRadius: '50%', backgroundColor: localColor, 
+                <div
+                    className="position-relative shadow-sm d-flex justify-content-center align-items-center"
+                    style={{
+                        width: '42px', height: '42px', borderRadius: '50%', backgroundColor: localColor,
                         border: '3px solid white', outline: `2px solid ${localColor?.length === 7 ? localColor : '#ccc'}`,
                         transition: 'all 0.2s',
                     }}
                     title="คลิกเพื่อเลือกสี"
                 >
                     <i className="bi bi-palette text-white" style={{ fontSize: '1.2rem', mixBlendMode: 'difference', pointerEvents: "none" }}></i>
-                    <input 
-                        type="color" 
-                        value={localColor?.length === 7 ? localColor : '#000000'} 
-                        onChange={(e) => setLocalColor(e.target.value)} 
+                    <input
+                        type="color"
+                        value={localColor?.length === 7 ? localColor : '#000000'}
+                        onChange={(e) => setLocalColor(e.target.value)}
                         className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
                         style={{ cursor: 'pointer' }}
                     />
                 </div>
-                
+
                 <div style={{ flex: 1, maxWidth: "150px" }}>
                     <div className="input-group input-group-sm shadow-sm" style={{ borderRadius: "8px", overflow: "hidden" }}>
                         <span className="input-group-text bg-light border-end-0 text-muted" style={{ fontSize: "0.8rem", fontWeight: 600 }}>HEX</span>
@@ -1690,14 +1723,14 @@ const ChatTagColorPicker = ({ value, onChange, colors }) => {
                         key={c}
                         type="button"
                         className="border-0 p-0 shadow-sm"
-                        style={{ 
+                        style={{
                             width: "30px", height: "30px", borderRadius: "50%", backgroundColor: c,
                             outline: value === c ? `2px solid ${c}` : "none", outlineOffset: "2px",
                             transform: value === c ? "scale(1.15)" : "scale(1)", transition: "transform 0.1s"
                         }}
                         onClick={() => {
-                           setLocalColor(c);
-                           onChange(c);
+                            setLocalColor(c);
+                            onChange(c);
                         }}
                     />
                 ))}
