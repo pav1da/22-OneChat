@@ -2,22 +2,33 @@ const db = require('../config/db.js');
 
 const Log = {
     findAll: async (filters) => {
-        let sql = 'SELECT * FROM LOGS WHERE 1=1';
+        let sql = `
+            SELECT LOGS.*, EMP.image AS current_avatar 
+            FROM LOGS 
+            LEFT JOIN EMP ON LOGS.user = EMP.username 
+            WHERE 1=1
+        `;
         let orderBy = ' ORDER BY created_at DESC';
         let params = [];
 
         if (filters.user) {
-            sql += ' AND user = ?';
+            sql += ' AND LOGS.user = ?';
             params.push(filters.user);
         }
 
         if (filters.action) {
-            sql += ' AND action = ?';
+            sql += ' AND LOGS.action = ?';
             params.push(filters.action);
         }
 
         const [rows] = await db.query(sql + orderBy, params);
-        return rows;
+        return rows.map(row => {
+            const { current_avatar, ...rest } = row;
+            return {
+                ...rest,
+                avatar: current_avatar || rest.avatar || null
+            };
+        });
     },
 
     create: async ({ user, avatar, action, target, details }) => {

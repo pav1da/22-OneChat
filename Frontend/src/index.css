@@ -395,3 +395,23 @@ h1, h2, h3, h4, h5, h6 {
 .reveal.stagger-4 { transition-delay: 0.4s; }
 .reveal.stagger-5 { transition-delay: 0.5s; }
 .reveal.stagger-6 { transition-delay: 0.6s; }
+
+/* ============ Global Dropdown & Form Fixes (Dark Theme Support) ============ */
+.dropdown-menu {
+    background-color: var(--bg-surface) !important;
+    border: 1px solid var(--border-medium) !important;
+}
+
+.dropdown-item {
+    color: var(--text-main) !important;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: var(--bg-hover) !important;
+    color: var(--brand-orange) !important;
+}
+
+.form-check-label {
+    color: var(--text-main) !important;
+}

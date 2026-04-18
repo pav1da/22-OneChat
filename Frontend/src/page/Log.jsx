@@ -195,9 +195,9 @@ const Log = () => {
                         >
                             {/* 1. Avatar */}
                             <div className="flex-shrink-0">
-                                {log.avatar ? (
+                                {log.avatar || users.find(u => u.username === log.user)?.image ? (
                                     <img
-                                        src={log.avatar}
+                                        src={log.avatar || users.find(u => u.username === log.user)?.image}
                                         alt={log.user}
                                         className="rounded-circle"
                                         style={{

@@ -491,9 +491,9 @@ const AllChat = () => {
                 จัดเรียง: {sortOrder === "latest" ? "ล่าสุด" : "เก่าสุด"}
                 <i className="bi bi-chevron-down ms-1" style={{ fontSize: "10px" }}></i>
               </Dropdown.Toggle>
-              <Dropdown.Menu className="p-2 border-0 shadow-sm rounded-3">
-                <Dropdown.Item onClick={() => setSortOrder("latest")} className="rounded">ล่าสุด</Dropdown.Item>
-                <Dropdown.Item onClick={() => setSortOrder("oldest")} className="rounded">เก่าสุด</Dropdown.Item>
+              <Dropdown.Menu className="p-2 border-0 shadow-sm rounded-3" style={{ backgroundColor: "var(--bg-main)", border: "1px solid var(--border-light)" }}>
+                <Dropdown.Item onClick={() => setSortOrder("latest")} className="rounded"><span style={{ color: "var(--text-main)" }}>ล่าสุด</span></Dropdown.Item>
+                <Dropdown.Item onClick={() => setSortOrder("oldest")} className="rounded"><span style={{ color: "var(--text-main)" }}>เก่าสุด</span></Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
 
@@ -505,11 +505,11 @@ const AllChat = () => {
                 ผู้รับผิดชอบ: {filterAssignee === "all" ? "ทั้งหมด" : filterAssignee === "unassigned" ? "ยังไม่ได้กำหนด" : members.find(m => m.emp_id === filterAssignee)?.username || filterAssignee}
                 <i className="bi bi-chevron-down ms-1" style={{ fontSize: "10px" }}></i>
               </Dropdown.Toggle>
-              <Dropdown.Menu className="p-2 border-0 shadow-sm rounded-3">
-                <Dropdown.Item onClick={() => setFilterAssignee("all")} className="rounded">ทั้งหมด</Dropdown.Item>
-                <Dropdown.Item onClick={() => setFilterAssignee("unassigned")} className="rounded">ยังไม่ได้กำหนด</Dropdown.Item>
+              <Dropdown.Menu className="p-2 border-0 shadow-sm rounded-3" style={{ backgroundColor: "var(--bg-main)", border: "1px solid var(--border-light)" }}>
+                <Dropdown.Item onClick={() => setFilterAssignee("all")} className="rounded"><span style={{ color: "var(--text-main)" }}>ทั้งหมด</span></Dropdown.Item>
+                <Dropdown.Item onClick={() => setFilterAssignee("unassigned")} className="rounded"><span style={{ color: "var(--text-main)" }}>ยังไม่ได้กำหนด</span></Dropdown.Item>
                 {members.map(m => (
-                  <Dropdown.Item key={m.emp_id} onClick={() => setFilterAssignee(m.emp_id)} className="rounded">{m.username}</Dropdown.Item>
+                  <Dropdown.Item key={m.emp_id} onClick={() => setFilterAssignee(m.emp_id)} className="rounded"><span style={{ color: "var(--text-main)" }}>{m.username}</span></Dropdown.Item>
                 ))}
               </Dropdown.Menu>
             </Dropdown>
@@ -522,7 +522,7 @@ const AllChat = () => {
                 <i className="bi bi-tags"></i>
                 แท็ก {filterTags.length > 0 ? `(${filterTags.length})` : ""}
               </Dropdown.Toggle>
-              <Dropdown.Menu className="p-2 border-0 shadow-sm rounded-3">
+              <Dropdown.Menu className="p-2 shadow-sm rounded-3" style={{ backgroundColor: "var(--bg-main)", border: "1px solid var(--border-light)" }}>
                 {globalTags.length === 0 ? (
                   <div className="text-muted px-2" style={{ fontSize: '0.8rem' }}>ยังไม่มีแท็ก กรุณาเพิ่มในหน้าตั้งค่า</div>
                 ) : globalTags.map(tag => (
@@ -531,10 +531,10 @@ const AllChat = () => {
                     type="checkbox"
                     id={`tag-${tag.id}`}
                     className="mb-1 d-flex align-items-center gap-2"
-                    style={{ fontSize: "0.85rem", cursor: "pointer" }}
+                    style={{ fontSize: "0.85rem", cursor: "pointer", color: "var(--text-main)" }}
                     checked={filterTags.includes(tag.id)}
                     label={
-                      <span className="d-flex align-items-center gap-2">
+                      <span className="d-flex align-items-center gap-2" style={{ color: "var(--text-main)" }}>
                         <span style={{ display:'inline-block', width:'10px', height:'10px', borderRadius:'50%', backgroundColor: tag.color, flexShrink:0 }} />
                         {tag.text}
                       </span>

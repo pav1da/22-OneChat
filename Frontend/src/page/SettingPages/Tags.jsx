@@ -89,9 +89,10 @@ function Tags() {
         {tags.map((tag) => (
           <div 
             key={tag.id} 
-            className="p-4 rounded-4 position-relative bg-white" 
+            className="p-4 rounded-4 position-relative" 
             style={{ 
-              border: "1px solid #f1f5f9",
+              backgroundColor: "var(--bg-surface)",
+              border: "1px solid var(--border-medium)",
               boxShadow: "0 4px 15px rgba(0,0,0,0.03)",
               transition: "all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
             }}
@@ -103,7 +104,7 @@ function Tags() {
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "none";
               e.currentTarget.style.boxShadow = "0 4px 15px rgba(0,0,0,0.03)";
-              e.currentTarget.style.borderColor = "#f1f5f9";
+              e.currentTarget.style.borderColor = "var(--border-medium)";
             }}
           >
             {/* Glowing Top Line Border */}
@@ -135,23 +136,23 @@ function Tags() {
               {/* Action Buttons (Floating style) */}
               <div className="d-flex gap-2">
                 <button 
-                  className="btn btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center border-0"
-                  style={{ width: "36px", height: "36px", color: "var(--primary-color)", backgroundColor: "#f8fafc", transition: "all 0.2s" }}
+                  className="btn rounded-circle shadow-sm d-flex align-items-center justify-content-center border-0"
+                  style={{ width: "36px", height: "36px", color: "var(--primary-color)", backgroundColor: "var(--bg-hover)", transition: "all 0.2s" }}
                   onClick={() => openEdit(tag)}
                   title="แก้ไข"
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#e0f2fe"}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#f8fafc"}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--primary-light)"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--bg-hover)"}
                 >
                   <Pencil size={15} />
                 </button>
                 <button 
-                  className="btn btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center border-0"
-                  style={{ width: "36px", height: "36px", color: "#f43f5e", backgroundColor: "#fff1f2", transition: "all 0.2s" }}
+                  className="btn rounded-circle shadow-sm d-flex align-items-center justify-content-center border-0"
+                  style={{ width: "36px", height: "36px", color: "#f43f5e", backgroundColor: "var(--bg-hover)", transition: "all 0.2s" }}
                   onClick={() => confirmDelete(tag)}
                   disabled={deletingId === tag.id || deletingId !== null}
                   title="ลบ"
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#ffe4e6"}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#fff1f2"}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(244, 63, 94, 0.15)"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--bg-hover)"}
                 >
                   {deletingId === tag.id ? <Spinner size="sm" animation="border" style={{width: "14px", height: "14px"}}/> : <Trash size={15} />}
                 </button>
@@ -162,12 +163,12 @@ function Tags() {
             <div className="position-absolute end-0 bottom-0" style={{ width: "80px", height: "80px", borderRadius: "100% 0 0 0", background: `radial-gradient(circle at bottom right, ${tag.color}15 0%, transparent 70%)`, pointerEvents: "none" }}></div>
 
             {/* Summary Footer */}
-            <div className="pt-3 d-flex align-items-center justify-content-between position-relative z-1" style={{ borderTop: "1px solid #f1f5f9" }}>
+            <div className="pt-3 d-flex align-items-center justify-content-between position-relative z-1" style={{ borderTop: "1px solid var(--border-light)" }}>
               <div className="d-flex align-items-center text-muted" style={{ fontSize: "0.85rem", fontWeight: 600 }}>
-                <i className="bi bi-people d-inline-block me-2" style={{ fontSize: "1.1rem", color: "#64748b" }}></i>
+                <i className="bi bi-people d-inline-block me-2" style={{ fontSize: "1.1rem", color: "var(--text-muted)" }}></i>
                 สมาชิกกลุ่ม
               </div>
-              <div className="badge rounded-pill px-3 py-1" style={{ backgroundColor: "#f8fafc", color: "#334155", border: "1px solid #e2e8f0", fontSize: "0.85rem", fontWeight: 700 }}>
+              <div className="badge rounded-pill px-3 py-1" style={{ backgroundColor: "var(--bg-hover)", color: "var(--text-main)", border: "1px solid var(--border-medium)", fontSize: "0.85rem", fontWeight: 700 }}>
                 {tag.count ?? 0} คน
               </div>
             </div>
