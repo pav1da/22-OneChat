@@ -8,6 +8,7 @@ const Customer = require("../models/customer.js");
 const Log = require("../models/log.js");
 const cloudinary = require("../config/cloudinary");
 const { lineClient } = require("../controllers/lineController.js");
+const fbController = require("../controllers/FbController.js");
 
 // Multer config for admin-uploaded chat images
 const chatImageStorage = multer.memoryStorage();
@@ -310,12 +311,15 @@ router.post("/", auth, async (req, res) => {
       message_text,
     });
 
-    // ถ้าเป็นข้อความจาก dashboard (own) ให้ส่งไปยัง LINE ด้วย
+    // ถ้าเป็นข้อความจาก dashboard (own) ให้ส่งไปยัง platform ของลูกค้า
     if ((sender || "own") === "own") {
       try {
         const customer = await Customer.findById(customer_id);
+
+        // === ส่งไปยัง LINE ===
         if (customer && customer.platform === "line" && customer.platform_id) {
           const lineMessages = [];
+          
           if ((message_type || "text") === "text") {
             lineMessages.push({ type: "text", text: message_text });
           } else if (message_type === "image") {
@@ -334,19 +338,201 @@ router.post("/", auth, async (req, res) => {
               originalContentUrl: imageAbsUrl,
               previewImageUrl: imageAbsUrl,
             });
+          } else if (message_type === "carousel") {
+             // Multi-Card Carousel Payload Mapping
+             try {
+                 const parsedCards = JSON.parse(message_text);
+                 const bubbles = parsedCards.map(c => {
+                     // ----- END CARD -----
+                     if (c.isEndCard || (!c.image && c.message)) {
+                         const endLabel = ((c.message || "").trim()) || "ดูเพิ่มเติม";
+                         const endLabelSafe = endLabel.length > 20 ? endLabel.substring(0, 20) : endLabel;
+                         return {
+                             type: "bubble",
+                             size: "mega",
+                             action: {
+                                 type: "message",
+                                 label: endLabelSafe,
+                                 text: endLabel
+                             },
+                             body: {
+                                 type: "box",
+                                 layout: "vertical",
+                                 paddingAll: "0px",
+                                 justifyContent: "center",
+                                 alignItems: "center",
+                                 backgroundColor: "#f8f9fa",
+                                 contents: [
+                                     {
+                                         type: "text",
+                                         text: endLabel,
+                                         color: "#42659a",
+                                         weight: "bold",
+                                         align: "center",
+                                         gravity: "center"
+                                     }
+                                 ]
+                             }
+                         };
+                     }
+                     
+                     // ----- NORMAL CARD -----
+                     const contents = [];
+                     
+                     // 1. The Image Background
+                     if (c.image && c.image.startsWith("https://")) {
+                         contents.push({
+                             type: "image",
+                             url: c.image,
+                             size: "full",
+                             aspectMode: "cover",
+                             aspectRatio: "1:1",
+                             gravity: "center"
+                         });
+                     } else {
+                         // Fallback for missing/invalid image URL
+                         contents.push({
+                             type: "image",
+                             url: "https://dummyimage.com/600x600/e2e8f0/64748b&text=Image",
+                             size: "full",
+                             aspectMode: "cover",
+                             aspectRatio: "1:1"
+                         });
+                     }
+                     
+                     // 2. Top-Left Tag
+                     if (c.tag && c.tag.trim() !== "") {
+                         contents.push({
+                             type: "box",
+                             layout: "vertical",
+                             position: "absolute",
+                             offsetTop: "16px",
+                             offsetStart: "16px",
+                             backgroundColor: "#00000088",
+                             paddingAll: "6px",
+                             paddingStart: "14px",
+                             paddingEnd: "14px",
+                             cornerRadius: "20px",
+                             contents: [
+                                 {
+                                     type: "text",
+                                     text: c.tag,
+                                     color: "#ffffff",
+                                     size: "sm",
+                                     align: "center",
+                                     weight: "bold"
+                                 }
+                             ]
+                         });
+                     }
+                     
+                     // 3. Bottom-Center Label
+                     if (c.message && c.message.trim() !== "") {
+                         contents.push({
+                             type: "box",
+                             layout: "horizontal",
+                             position: "absolute",
+                             offsetBottom: "16px",
+                             offsetStart: "0px",
+                             offsetEnd: "0px",
+                             justifyContent: "center",
+                             contents: [
+                                 {
+                                     type: "box",
+                                     layout: "vertical",
+                                     backgroundColor: "#000000A6",
+                                     paddingAll: "6px",
+                                     paddingStart: "20px",
+                                     paddingEnd: "20px",
+                                     cornerRadius: "20px",
+                                     contents: [
+                                         {
+                                             type: "text",
+                                             text: c.message,
+                                             color: "#ffffff",
+                                             size: "md",
+                                             align: "center",
+                                             weight: "bold"
+                                         }
+                                     ]
+                                 }
+                             ]
+                         });
+                     }
+                     
+                     const cardActionText = ((c.message || c.tag || "ดูรายละเอียด").trim()) || "ดูรายละเอียด";
+                     const cardActionLabel = cardActionText.length > 20 ? cardActionText.substring(0, 20) : cardActionText;
+                     return {
+                         type: "bubble",
+                         size: "mega",
+                         action: {
+                             type: "message",
+                             label: cardActionLabel,
+                             text: cardActionText
+                         },
+                         body: {
+                             type: "box",
+                             layout: "vertical",
+                             paddingAll: "0px",
+                             position: "relative",
+                             contents: contents
+                         }
+                     };
+                 });
+
+                 if (bubbles.length > 0) {
+                     lineMessages.push({
+                         type: "flex",
+                         altText: "ส่งรูปภาพจาก Card Message",
+                         contents: {
+                             type: "carousel",
+                             contents: bubbles.slice(0, 10) // LINE Limit: max 10 bubbles
+                         }
+                     });
+                 }
+             } catch(err) {
+                 console.error("Failed parsing carousel to line message:", err);
+             }
           }
-          if (lineMessages.length > 0) {
-            await lineClient.pushMessage({
-              to: customer.platform_id,
-              messages: lineMessages,
-            });
-            console.log(
-              `📤 ส่งข้อความไปยัง LINE (${customer.cus_name}) สำเร็จ`,
-            );
+          
+           if (lineMessages.length > 0) {
+             try {
+               // DEBUG: print full payload to backend console
+               console.log("[LINE DEBUG] payload:", JSON.stringify(lineMessages, null, 2));
+               await lineClient.pushMessage({
+                 to: customer.platform_id,
+                 messages: lineMessages,
+               });
+               console.log(`✅ LINE push OK (${customer.cus_name}) type=${lineMessages.map(m=>m.type).join(',')}`);
+             } catch (lineErr) {
+               const errBody = lineErr?.response?.data || lineErr?.message || lineErr;
+               console.error(`❌ LINE pushMessage FAILED (${customer.cus_name}):`, JSON.stringify(errBody, null, 2));
+             }
+           }
+        }
+
+        // === ส่งไปยัง Facebook Messenger ===
+        if (customer && customer.platform === "facebook" && customer.platform_id) {
+          if ((message_type || "text") === "text") {
+            await fbController.sendTextMessage(customer.platform_id, message_text);
+          } else if (message_type === "image") {
+            let imageAbsUrl = message_text;
+            if (!message_text.startsWith("http")) {
+              const backendUrl = (process.env.BACKEND_URL || "http://localhost:3000").replace(/\/$/, "");
+              imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
+            }
+            await fbController.sendImageMessage(customer.platform_id, imageAbsUrl);
+          } else if (message_type === "carousel") {
+            try {
+              const parsedCards = JSON.parse(message_text);
+              await fbController.sendCarouselMessage(customer.platform_id, parsedCards);
+            } catch (fbCarouselErr) {
+              console.error("FB carousel parse error:", fbCarouselErr.message);
+            }
           }
         }
-      } catch (lineErr) {
-        console.error("LINE push message error:", lineErr);
+      } catch (platformErr) {
+        console.error("Platform push message error:", platformErr);
       }
     }
 
@@ -359,7 +545,7 @@ router.post("/", auth, async (req, res) => {
         customer_id,
         sender: sender || "own",
         message_type: message_type || "text",
-        text: (message_type || "text") === "text" ? message_text : null,
+        text: (message_type === "text" || message_type === "carousel") ? message_text : null,
         image:
           message_type === "image"
             ? message_text.startsWith("http")
@@ -383,10 +569,12 @@ router.post("/", auth, async (req, res) => {
         const customerName = customer?.cus_name || `Customer #${customer_id}`;
         const adminName = req.user?.username || "unknown";
         const msgPreview =
-          (message_type || "text") === "text"
+          message_type === "text"
             ? message_text.length > 50
               ? message_text.substring(0, 50) + "..."
               : message_text
+            : message_type === "carousel"
+            ? "(Carousel Message)"
             : "(รูปภาพ)";
 
         const logData = {

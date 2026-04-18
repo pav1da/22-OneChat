@@ -14,6 +14,7 @@
   border-radius: 16px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  
 }
 
 /* =========================================================================
@@ -134,14 +135,11 @@
   background-color: var(--bg-main, #ffffff);
   font-size: var(--fs-md, var(--fs-base));
   border-bottom: 1px solid var(--border-light, #e9ecef);
-  transition:
-    background-color 0.15s ease,
-    transform 0.12s ease;
+  transition: background-color 0.15s ease;
 }
 
 .member-row:hover {
   background-color: var(--bg-surface, #f8f9fa);
-  transform: translateY(-1px);
 }
 
 /* กำหนดความกว้างของแต่ละคอลัมน์ */
@@ -422,4 +420,132 @@
   .member-search-input {
     min-width: 160px;
   }
+}
+
+/* =========================================================================
+   Member Name Group (username + display name)
+   ========================================================================= */
+
+.member-name-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.member-username {
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-main, #212529);
+}
+
+.member-display-name {
+  font-size: var(--fs-sm, 0.8rem);
+  color: var(--text-muted, #6c757d);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================================
+   Action Items (Edit + Delete) — แยกสี
+   ========================================================================= */
+
+.action-item-edit {
+  color: var(--text-main, #212529) !important;
+}
+
+.action-item-edit:hover {
+  background-color: rgba(242, 102, 35, 0.08) !important;
+  color: var(--primary-color, #F26623) !important;
+}
+
+.action-item-delete {
+  color: var(--text-danger, #dc3545) !important;
+}
+
+.action-item-delete:hover {
+  background-color: rgba(220, 53, 69, 0.08) !important;
+}
+
+/* =========================================================================
+   Edit Member Modal
+   ========================================================================= */
+
+.edit-member-modal .modal-content {
+  border-radius: 1rem;
+  border: 1px solid var(--border-light, #e9ecef);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.edit-member-modal .modal-header {
+  border-bottom: 1px solid var(--border-light, #e9ecef);
+  padding: 1rem 1.25rem;
+}
+
+.edit-member-modal .modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main, #212529);
+}
+
+.edit-member-modal .modal-body {
+  padding: 1.25rem;
+}
+
+.edit-member-modal .modal-footer {
+  border-top: 1px solid var(--border-light, #e9ecef);
+  padding: 0.75rem 1.25rem;
+}
+
+.edit-form-label {
+  font-weight: 500;
+  font-size: var(--fs-base, 0.875rem);
+  color: var(--text-main, #212529);
+}
+
+.edit-input {
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-light, #e9ecef);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--fs-base, 0.875rem);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edit-input:focus {
+  border-color: var(--primary-color, #F26623);
+  box-shadow: 0 0 0 3px rgba(242, 102, 35, 0.1);
+}
+
+.edit-input-disabled {
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: var(--fs-base, 0.875rem);
+  background-color: var(--bg-surface, #f8f9fa) !important;
+  color: var(--text-muted, #6c757d) !important;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  border-radius: 0.5rem;
+  padding: 0.4rem 1rem;
+  font-size: var(--fs-base, 0.875rem);
+}
+
+.btn-save {
+  border-radius: 0.5rem;
+  padding: 0.4rem 1.25rem;
+  font-size: var(--fs-base, 0.875rem);
+  background-color: var(--primary-color, #F26623) !important;
+  border-color: var(--primary-color, #F26623) !important;
+  transition: opacity 0.2s ease;
+}
+
+.btn-save:hover {
+  opacity: 0.9;
+}
+
+.btn-save:disabled {
+  opacity: 0.65;
 }

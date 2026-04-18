@@ -56,7 +56,7 @@ function SignUpPage({ onLogin }) {
             sessionStorage.setItem("token", data.token);
 
             if (onLogin) onLogin(data.user);
-            navigate("/dashboard");
+            navigate("/allchat");
         } catch (err) {
             setError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
             setLoading(false);

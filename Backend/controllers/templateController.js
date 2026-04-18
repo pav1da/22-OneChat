@@ -2,7 +2,7 @@ const Template = require('../models/template.js');
 const Log = require('../models/log.js');
 
 // ช่วยแปลง user id ชั่วคราว (หรือจะรับจาก req.user ถ้ามี auth)
-const getUsername = (req) => req.user?.username || req.body.username || 'Admin';
+const getUsername = (req) => req.user?.username || req.body?.username || 'Admin';
 
 // สร้าง Template ใหม่
 exports.createTemplate = async (req, res) => {
@@ -39,6 +39,51 @@ exports.getAllTemplates = async (req, res) => {
         console.error('Error in getAllTemplates:', error.message);
         console.error('Error details:', { code: error.code, errno: error.errno, sqlState: error.sqlState, sqlMessage: error.sqlMessage });
         res.status(500).json({ status: 'error', message: 'เกิดข้อผิดพลาดในการดึงข้อมูล', detail: error.message });
+    }
+};
+
+// ดึง Template สำหรับ TemplatePicker (ไม่รวม base64 รูป)
+exports.getTemplatesForPicker = async (req, res) => {
+    try {
+        const templates = await Template.findSummaryForPicker();
+        res.status(200).json({ status: 'success', data: templates });
+    } catch (error) {
+        console.error('Error in getTemplatesForPicker:', error.message);
+        res.status(500).json({ status: 'error', message: 'เกิดข้อผิดพลาดในการดึงข้อมูล' });
+    }
+};
+
+// ดึงรูป Template ตาม ID (return เป็น binary image สำหรับ <img src>)
+exports.getTemplateImage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const template = await Template.findById(id);
+        if (!template) return res.status(404).json({ error: 'Not found' });
+
+        const content = typeof template.content === 'string'
+            ? JSON.parse(template.content)
+            : template.content;
+
+        // Resolve image data — supports single image, images[], and carousel cards[]
+        const imageData = content?.image ||
+            (Array.isArray(content?.images) && content.images[0]) ||
+            (Array.isArray(content?.cards) && content.cards[0]?.image) ||
+            '';
+
+        if (!imageData || !String(imageData).startsWith('data:')) {
+            return res.status(404).json({ error: 'No image in template' });
+        }
+
+        const [header, base64] = String(imageData).split(',');
+        const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
+        const buffer = Buffer.from(base64, 'base64');
+
+        res.set('Content-Type', mime);
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.send(buffer);
+    } catch (err) {
+        console.error('Error in getTemplateImage:', err);
+        res.status(500).json({ error: err.message });
     }
 };
 

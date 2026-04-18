@@ -72,8 +72,11 @@ const User = {
         return result.affectedRows > 0;
     },
 
-    // ลบ user
+    // ลบ user (ลบข้อมูลที่เกี่ยวข้องก่อน เพื่อหลีกเลี่ยง foreign key constraint)
     deleteById: async (id) => {
+        // ลบจาก team_members ก่อน
+        await pool.query('DELETE FROM team_members WHERE emp_id = ?', [id]);
+        // แล้วค่อยลบจาก EMP
         const [result] = await pool.query(
             'DELETE FROM EMP WHERE emp_id = ?',
             [id]
@@ -88,6 +91,39 @@ const User = {
             [imageUrl, id]
         );
         return result.affectedRows > 0;
+    },
+
+    // อัพเดท display_name
+    updateDisplayName: async (id, displayName) => {
+        const [result] = await pool.query(
+            'UPDATE EMP SET display_name = ? WHERE emp_id = ?',
+            [displayName, id]
+        );
+        return result.affectedRows > 0;
+    },
+
+    // อัพเดท member โดย admin/manager (display_name + password)
+    updateMemberByAdmin: async (id, { display_name, password }) => {
+        if (display_name !== undefined && password) {
+            const [result] = await pool.query(
+                'UPDATE EMP SET display_name = ?, password = ? WHERE emp_id = ?',
+                [display_name, password, id]
+            );
+            return result.affectedRows > 0;
+        } else if (display_name !== undefined) {
+            const [result] = await pool.query(
+                'UPDATE EMP SET display_name = ? WHERE emp_id = ?',
+                [display_name, id]
+            );
+            return result.affectedRows > 0;
+        } else if (password) {
+            const [result] = await pool.query(
+                'UPDATE EMP SET password = ? WHERE emp_id = ?',
+                [password, id]
+            );
+            return result.affectedRows > 0;
+        }
+        return false;
     },
 
     // ดึง user ทั้งหมด (ไม่รวม password)

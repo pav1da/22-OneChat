@@ -116,7 +116,28 @@ const Template = {
 
     // ค้นหา Template ทั้งหมด 
     findAll: async () => {
-        const [rows] = await pool.query('SELECT id, name, type, created_by, created_at, updated_at FROM templates ORDER BY created_at DESC');
+        const [rows] = await pool.query('SELECT id, name, type, created_by, created_at, updated_at FROM templates ORDER BY id DESC');
+        return rows;
+    },
+
+    // ดึงสำหรับ TemplatePicker: เอา content เฉพาะ type=ข้อความ (ไม่เอา base64 รูป)
+    findSummaryForPicker: async () => {
+        const [rows] = await pool.query(`
+            SELECT id, name, type,
+                CASE 
+                    WHEN type = 'ข้อความ' THEN content 
+                    WHEN type = 'รูปภาพ' AND JSON_VALID(content) = 1 THEN 
+                         JSON_OBJECT(
+                             'type', 'carousel',
+                             'message', COALESCE(JSON_UNQUOTE(JSON_EXTRACT(content, '$.message')), JSON_UNQUOTE(JSON_EXTRACT(content, '$.cards[0].message')), ''),
+                             'tag', COALESCE(JSON_UNQUOTE(JSON_EXTRACT(content, '$.tag')), JSON_UNQUOTE(JSON_EXTRACT(content, '$.cards[0].tag')), '')
+                         )
+                    ELSE NULL 
+                END AS content,
+                created_at
+            FROM templates
+            ORDER BY id DESC
+        `);
         return rows;
     },
 

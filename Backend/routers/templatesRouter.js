@@ -281,6 +281,12 @@ router.get('/', templateController.getAllTemplates);
 // ดึง Template ตามประเภท
 router.get('/type/:type', templateController.getTemplatesByType);
 
+// ดึง Template สำหรับ TemplatePicker (ไม่รวม base64 รูปภาพ — โหลดเร็ว)
+router.get('/picker', templateController.getTemplatesForPicker);
+
+// ดึงรูปภาพ Template ตาม ID (binary image สำหรับ <img src>)
+router.get('/:id/image', templateController.getTemplateImage);
+
 // ดึง Template ตาม ID
 router.get('/:id', templateController.getTemplateById);
 

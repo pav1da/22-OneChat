@@ -46,7 +46,7 @@ const Notification = {
         try {
             const [rows] = await db.query(
                 `SELECT n.*, 
-                        e.name AS sender_name, 
+                        e.username AS sender_name, 
                         e.username AS sender_username,
                         COALESCE(c.displayname, c.cus_name) AS customer_name,
                         c.cus_picture AS customer_avatar
@@ -58,11 +58,11 @@ const Notification = {
                 [userId]
             );
             return rows;
-        } catch {
+        } catch (err) {
             // Fallback: ถ้า updated_at ยังไม่มี
             const [rows] = await db.query(
                 `SELECT n.*, 
-                        e.name AS sender_name, 
+                        e.username AS sender_name, 
                         e.username AS sender_username
                  FROM notifications n
                  LEFT JOIN EMP e ON n.sender_id = e.emp_id

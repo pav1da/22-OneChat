@@ -10,6 +10,7 @@ import {
   InfoCircle,
   Send,
   PaintBucket,
+  Tags as TagsIcon,
 } from "react-bootstrap-icons";
 
 import "./SettingPage.css";
@@ -22,6 +23,7 @@ import Connect from "./Connect";
 import Policy from "./Policy";
 import Contact from "./Contact";
 import About from "./About";
+import Tags from "./Tags";
 import { useTheme } from "../../context/ThemeContext";
 
 function Setting({ user }) {
@@ -56,6 +58,8 @@ function Setting({ user }) {
         return <Notifications />;
       case "chat":
         return <Chats />;
+      case "tags":
+        return <Tags />;
       case "ai":
         return <Ai />;
       case "appearance":
@@ -114,6 +118,10 @@ function Setting({ user }) {
 
               <Nav.Link eventKey="chat">
                 <ChatDots size={18} /> แชท
+              </Nav.Link>
+
+              <Nav.Link eventKey="tags">
+                <TagsIcon size={18} /> จัดการแท็ก
               </Nav.Link>
 
               <Nav.Link eventKey="ai">
@@ -198,6 +206,9 @@ function Setting({ user }) {
                   </Nav.Link>
                   <Nav.Link eventKey="chat">
                     <ChatDots size={16} /> แชท
+                  </Nav.Link>
+                  <Nav.Link eventKey="tags">
+                    <TagsIcon size={16} /> จัดการแท็ก
                   </Nav.Link>
                   <Nav.Link eventKey="ai">
                     <span

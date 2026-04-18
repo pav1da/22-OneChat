@@ -7,6 +7,16 @@
   --saas-active-bg: #f3f4f6; /* Gray background for active item */
 }
 
+/* Dark mode support */
+[data-theme="dark"] {
+  --saas-border: var(--border-medium);
+  --saas-bg: var(--bg-surface);
+  --saas-hover: var(--bg-hover);
+  --saas-text-dark: var(--text-main);
+  --saas-text-muted: var(--text-muted);
+  --saas-active-bg: var(--bg-hover);
+}
+
 /* ================= Wrapper (Floating Sidebar Style) ================= */
 .saas-sidebar-container {
   height: 100vh;
@@ -217,15 +227,37 @@
 
 /* ================= Badges ================= */
 .saas-badge {
-  color: #9ca3af;
-  font-size: 0.75rem;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
   margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  background: linear-gradient(135deg, #F26623, #e05512);
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(242, 102, 35, 0.35);
+  animation: badgePulse 2s ease-in-out infinite;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.saas-nav-item:hover .saas-badge,
+.saas-nav-item:hover .saas-badge {
+  transform: scale(1.1);
+  box-shadow: 0 3px 10px rgba(242, 102, 35, 0.45);
+}
+
 .saas-nav-item.active .saas-badge {
-  color: var(--saas-text-dark);
+  background: linear-gradient(135deg, #e05512, #c74a10);
+  box-shadow: 0 2px 8px rgba(224, 85, 18, 0.4);
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
 }
 
 /* ================= 4. Section Divider & Header ================= */

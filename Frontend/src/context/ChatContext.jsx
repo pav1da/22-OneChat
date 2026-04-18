@@ -27,6 +27,19 @@ const getHeaders = () => ({
   Authorization: `Bearer ${getToken()}`,
 });
 
+// Helper: แปลง LINE emoji markers ใน last message ให้อ่านง่าย
+const LINE_EMOJI_RE = /\[line-emoji:[^\]]+\]/g;
+const sanitizeLastText = (text) => {
+  if (!text) return text;
+  // ถ้าไม่มี LINE emoji marker เลย → คืนค่าเดิม
+  if (!text.includes("[line-emoji:")) return text;
+  // แทนที่ marker ด้วย "(อีโมจิ)"
+  const replaced = text.replace(LINE_EMOJI_RE, "(อีโมจิ)").trim();
+  // ถ้าผลลัพธ์เป็นแค่ "(อีโมจิ)" ซ้ำๆ → ย่อเป็นอันเดียว
+  if (/^\(อีโมจิ\)(\s*\(อีโมจิ\))*$/.test(replaced)) return "(อีโมจิ)";
+  return replaced;
+};
+
 export const ChatProvider = ({ children }) => {
   const [messages, setMessages] = useState({});
   const [customers, setCustomers] = useState([]);
@@ -57,13 +70,15 @@ export const ChatProvider = ({ children }) => {
             id: c.cus_id,
             name: c.display_name || c.cus_name || `Customer #${c.cus_id}`,
             originalName: c.cus_name || `Customer #${c.cus_id}`,
-            img: c.cus_picture || "",
+            img: c.cus_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.cus_name || 'User')}&background=random&size=200`,
             app: c.platform
               ? `${c.platform === "line" ? "Line" : "Facebook"}`
               : "",
             platform: c.platform,
             platform_id: c.platform_id,
+            channel_name: c.channel_name || null,
             status: c.status || STATUS.NOT_STARTED,
+            assigned_to: c.assigned_to || null,
             last: "",
           }));
           setCustomers(mapped);
@@ -79,7 +94,14 @@ export const ChatProvider = ({ children }) => {
               const msgs = msgData[c.id];
               if (msgs && msgs.length > 0) {
                 const lastMsg = msgs[msgs.length - 1];
-                return { ...c, last: lastMsg.text || "(รูปภาพ)" };
+                const lastText = lastMsg.message_type === "carousel"
+                  ? "📋 Card Message"
+                  : lastMsg.message_type === "image"
+                    ? "📷 รูปภาพ"
+                    : lastMsg.message_type === "sticker"
+                      ? "🎨 สติกเกอร์"
+                      : sanitizeLastText(lastMsg.text) || "(รูปภาพ)";
+                return { ...c, last: lastText };
               }
               return c;
             }),
@@ -111,10 +133,16 @@ export const ChatProvider = ({ children }) => {
 
       // อัปเดต last message + ย้ายลูกค้าขึ้นบนสุด
       const lastText =
-        msg.text ||
-        (msg.image && msg.image.includes("stickershop")
-          ? "(สติกเกอร์)"
-          : "(รูปภาพ)");
+        msg.message_type === "carousel"
+          ? "📋 Card Message"
+          : msg.message_type === "image"
+            ? "📷 รูปภาพ"
+            : msg.message_type === "sticker"
+              ? "🎨 สติกเกอร์"
+              : sanitizeLastText(msg.text) ||
+                (msg.image && msg.image.includes("stickershop")
+                  ? "(สติกเกอร์)"
+                  : "(รูปภาพ)");
       setCustomers((prev) => {
         const updated = prev.map((c) =>
           c.id === cid ? { ...c, last: lastText } : c,
@@ -166,16 +194,26 @@ export const ChatProvider = ({ children }) => {
             name:
               cust.display_name || cust.cus_name || `Customer #${cust.cus_id}`,
             originalName: cust.cus_name || `Customer #${cust.cus_id}`,
-            img: cust.cus_picture || "",
+            img: cust.cus_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(cust.cus_name || 'User')}&background=random&size=200`,
             app: cust.platform === "line" ? "Line" : "Facebook",
             platform: cust.platform,
             platform_id: cust.platform_id,
             status: cust.status || STATUS.NOT_STARTED,
+            assigned_to: cust.assigned_to || null,
             last: cust.first_message || "",
           },
           ...prev,
         ];
       });
+    });
+
+    // อัปเดต assigned_to แบบ real-time (จาก client อื่น)
+    socket.on("customer-assigned", ({ cus_id, assigned_to }) => {
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === cus_id ? { ...c, assigned_to } : c,
+        ),
+      );
     });
 
     return () => socket.disconnect();
@@ -243,11 +281,10 @@ export const ChatProvider = ({ children }) => {
       const { filename, url } = await uploadRes.json();
 
       // --- จุดที่ 1: Optimistic Update ---
-      // ใช้ url ที่ได้จาก Cloudinary มาแสดงผลทันที
       const newMsg = {
         id: Date.now(),
         sender: "own",
-        message_type: "image", // เพิ่ม type เพื่อให้ Component รู้ว่าเป็นรูป
+        message_type: "image",
         image: url,
         created_at: new Date().toISOString(),
       };
@@ -257,8 +294,20 @@ export const ChatProvider = ({ children }) => {
         [customerId]: [...(prev[customerId] || []), newMsg],
       }));
 
+      // อัปเดต sidebar: แสดง "รูปภาพ" และย้ายขึ้นบนสุด
+      setCustomers((prev) => {
+        const updated = prev.map((c) =>
+          c.id === customerId ? { ...c, last: "📷 รูปภาพ" } : c,
+        );
+        const idx = updated.findIndex((c) => c.id === customerId);
+        if (idx > 0) {
+          const [cust] = updated.splice(idx, 1);
+          updated.unshift(cust);
+        }
+        return updated;
+      });
+
       // --- จุดที่ 2: ส่งข้อมูลลง DB ---
-      // ในระบบใหม่ message_text จะต้องเก็บ URL เต็มๆ เพื่อให้ LINE ดึงรูปไปใช้ได้
       await fetch("/api/messages", {
         method: "POST",
         headers: getHeaders(),
@@ -266,12 +315,117 @@ export const ChatProvider = ({ children }) => {
           customer_id: customerId,
           sender: "own",
           message_type: "image",
-          message_text: url, // ใช้ url แทน filename เดิม
+          message_text: url,
           socket_id: socketRef.current?.id || null,
         }),
       });
     } catch (err) {
       console.error("Send image error:", err);
+    }
+  }, []);
+
+  // ---------- ส่งข้อความแบบ Carousel (Multiple Cards) ----------
+  const sendCarouselMessage = useCallback(async (customerId, cards) => {
+    try {
+      if (!cards || cards.length === 0) return;
+
+      // 1. ตรวจสอบและอัปโหลด base64 image เป็น URL ก่อน
+      const processedCards = await Promise.all(
+        cards.map(async (c) => {
+          // End cards have no image — skip upload entirely
+          if (c.isEndCard) {
+            return {
+              image: null,
+              message: c.message ? c.message.trim() : "ดูรายละเอียด",
+              tag: c.tag || "",
+              isEndCard: true,
+            };
+          }
+
+          let finalUrl = c.image;
+          // ถ้าเป็น base64 ให้แปลงและอัปโหลดผ่าน endpoint /api/messages/upload-image
+          if (finalUrl && finalUrl.startsWith("data:")) {
+            try {
+              const [header, b64] = finalUrl.split(",");
+              const mime = header.match(/:(.*?);/)?.[1] || "image/jpeg";
+              const binary = atob(b64);
+              const bytes = new Uint8Array(binary.length);
+              for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+              }
+              const blob = new Blob([bytes], { type: mime });
+              const ext = mime.split("/")[1] || "jpg";
+              const file = new File([blob], `carousel_card.${ext}`, { type: mime });
+
+              const formData = new FormData();
+              formData.append("image", file);
+
+              const uploadRes = await fetch("/api/messages/upload-image", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${getToken()}` },
+                body: formData,
+              });
+
+              if (uploadRes.ok) {
+                const { url } = await uploadRes.json();
+                finalUrl = url;
+              }
+            } catch (err) {
+              console.error("Failed to parse/upload base64 carousel card:", err);
+            }
+          }
+          return {
+            image: finalUrl,
+            message: c.message ? c.message.trim() : "",
+            tag: c.tag || "",
+            isEndCard: false,
+          };
+        })
+      );
+
+      const cardsJson = JSON.stringify(processedCards);
+
+      // --- จุดที่ 1: Optimistic Update ---
+      const newMsg = {
+        id: Date.now(),
+        sender: "own",
+        message_type: "carousel",
+        text: cardsJson,
+        created_at: new Date().toISOString(),
+      };
+
+      setMessages((prev) => ({
+        ...prev,
+        [customerId]: [...(prev[customerId] || []), newMsg],
+      }));
+
+      // อัปเดต sidebar
+      setCustomers((prev) => {
+        const updated = prev.map((c) =>
+          c.id === customerId ? { ...c, last: "📋 Carousel Message" } : c
+        );
+        const idx = updated.findIndex((c) => c.id === customerId);
+        if (idx > 0) {
+          const [cust] = updated.splice(idx, 1);
+          updated.unshift(cust);
+        }
+        return updated;
+      });
+
+      // --- จุดที่ 2: ส่งข้อมูลลง DB ---
+      await fetch("/api/messages", {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          customer_id: customerId,
+          sender: "own",
+          message_type: "carousel",
+          message_text: cardsJson,
+          socket_id: socketRef.current?.id || null,
+        }),
+      });
+    } catch (err) {
+      console.error("Send carousel error:", err);
     }
   }, []);
 
@@ -299,6 +453,25 @@ export const ChatProvider = ({ children }) => {
       });
     } catch (err) {
       console.error("Update status error:", err);
+    }
+  }, []);
+
+  // ---------- อัปเดตผู้รับผิดชอบ (assigned_to) ----------
+  const updateCustomerAssign = useCallback(async (customerId, empId) => {
+    // อัปเดต UI ทันที (optimistic)
+    setCustomers((prev) =>
+      prev.map((c) =>
+        c.id === customerId ? { ...c, assigned_to: empId } : c,
+      ),
+    );
+    try {
+      await fetch(`/api/customers/${customerId}/assign`, {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ emp_id: empId }),
+      });
+    } catch (err) {
+      console.error("Update assigned_to error:", err);
     }
   }, []);
 
@@ -333,8 +506,10 @@ export const ChatProvider = ({ children }) => {
         unreadCounts,
         sendMessage,
         sendImageMessage,
+        sendCarouselMessage,
         updateCustomerStatus,
         updateCustomerName,
+        updateCustomerAssign,
         markAsRead,
         STATUS,
       }}

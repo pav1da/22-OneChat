@@ -8,14 +8,15 @@ import SignUpPage from "./page/SignUpPage";
 import SignInPage from "./page/SignInPage";
 import Home from "./page/Home";
 import Notes from "./page/notes/notes";
-import Inbox from "./page/Inbox/Inbox";
+import Inbox from "./page/chat/chat";
+import MyChat from "./page/mychats/mychat";
 import Setting from "./page/SettingPages/Setting";
 import Notifiacation from "./page/notification/Notification";
 import Log from "./page/Log";
 import Member from "./page/member/Member";
 import Teams from "./page/team/team";
 import TokenReport from "./page/TokenReport";
-import AllChat from "./page/allchat/Allchat";
+import AllChat from "./page/chat/allchat/Allchat"; 
 import CardMessage from "./page/CardmessagePage/Cardmessage";
 import { ChatProvider } from "./context/ChatContext";
 import { TeamProvider } from "./context/TeamContext";
@@ -48,6 +49,18 @@ function App() {
 
     useEffect(() => {
         sessionStorage.removeItem("dashboardNotes");
+    }, []);
+
+    // ฟัง event เมื่อ user อัปเดตข้อมูล (เช่น เปลี่ยนรูปโปรไฟล์)
+    useEffect(() => {
+        const handleUserUpdated = () => {
+            const savedUser = sessionStorage.getItem("myAppUser");
+            if (savedUser) {
+                setCurrentUser(JSON.parse(savedUser));
+            }
+        };
+        window.addEventListener("user-updated", handleUserUpdated);
+        return () => window.removeEventListener("user-updated", handleUserUpdated);
     }, []);
 
     const handleLogin = (userFromForm) => {
@@ -112,7 +125,7 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                     path="/signin"
                     element={
                         currentUser ? (
-                            <Navigate to="/notes" />
+                            <Navigate to="/allchat" />
                         ) : (
                             <SignInPage onLogin={handleLogin} />
                         )
@@ -140,6 +153,7 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                 >
                     <Route path="/notes" element={<Notes user={currentUser} />} />
                     <Route path="/allchat" element={<AllChat currentUser={currentUser} />} />
+                    <Route path="/mychat" element={<MyChat currentUser={currentUser} />} />
                     <Route path="/inbox" element={<Inbox currentUser={currentUser} />} />
                     <Route path="/cardmessage" element={<CardMessage currentUser={currentUser} />} />
                     <Route path="/log" element={<Log />} />

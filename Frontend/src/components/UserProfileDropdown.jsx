@@ -43,7 +43,13 @@ const UserProfileDropdown = ({
       {/* Top Section */}
       <div className="upd-top">
         <div className="upd-avatar-wrapper">
-          <img src={userImage} alt="user" className="upd-avatar-large" />
+          {userImage ? (
+            <img src={userImage} alt="user" className="upd-avatar-large" />
+          ) : (
+            <div className="upd-avatar-large d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '500', borderRadius: '50%' }}>
+              No IMG
+            </div>
+          )}
         </div>
         <div className="upd-name">{userName}</div>
         <div className="upd-email">{userEmail}</div>

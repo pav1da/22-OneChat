@@ -32,6 +32,7 @@ const apiKeysRouter = require("./routers/apiKeysRouter.js");
 const channelsRouter = require("./routers/channelsRouter.js");
 const teamRouter = require("./routers/teamRouter.js");
 const membersRouter = require("./routers/membersRouter.js");
+const tagsRouter = require("./routers/tagsRouter.js");
 
 const app = express();
 const server = http.createServer(app);
@@ -128,6 +129,12 @@ app.post("/webhook", (req, res, next) => {
   next();
 }, line.middleware(lineMiddlewareConfig), lineController.handleWebhook);
 
+// ===== FACEBOOK Webhook =====
+const fbController = require("./controllers/FbController.js");
+app.get('/webhook/facebook', fbController.verifyWebhook);
+app.post('/webhook/facebook', express.json(), fbController.handleWebhook);
+
+
 // ===== Middleware =====
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -166,6 +173,11 @@ app.use("/api/api-keys", apiKeysRouter);
 app.use("/api/channels", channelsRouter);
 app.use("/api/teams", teamRouter);
 app.use("/api/members", membersRouter);
+app.use("/api/tags", tagsRouter);
+
+// ===== Facebook API =====
+const auth = require("./middleware/auth.js");
+app.post("/api/facebook/sync-history", auth, fbController.syncConversationHistory);
 
 // เปิดเซิร์ฟเวอร์ (ใช้ server.listen แทน app.listen เพื่อให้ Socket.IO ทำงาน)
 // ดึง Port จาก Railway ถ้าไม่มีให้ใช้ 3000 (สำหรับรันในเครื่อง)
