@@ -405,6 +405,60 @@ const Inbox = ({ currentUser }) => {
         fetchMembers();
     }, []);
 
+    // ---------- Fetch all tags & populates tagsMap ----------
+    useEffect(() => {
+        const token = sessionStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const fetchAllTags = async () => {
+            try {
+                const res = await fetch("/api/tags", { headers });
+                if (res.ok) {
+                    const data = await res.json();
+                    setAllTags(Array.isArray(data) ? data : []);
+                }
+            } catch (err) {
+                console.error("Fetch all tags error:", err);
+            }
+        };
+
+        const fetchCustomerTagsMap = async () => {
+            try {
+                const res = await fetch("/api/tags/customers/all", { headers });
+                if (res.ok) {
+                    const data = await res.json();
+                    // Merge with any existing tags fetched concurrently
+                    setTagsMap(prev => ({ ...prev, ...(typeof data === "object" ? data : {}) }));
+                }
+            } catch (err) {
+                console.error("Fetch customer tags map error:", err);
+            }
+        };
+
+        fetchAllTags();
+        fetchCustomerTagsMap();
+    }, []);
+
+    // Load single customer tags on select (fallback if not in map)
+    useEffect(() => {
+        if (!selectedChatId) return;
+        if (tagsMap[selectedChatId]) return;
+        const fetchTags = async () => {
+            try {
+                const res = await fetch(`/api/tags/customer/${selectedChatId}`, {
+                    headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setTagsMap((prev) => ({ ...prev, [selectedChatId]: data }));
+                }
+            } catch (err) {
+                console.error("Fetch single customer tags error:", err);
+            }
+        };
+        fetchTags();
+    }, [selectedChatId]);
+
     // ---------- Assignment handler ----------
     const handleAssignChange = (customerId, empId) => {
         const numEmpId = empId ? Number(empId) : null;
@@ -1268,22 +1322,22 @@ const Inbox = ({ currentUser }) => {
                         {selectedCustomer.platform && (
                             <div className="w-100 px-2 mt-3">
                                 <div className="d-flex align-items-center gap-1 mb-1">
-                                    <span style={{ fontSize: "0.85rem", fontWeight: 500 }}>แหล่งที่มา</span>
+                                    <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--text-main)" }}>แหล่งที่มา</span>
                                 </div>
                                 <div
                                     className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-                                    style={{ backgroundColor: "#f9fafb", border: "1px solid #f3f4f6" }}
+                                    style={{ backgroundColor: "var(--bg-input, #f9fafb)", border: "1px solid var(--border-light, #f3f4f6)" }}
                                 >
                                     {selectedCustomer.platform === "line" ? (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#06C755"><path d="M12 2C6.48 2 2 5.88 2 10.54c0 4.24 3.76 7.78 8.84 8.44.34.07.81.22.93.52.1.27.07.68.03.95l-.15.91c-.05.27-.22 1.06.93.58s6.19-3.65 8.44-6.25C22.97 13.42 22 12.06 22 10.54 22 5.88 17.52 2 12 2z" /></svg>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#06C755" style={{ flexShrink: 0 }}><path d="M12 2C6.48 2 2 5.88 2 10.54c0 4.24 3.76 7.78 8.84 8.44.34.07.81.22.93.52.1.27.07.68.03.95l-.15.91c-.05.27-.22 1.06.93.58s6.19-3.65 8.44-6.25C22.97 13.42 22 12.06 22 10.54 22 5.88 17.52 2 12 2z" /></svg>
                                     ) : (
-                                        <i className="bi bi-messenger" style={{ color: "#0084FF", fontSize: "18px" }}></i>
+                                        <i className="bi bi-messenger" style={{ color: "#0084FF", fontSize: "18px", flexShrink: 0 }}></i>
                                     )}
-                                    <div style={{ lineHeight: 1.3 }}>
-                                        <div style={{ fontSize: "0.8rem", fontWeight: 600 }}>
+                                    <div style={{ lineHeight: 1.3, minWidth: 0, overflow: "hidden" }}>
+                                        <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-main)", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
                                             {selectedCustomer.channel_name || selectedCustomer.app}
                                         </div>
-                                        <div style={{ fontSize: "0.7rem", color: "#9ca3af" }}>
+                                        <div style={{ fontSize: "0.7rem", color: "var(--text-muted, #9ca3af)", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
                                             {selectedCustomer.platform === "line" ? "LINE" : "Facebook"} Messaging
                                         </div>
                                     </div>

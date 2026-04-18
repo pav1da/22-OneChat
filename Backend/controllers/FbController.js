@@ -66,15 +66,16 @@ exports.handleWebhook = async (req, res) => {
 
         for (const webhook_event of entry.messaging) {
           const sender_psid = webhook_event.sender.id;
+          const page_id = webhook_event.recipient && webhook_event.recipient.id ? webhook_event.recipient.id : null;
 
           // === ข้อความ Text ===
           if (webhook_event.message && webhook_event.message.text) {
-            await handleTextMessage(io, sender_psid, webhook_event.message.text);
+            await handleTextMessage(io, sender_psid, webhook_event.message.text, page_id);
           }
 
           // === รูปภาพ / Attachments ===
           if (webhook_event.message && webhook_event.message.attachments) {
-            await handleAttachments(io, sender_psid, webhook_event.message.attachments);
+            await handleAttachments(io, sender_psid, webhook_event.message.attachments, page_id);
           }
 
           // === Postback (ปุ่มกด) ===
@@ -179,10 +180,10 @@ exports.sendCarouselMessage = async (recipientPsid, cards) => {
 // ========== Internal Handlers ==========
 
 // จัดการข้อความ Text
-async function handleTextMessage(io, sender_psid, text) {
+async function handleTextMessage(io, sender_psid, text, page_id) {
   console.log(`📬 [Facebook] ข้อความ: "${text}" จาก PSID: ${sender_psid}`);
 
-  const { customerId, displayName, pictureUrl, isNew } = await findOrCreateFbCustomer(sender_psid);
+  const { customerId, displayName, pictureUrl, isNew } = await findOrCreateFbCustomer(sender_psid, page_id);
 
   // บันทึกข้อความลง chat_messages
   const msgSql =
@@ -230,7 +231,7 @@ async function handleTextMessage(io, sender_psid, text) {
 }
 
 // จัดการ Attachments (รูปภาพ, สติกเกอร์, วิดีโอ, ไฟล์)
-async function handleAttachments(io, sender_psid, attachments) {
+async function handleAttachments(io, sender_psid, attachments, page_id) {
   for (const att of attachments) {
     if (att.type === "image" && att.payload && att.payload.url) {
       const imageUrl = att.payload.url;
@@ -240,7 +241,7 @@ async function handleAttachments(io, sender_psid, attachments) {
 
       console.log(`${isSticker ? "😀" : "🖼️"} [Facebook] ${isSticker ? "สติกเกอร์" : "รูปภาพ"}จาก PSID: ${sender_psid}`);
 
-      const { customerId, displayName, pictureUrl, isNew } = await findOrCreateFbCustomer(sender_psid);
+      const { customerId, displayName, pictureUrl, isNew } = await findOrCreateFbCustomer(sender_psid, page_id);
 
       const msgSql =
         "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', ?, ?)";
@@ -294,7 +295,7 @@ async function handleAttachments(io, sender_psid, attachments) {
 // ========== Helper Functions ==========
 
 // ค้นหาหรือสร้างลูกค้า Facebook ใน DB
-async function findOrCreateFbCustomer(psid) {
+async function findOrCreateFbCustomer(psid, pageId) {
   const [existing] = await db.query(
     "SELECT cus_id, cus_name, cus_picture, updated_at FROM customers WHERE platform = 'facebook' AND platform_id = ?",
     [psid]
@@ -395,10 +396,25 @@ async function findOrCreateFbCustomer(psid) {
   }
 
   // ค้นหา channel_id ของ Facebook ที่ active อยู่
-  const [fbChannels] = await db.query(
-    "SELECT id FROM channels WHERE platform = 'facebook' AND status = 'active' LIMIT 1"
-  );
-  const channelId = fbChannels.length > 0 ? fbChannels[0].id : null;
+  let channelId = null;
+  
+  if (pageId) {
+    const [matchedChannels] = await db.query(
+      "SELECT id FROM channels WHERE platform = 'facebook' AND status = 'active' AND channel_id = ? LIMIT 1",
+      [pageId]
+    );
+    if (matchedChannels.length > 0) {
+      channelId = matchedChannels[0].id;
+    }
+  }
+
+  // Fallback ถ้าหาแบบเจาะจงไม่เจอ ให้ใช้เพจแรกสุดแทน
+  if (!channelId) {
+    const [fbChannels] = await db.query(
+      "SELECT id FROM channels WHERE platform = 'facebook' AND status = 'active' LIMIT 1"
+    );
+    channelId = fbChannels.length > 0 ? fbChannels[0].id : null;
+  }
 
   await db.query(
     "INSERT INTO customers (platform, platform_id, cus_name, cus_picture, channel_id) VALUES ('facebook', ?, ?, ?, ?)",
@@ -570,8 +586,8 @@ exports.syncConversationHistory = async (req, res) => {
 
       const senderPsid = customer.id;
 
-      // สร้างหรือค้นหาลูกค้าใน DB
-      const { customerId, isNew } = await findOrCreateFbCustomer(senderPsid);
+      // สร้างหรือค้นหาลูกค้าใน DB (ส่ง pageId เข้าไปเพื่อเชื่อมร้านให้ตรงกัน)
+      const { customerId, isNew } = await findOrCreateFbCustomer(senderPsid, pageId);
       if (isNew) totalNewCustomers++;
 
       // 4. ดึงข้อความจาก conversation นี้

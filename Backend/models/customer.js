@@ -5,14 +5,14 @@ const COLS = `c.cus_id, c.cus_name, c.displayname AS display_name, c.platform, c
 const Customer = {
   findAll: async () => {
     const [rows] = await pool.query(
-      `SELECT ${COLS} FROM customers c LEFT JOIN channels ch ON c.channel_id = ch.channel_id ORDER BY c.updated_at DESC`
+      `SELECT ${COLS} FROM customers c LEFT JOIN channels ch ON c.channel_id = ch.id ORDER BY c.updated_at DESC`
     );
     return rows;
   },
 
   findById: async (id) => {
     const [rows] = await pool.query(
-      `SELECT ${COLS} FROM customers c LEFT JOIN channels ch ON c.channel_id = ch.channel_id WHERE c.cus_id = ?`, [id]
+      `SELECT ${COLS} FROM customers c LEFT JOIN channels ch ON c.channel_id = ch.id WHERE c.cus_id = ?`, [id]
     );
     return rows[0] || null;
   },

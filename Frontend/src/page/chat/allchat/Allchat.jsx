@@ -311,9 +311,11 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
 // === Main Component ===
 const AllChat = () => {
     const navigate = useNavigate();
-    const { messages, customers, sendMessage, sendImageMessage, sendCarouselMessage, unreadCounts, markAsRead, STATUS } = useChat();
+    const { messages, customers, sendMessage, sendImageMessage, sendCarouselMessage, unreadCounts, markAsRead, STATUS, updateCustomerStatus, updateCustomerAssign } = useChat();
 
     const [expandedChatIds, setExpandedChatIds] = useState([]);
+    const [contextMenu, setContextMenu] = useState(null);
+    const [openSubMenu, setOpenSubMenu] = useState(null);
     const [cols, setCols] = useState(4);
     const [activeFilter, setActiveFilter] = useState("all");
     const [searchText, setSearchText] = useState("");
@@ -358,6 +360,12 @@ const AllChat = () => {
 
 
     useEffect(() => {
+        const handleClickOutside = () => setContextMenu(null);
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth;
             if (width <= 575) setCols(1);
@@ -370,12 +378,27 @@ const AllChat = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    // === Get last message time for a customer ===
+    // === Get last message time for a customer (For display) ===
     const getLastMsgTime = useCallback((customerId) => {
         const msgs = messages[customerId];
         if (!msgs || msgs.length === 0) return 0;
         const timeStr = msgs[msgs.length - 1].created_at;
         return timeStr ? new Date(timeStr).getTime() : 0;
+    }, [messages]);
+
+    // === Get last message time for SORTING (Only consider customer's own messages so our replies don't make them jump to top) ===
+    const getSortMsgTime = useCallback((customerId) => {
+        const msgs = messages[customerId];
+        if (!msgs || msgs.length === 0) return 0;
+        
+        for (let i = msgs.length - 1; i >= 0; i--) {
+            if (msgs[i].sender !== "own") {
+                return msgs[i].created_at ? new Date(msgs[i].created_at).getTime() : 0;
+            }
+        }
+        // Fallback to first message
+        const fallbackTime = msgs[0].created_at;
+        return fallbackTime ? new Date(fallbackTime).getTime() : 0;
     }, [messages]);
 
     // === Filter logic ===
@@ -406,12 +429,12 @@ const AllChat = () => {
             }
             return true;
         }).sort((a, b) => {
-            // 5. Sorting
-            const timeA = getLastMsgTime(a.id);
-            const timeB = getLastMsgTime(b.id);
+            // 5. Sorting (using getSortMsgTime so replying doesn't jump the chat)
+            const timeA = getSortMsgTime(a.id);
+            const timeB = getSortMsgTime(b.id);
             return sortOrder === "latest" ? timeB - timeA : timeA - timeB;
         });
-    }, [customers, activeFilter, filterAssignee, filterTags, searchText, sortOrder, getLastMsgTime, STATUS, customerTagsMap]);
+    }, [customers, activeFilter, filterAssignee, filterTags, searchText, sortOrder, getSortMsgTime, STATUS, customerTagsMap]);
 
     // === Count per status (for tab badges) ===
     const statusCounts = {
@@ -420,6 +443,60 @@ const AllChat = () => {
         in_progress: customers.filter((c) => c.status === STATUS.IN_PROGRESS).length,
         done: customers.filter((c) => c.status === STATUS.DONE).length,
     };
+
+    const handleContextMenu = useCallback((e, customer) => {
+        e.preventDefault();
+        
+        // คำนวณพิกัดเพื่อไม่ให้เมนูหลุดจอ
+        const menuWidth = 160;
+        const menuHeight = 150;
+        let x = e.clientX;
+        let y = e.clientY;
+        
+        if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+        if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+
+        setContextMenu({
+            mouseX: x,
+            mouseY: y,
+            customer: customer
+        });
+        setOpenSubMenu(null);
+    }, []);
+
+    const handleToggleContextTag = useCallback(async (customerId, tagId) => {
+        const token = sessionStorage.getItem("token");
+        try {
+            const currentTags = customerTagsMap[customerId] || [];
+            const hasTag = currentTags.some((t) => t.id === tagId);
+
+            if (hasTag) {
+                await fetch(`/api/tags/customer/${customerId}/${tagId}`, {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setCustomerTagsMap(prev => ({
+                    ...prev,
+                    [customerId]: prev[customerId].filter(t => t.id !== tagId)
+                }));
+            } else {
+                const selectedTag = globalTags.find(t => t.id === tagId);
+                if (selectedTag) {
+                    await fetch(`/api/tags/customer/${customerId}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ text: selectedTag.text, color: selectedTag.color })
+                    });
+                    setCustomerTagsMap(prev => ({
+                        ...prev,
+                        [customerId]: [...(prev[customerId] || []), selectedTag]
+                    }));
+                }
+            }
+        } catch (err) {
+            console.error("Context Tag Error:", err);
+        }
+    }, [customerTagsMap, globalTags]);
 
     const handleCardClick = useCallback((customerId) => {
         setExpandedChatIds((prev) =>
@@ -458,6 +535,7 @@ const AllChat = () => {
             <div
                 className={`user-card ${isActive ? "active-card" : ""}`}
                 onClick={() => handleCardClick(customer.id)}
+                onContextMenu={(e) => handleContextMenu(e, customer)}
             >
                 <div className="user-card-main">
                     <div className="position-relative" style={{ flexShrink: 0 }}>
@@ -493,7 +571,9 @@ const AllChat = () => {
                                 ) : (
                                     <i className="bi bi-messenger" style={{ color: "#0084FF", fontSize: "12px" }}></i>
                                 )}
-                                <span>{customer.channel_name || customer.app}</span>
+                                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                    {customer.channel_name || customer.app}
+                                </span>
                             </div>
                         )}
                     </div>
@@ -680,7 +760,7 @@ const AllChat = () => {
                                         const customer = filteredCustomers[i];
                                         const isExpanded = expandedChatIds.includes(customer.id);
                                         colItems.push(
-                                            <div key={customer.id} className="w-100 mb-3">
+                                            <div key={customer.id} id={`allchat-card-${customer.id}`} className="w-100 mb-3">
                                                 {renderUserCard(customer, isExpanded)}
                                                 {isExpanded && (
                                                     <div className="mt-2" style={{ width: "100%", animation: "slideDown 0.25s ease-out" }}>
@@ -709,6 +789,151 @@ const AllChat = () => {
                     )}
                 </Container>
             </div>
+
+            {/* Context Menu Overlay */}
+            {contextMenu && (
+                <div
+                    className="allchat-context-menu"
+                    style={{
+                        position: "fixed",
+                        top: contextMenu.mouseY,
+                        left: contextMenu.mouseX,
+                        zIndex: 9999,
+                        backgroundColor: "var(--bg-surface, #ffffff)",
+                        border: "1px solid var(--border-medium, #e5e7eb)",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                        borderRadius: "8px",
+                        padding: "4px 0",
+                        minWidth: "160px",
+                        fontSize: "0.85rem"
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    onContextMenu={(e) => e.preventDefault()}
+                >
+                    {/* Status Submenu */}
+                    <Dropdown drop="end" className="w-100" show={openSubMenu === 'status'}>
+                        <Dropdown.Toggle 
+                            as="div" 
+                            className="context-menu-item d-flex justify-content-between align-items-center px-3 py-2" 
+                            style={{ cursor: "pointer", backgroundColor: openSubMenu === 'status' ? 'var(--bg-hover, #f3f4f6)' : 'transparent', transition: "background-color 0.1s" }} 
+                            onClick={() => setOpenSubMenu(openSubMenu === 'status' ? null : 'status')}
+                        >
+                            <span><i className="bi bi-circle-half me-2"></i>สถานะ</span>
+                            <i className="bi bi-chevron-right" style={{ fontSize: "10px" }}></i>
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu className="border-0 shadow-sm" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-medium, #e5e7eb)" }}>
+                            {Object.entries(STATUS_STYLE).map(([status, style]) => (
+                                <Dropdown.Item 
+                                    key={status} 
+                                    onClick={() => {
+                                        updateCustomerStatus(contextMenu.customer.id, status);
+                                        setContextMenu(null);
+                                    }}
+                                >
+                                    <span style={{ color: style.bg, fontWeight: 500 }}>{status}</span>
+                                </Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+
+                    {/* Assignee Submenu */}
+                    <Dropdown drop="end" className="w-100" show={openSubMenu === 'assignee'}>
+                        <Dropdown.Toggle 
+                            as="div" 
+                            className="context-menu-item d-flex justify-content-between align-items-center px-3 py-2" 
+                            style={{ cursor: "pointer", backgroundColor: openSubMenu === 'assignee' ? 'var(--bg-hover, #f3f4f6)' : 'transparent', transition: "background-color 0.1s" }} 
+                            onClick={() => setOpenSubMenu(openSubMenu === 'assignee' ? null : 'assignee')}
+                        >
+                            <span><i className="bi bi-person-check me-2"></i>ผู้รับผิดชอบ</span>
+                            <i className="bi bi-chevron-right" style={{ fontSize: "10px" }}></i>
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu className="border-0 shadow-sm" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-medium, #e5e7eb)", maxHeight: "200px", overflowY: "auto" }}>
+                            <Dropdown.Item 
+                                onClick={() => {
+                                    updateCustomerAssign(contextMenu.customer.id, null);
+                                    setContextMenu(null);
+                                }}
+                            >
+                                <i className="bi bi-dash-circle me-2 text-muted"></i> นำออก
+                            </Dropdown.Item>
+                            <Dropdown.Divider style={{ borderColor: "var(--border-medium, #e5e7eb)" }} />
+                            {members.map((m) => (
+                                <Dropdown.Item 
+                                    key={m.emp_id}
+                                    onClick={() => {
+                                        updateCustomerAssign(contextMenu.customer.id, m.emp_id);
+                                        setContextMenu(null);
+                                    }}
+                                >
+                                    <img src={m.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.username)}`} alt="" style={{ width: "20px", height: "20px", borderRadius: "50%", marginRight: "8px" }} />
+                                    {m.username}
+                                </Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+
+                    {/* Tags Submenu */}
+                    <Dropdown drop="end" className="w-100" show={openSubMenu === 'tag'}>
+                        <Dropdown.Toggle 
+                            as="div" 
+                            className="context-menu-item d-flex justify-content-between align-items-center px-3 py-2" 
+                            style={{ cursor: "pointer", backgroundColor: openSubMenu === 'tag' ? 'var(--bg-hover, #f3f4f6)' : 'transparent', transition: "background-color 0.1s" }} 
+                            onClick={() => setOpenSubMenu(openSubMenu === 'tag' ? null : 'tag')}
+                        >
+                            <span><i className="bi bi-tags me-2"></i>แท็ก</span>
+                            <i className="bi bi-chevron-right" style={{ fontSize: "10px" }}></i>
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu className="border-0 shadow-sm p-2" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-medium, #e5e7eb)", maxHeight: "250px", overflowY: "auto", minWidth: "380px" }}>
+                            {globalTags.length === 0 ? (
+                                <div className="px-3 py-2 text-muted text-center" style={{ fontSize: "0.8rem" }}>ไม่มีแท็กในระบบ</div>
+                            ) : (
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px" }}>
+                                    {globalTags.map((t) => {
+                                        const cTags = customerTagsMap[contextMenu.customer.id] || [];
+                                        const hasTag = cTags.some((ct) => ct.id === t.id);
+                                        return (
+                                            <div 
+                                                key={t.id}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleToggleContextTag(contextMenu.customer.id, t.id);
+                                                }}
+                                                style={{ 
+                                                    cursor: "pointer", 
+                                                    backgroundColor: hasTag ? t.color : t.color + '1A',
+                                                    color: hasTag ? '#fff' : t.color,
+                                                    border: `1px solid ${hasTag ? t.color : t.color + '4D'}`,
+                                                    borderRadius: "6px", 
+                                                    padding: "4px 4px",
+                                                    fontSize: "0.7rem", 
+                                                    fontWeight: 600,
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    textAlign: "center",
+                                                    userSelect: "none",
+                                                    transition: "all 0.15s ease"
+                                                }}
+                                                title={t.text}
+                                            >
+                                                <span style={{ 
+                                                    whiteSpace: "nowrap", 
+                                                    overflow: "hidden", 
+                                                    textOverflow: "ellipsis",
+                                                    maxWidth: "100%"
+                                                }}>
+                                                    {t.text}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </div>
+            )}
         </div>
     );
 };

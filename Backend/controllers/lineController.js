@@ -44,7 +44,9 @@ exports.handleWebhook = async (req, res) => {
     console.error("Channel status check error:", err.message);
   }
 
-  Promise.all(req.body.events.map((event) => handleEvent(event, io)))
+  const destination = req.body.destination;
+
+  Promise.all(req.body.events.map((event) => handleEvent(event, io, destination)))
     .then(() => res.status(200).send("OK"))
     .catch((err) => {
       console.error(err);
@@ -52,7 +54,7 @@ exports.handleWebhook = async (req, res) => {
     });
 };
 
-async function handleEvent(event, io) {
+async function handleEvent(event, io, destination) {
   if (!event.source || !event.source.userId) return null;
 
   const userId = event.source.userId;
@@ -74,10 +76,24 @@ async function handleEvent(event, io) {
       pictureUrl = profile.pictureUrl || "";
 
       // ค้นหา channel_id ของ LINE ที่ active อยู่
-      const [lineChannels] = await db.query(
-        "SELECT id FROM channels WHERE platform = 'line' AND status = 'active' LIMIT 1",
-      );
-      const channelId = lineChannels.length > 0 ? lineChannels[0].id : null;
+      let channelId = null;
+      if (destination) {
+        const [matchedChannels] = await db.query(
+          "SELECT id FROM channels WHERE platform = 'line' AND status = 'active' AND channel_id = ? LIMIT 1",
+          [destination]
+        );
+        if (matchedChannels.length > 0) {
+          channelId = matchedChannels[0].id;
+        }
+      }
+
+      // Fallback ถ้าหาแบบเจาะจงไม่เจอ ให้ใช้เพจแรกสุดแทน
+      if (!channelId) {
+        const [lineChannels] = await db.query(
+          "SELECT id FROM channels WHERE platform = 'line' AND status = 'active' LIMIT 1"
+        );
+        channelId = lineChannels.length > 0 ? lineChannels[0].id : null;
+      }
 
       await db.query(
         `INSERT INTO customers (platform, platform_id, cus_name, cus_picture, channel_id) VALUES ('line', ?, ?, ?, ?)`,
