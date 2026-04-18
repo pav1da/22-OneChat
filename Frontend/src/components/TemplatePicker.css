@@ -396,7 +396,7 @@
   justify-content: center;
   align-items: flex-start;
   padding: 24px;
-  background: #abc0d6; /* LINE chat background color style */
+  background: #fff; 
   overflow-y: auto;
   overflow-x: hidden;
 }

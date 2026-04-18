@@ -60,6 +60,7 @@ const Cardmessage = () => {
   const [previewItem, setPreviewItem] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewCardIndex, setPreviewCardIndex] = useState(0);
+  const [sortDesc, setSortDesc] = useState(true);
 
   // Delete Confirmation State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -107,6 +108,7 @@ const Cardmessage = () => {
             title: item.name,
             textPreview,
             created: new Date(item.created_at).toLocaleString(),
+            createdTimestamp: new Date(item.created_at).getTime(),
           };
         });
         setItems(backendItems);
@@ -208,6 +210,163 @@ const Cardmessage = () => {
       item.type.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    return sortDesc ? b.createdTimestamp - a.createdTimestamp : a.createdTimestamp - b.createdTimestamp;
+  });
+
+  const textItems = sortedItems.filter(item => item.type === "ข้อความ");
+  const imageItems = sortedItems.filter(item => item.type === "รูปภาพ");
+
+  const renderCard = (item) => (
+    <Col xs={12} sm={6} xl={6} key={item.id} className="d-flex">
+      <div className="cm-template-card w-100" onClick={() => handlePreview(item.id)} style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}>
+        {/* Image/Preview Header */}
+        <div className="cm-card-preview" style={{ flexShrink: 0 }}>
+          {item.type === "รูปภาพ" ? (
+            <img
+              src={`/api/templates/${item.id}/image`}
+              alt={item.title}
+              loading="lazy"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="cm-text-preview-container flex-grow-1">
+              <div
+                className="cm-text-preview-content"
+                title={item.textPreview}
+              >
+                {item.textPreview || "ไม่มีข้อความตัวอย่าง"}
+              </div>
+            </div>
+          )}
+
+          {/* Dropdown Action Menu */}
+          <div className="cm-card-actions" onClick={(e) => e.stopPropagation()}>
+            <Dropdown>
+              <Dropdown.Toggle as="div" className="cm-card-action-btn">
+                <i className="bi bi-three-dots-vertical"></i>
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu
+                align="end"
+                className="shadow-sm border-0"
+                style={{ borderRadius: "12px" }}
+              >
+                <Dropdown.Item
+                  onClick={async () => {
+                    try {
+                      const token = sessionStorage.getItem("token");
+                      const res = await fetch(
+                        `/api/templates/${item.id}`,
+                        {
+                          headers: { Authorization: `Bearer ${token}` },
+                        },
+                      );
+                      const data = await res.json();
+                      if (data.status === "success") {
+                        let content = {};
+                        try {
+                          content =
+                            typeof data.data.content === "string"
+                              ? JSON.parse(data.data.content)
+                              : data.data.content;
+                        } catch (e) { }
+                        const imageValue =
+                          content?.image ||
+                          (Array.isArray(content?.images) &&
+                            content.images.length > 0
+                            ? content.images[0]
+                            : "");
+                        let restoredCards;
+                        if (
+                          Array.isArray(content?.cards) &&
+                          content.cards.length > 0
+                        ) {
+                          restoredCards = content.cards.map((c, i) => ({
+                            id: i + 1,
+                            image: c.image || "",
+                            message: c.message || "",
+                            tag: c.tag || "",
+                            isEndCard: c.isEndCard || false,
+                          }));
+                        } else {
+                          restoredCards = [
+                            {
+                              id: 1,
+                              image: imageValue,
+                              message: content?.message || "",
+                              tag: "",
+                              isEndCard: false,
+                            },
+                          ];
+                        }
+                        const editData = {
+                          id: data.data.id,
+                          type: data.data.type,
+                          title: data.data.name,
+                          image: restoredCards[0].image,
+                          message: restoredCards[0].message,
+                        };
+                        setEditingItem(editData);
+                        setNewItem(editData);
+                        setCards(restoredCards);
+                        setActiveCardIndex(0);
+                        setShow(true);
+                      }
+                    } catch (error) {
+                      console.error(
+                        "Error fetching template for edit:",
+                        error,
+                      );
+                    }
+                  }}
+                  className="py-2 px-3"
+                >
+                  <i className="bi bi-pencil-square me-2 text-primary"></i>
+                  แก้ไข
+                </Dropdown.Item>
+
+                <Dropdown.Divider />
+
+                <Dropdown.Item
+                  onClick={() => {
+                    setItemToDelete(item);
+                    setShowDeleteModal(true);
+                  }}
+                  className="py-2 px-3 text-danger"
+                >
+                  <i className="bi bi-trash me-2"></i>ลบเทมเพลต
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+        </div>
+
+        {/* Card Body Information */}
+        <div className="cm-card-body d-flex flex-column" style={{ flexGrow: 1 }}>
+          <div className="d-flex justify-content-between align-items-start mb-2">
+            <h6
+              className="cm-card-title text-truncate me-2 mb-0"
+              title={item.title}
+            >
+              {item.title}
+            </h6>
+            <span
+              className={`cm-type-badge shrink-0 ${item.type === "ข้อความ" ? "text" : ""}`}
+            >
+              {item.type === "รูปภาพ" ? "การ์ดเมสเสจ" : item.type}
+            </span>
+          </div>
+          <div className="cm-card-meta mt-auto">
+            {item.created.split(",")[0]}
+          </div>
+        </div>
+      </div>
+    </Col>
+  );
+
   // Preview: fetch full template data and open preview modal
   const handlePreview = async (itemId) => {
     try {
@@ -223,7 +382,7 @@ const Cardmessage = () => {
             typeof data.data.content === "string"
               ? JSON.parse(data.data.content)
               : data.data.content;
-        } catch (e) {}
+        } catch (e) { }
         const imageValue =
           content?.image ||
           (Array.isArray(content?.images) && content.images.length > 0
@@ -353,9 +512,9 @@ const Cardmessage = () => {
           </div>
 
           {/* Sort */}
-          <button className="cm-sort-btn">
+          <button className="cm-sort-btn" onClick={() => setSortDesc(!sortDesc)}>
             <i className="bi bi-arrow-down-up"></i>
-            เรียงลำดับ
+            เรียงลำดับ {sortDesc ? "(ใหม่สุด)" : "(เก่าสุด)"}
           </button>
 
           {/* Create */}
@@ -368,155 +527,37 @@ const Cardmessage = () => {
 
       <Container fluid className="cm-card-grid pb-5">
         <Row className="g-4">
-          {filteredItems.map((item) => (
-            <Col xs={12} sm={6} lg={4} xl={3} key={item.id}>
-              <div className="cm-template-card" onClick={() => handlePreview(item.id)} style={{ cursor: "pointer" }}>
-                {/* Image/Preview Header */}
-                <div className="cm-card-preview">
-                  {item.type === "รูปภาพ" ? (
-                    <img
-                      src={`/api/templates/${item.id}/image`}
-                      alt={item.title}
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
-                    />
-                  ) : (
-                    <div className="cm-text-preview-container">
-                      <div
-                        className="cm-text-preview-content"
-                        title={item.textPreview}
-                      >
-                        {item.textPreview || "ไม่มีข้อความตัวอย่าง"}
-                      </div>
-                    </div>
-                  )}
+          {/* ฝั่งข้อความ */}
+          <Col xs={12} lg={6} className="cm-column-section">
+            <div className="d-flex align-items-center mb-3">
+              <h5 className="mb-0 fw-bold kanit-semibold" style={{ color: "var(--text-heading, #1e293b)" }}>
+                ข้อความ
+              </h5>
+            </div>
+            <Row className="g-3 align-items-stretch">
+              {textItems.length > 0 ? textItems.map(renderCard) : (
+                <Col xs={12}>
+                  <div className="text-muted small border rounded p-4 text-center bg-light w-100">ไม่มีเทมเพลตข้อความ</div>
+                </Col>
+              )}
+            </Row>
+          </Col>
 
-                  {/* Dropdown Action Menu */}
-                  <div className="cm-card-actions" onClick={(e) => e.stopPropagation()}>
-                    <Dropdown>
-                      <Dropdown.Toggle as="div" className="cm-card-action-btn">
-                        <i className="bi bi-three-dots-vertical"></i>
-                      </Dropdown.Toggle>
-
-                      <Dropdown.Menu
-                        align="end"
-                        className="shadow-sm border-0"
-                        style={{ borderRadius: "12px" }}
-                      >
-                        <Dropdown.Item
-                          onClick={async () => {
-                            try {
-                              const token = sessionStorage.getItem("token");
-                              const res = await fetch(
-                                `/api/templates/${item.id}`,
-                                {
-                                  headers: { Authorization: `Bearer ${token}` },
-                                },
-                              );
-                              const data = await res.json();
-                              if (data.status === "success") {
-                                let content = {};
-                                try {
-                                  content =
-                                    typeof data.data.content === "string"
-                                      ? JSON.parse(data.data.content)
-                                      : data.data.content;
-                                } catch (e) {}
-                                const imageValue =
-                                  content?.image ||
-                                  (Array.isArray(content?.images) &&
-                                  content.images.length > 0
-                                    ? content.images[0]
-                                    : "");
-                                let restoredCards;
-                                if (
-                                  Array.isArray(content?.cards) &&
-                                  content.cards.length > 0
-                                ) {
-                                  restoredCards = content.cards.map((c, i) => ({
-                                    id: i + 1,
-                                    image: c.image || "",
-                                    message: c.message || "",
-                                    tag: c.tag || "",
-                                    isEndCard: c.isEndCard || false,
-                                  }));
-                                } else {
-                                  restoredCards = [
-                                    {
-                                      id: 1,
-                                      image: imageValue,
-                                      message: content?.message || "",
-                                      tag: "",
-                                      isEndCard: false,
-                                    },
-                                  ];
-                                }
-                                const editData = {
-                                  id: data.data.id,
-                                  type: data.data.type,
-                                  title: data.data.name,
-                                  image: restoredCards[0].image,
-                                  message: restoredCards[0].message,
-                                };
-                                setEditingItem(editData);
-                                setNewItem(editData);
-                                setCards(restoredCards);
-                                setActiveCardIndex(0);
-                                setShow(true);
-                              }
-                            } catch (error) {
-                              console.error(
-                                "Error fetching template for edit:",
-                                error,
-                              );
-                            }
-                          }}
-                          className="py-2 px-3"
-                        >
-                          <i className="bi bi-pencil-square me-2 text-primary"></i>
-                          แก้ไข
-                        </Dropdown.Item>
-
-                        <Dropdown.Divider />
-
-                        <Dropdown.Item
-                          onClick={() => {
-                            setItemToDelete(item);
-                            setShowDeleteModal(true);
-                          }}
-                          className="py-2 px-3 text-danger"
-                        >
-                          <i className="bi bi-trash me-2"></i>ลบเทมเพลต
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </div>
-                </div>
-
-                {/* Card Body Information */}
-                <div className="cm-card-body">
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <h6
-                      className="cm-card-title text-truncate me-2 mb-0"
-                      title={item.title}
-                    >
-                      {item.title}
-                    </h6>
-                    <span
-                      className={`cm-type-badge shrink-0 ${item.type === "ข้อความ" ? "text" : ""}`}
-                    >
-                      {item.type === "รูปภาพ" ? "การ์ดเมสเสจ" : item.type}
-                    </span>
-                  </div>
-                  <div className="cm-card-meta">
-                    {item.created.split(",")[0]}
-                  </div>
-                </div>
-              </div>
-            </Col>
-          ))}
+          {/* ฝั่งรูปภาพ (การ์ดเมสเสจ) */}
+          <Col xs={12} lg={6} className="cm-column-section">
+            <div className="d-flex align-items-center mb-3">
+              <h5 className="mb-0 fw-bold kanit-semibold" style={{ color: "var(--text-heading, #1e293b)" }}>
+                รูปภาพ
+              </h5>
+            </div>
+            <Row className="g-3 align-items-stretch">
+              {imageItems.length > 0 ? imageItems.map(renderCard) : (
+                <Col xs={12}>
+                  <div className="text-muted small border rounded p-4 text-center bg-light w-100">ไม่มีเทมเพลตการ์ดเมสเสจ</div>
+                </Col>
+              )}
+            </Row>
+          </Col>
         </Row>
       </Container>
 
@@ -808,7 +849,7 @@ const Cardmessage = () => {
                         >
                           <Form.Label className="cm-form-label">
                             อัปโหลดรูปภาพ
-                           (ขนาดที่แนะนำ 1:1)</Form.Label>
+                            (ขนาดที่แนะนำ 1:1)</Form.Label>
                           <Form.Control
                             type="file"
                             accept="image/*"
@@ -997,22 +1038,22 @@ const Cardmessage = () => {
           </div>
           <h5 className="fw-bold mb-3" style={{ color: "var(--text-heading, #1e293b)" }}>ยืนยันการลบเทมเพลต</h5>
           <p className="mb-4" style={{ color: "var(--text-secondary, #4b5563)", fontSize: "1rem" }}>
-            คุณต้องการลบเทมเพลต <strong>{itemToDelete?.title}</strong> ใช่หรือไม่?<br/>
+            คุณต้องการลบเทมเพลต <strong>{itemToDelete?.title}</strong> ใช่หรือไม่?<br />
             การกระทำนี้จะไม่สามารถเรียกคืนได้
           </p>
           <div className="d-flex justify-content-center gap-3">
-            <Button 
-              variant="light" 
-              onClick={() => { setShowDeleteModal(false); setItemToDelete(null); }} 
-              className="px-4 py-2" 
+            <Button
+              variant="light"
+              onClick={() => { setShowDeleteModal(false); setItemToDelete(null); }}
+              className="px-4 py-2"
               style={{ fontWeight: 600, color: "var(--text-secondary, #4b5563)", border: "1px solid var(--border-medium, #cbd5e1)" }}
             >
               ยกเลิก
             </Button>
-            <Button 
-              variant="danger" 
-              onClick={confirmDelete} 
-              className="px-4 py-2" 
+            <Button
+              variant="danger"
+              onClick={confirmDelete}
+              className="px-4 py-2"
               style={{ fontWeight: 600 }}
             >
               ลบเทมเพลต
@@ -1034,7 +1075,7 @@ const Cardmessage = () => {
               image={imgSrc}
               crop={crop}
               zoom={zoom}
-              aspect={1} 
+              aspect={1}
               onCropChange={setCrop}
               onCropComplete={(croppedArea, croppedAreaPixels) => {
                 setCroppedAreaPixels(croppedAreaPixels);
@@ -1043,17 +1084,17 @@ const Cardmessage = () => {
             />
           </div>
           <div className="w-100 mt-4 d-flex align-items-center">
-             <span className="me-3" style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>ซูม:</span>
-             <input
-                type="range"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.1}
-                aria-labelledby="Zoom"
-                onChange={(e) => setZoom(e.target.value)}
-                className="w-100"
-             />
+            <span className="me-3" style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>ซูม:</span>
+            <input
+              type="range"
+              value={zoom}
+              min={1}
+              max={3}
+              step={0.1}
+              aria-labelledby="Zoom"
+              onChange={(e) => setZoom(e.target.value)}
+              className="w-100"
+            />
           </div>
         </Modal.Body>
         <Modal.Footer className="border-top-0 pt-0 pb-4 pe-4">

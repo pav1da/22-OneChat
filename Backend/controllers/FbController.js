@@ -136,41 +136,58 @@ exports.sendImageMessage = async (recipientPsid, imageUrl) => {
   });
 };
 
-// ===== ส่ง Carousel ไปยัง Facebook Messenger (แบบรูปเต็ม + caption) =====
+// ===== ส่ง Carousel ไปยัง Facebook Messenger (แบบสไลด์ Generic Template) =====
 exports.sendCarouselMessage = async (recipientPsid, cards) => {
   try {
-    const normalCards = cards.filter((c) => !c.isEndCard && c.image && c.image.startsWith("https://"));
+    const normalCards = cards.filter((c) => !c.isEndCard && c.image && c.image.startsWith("http"));
     const endCard = cards.find((c) => c.isEndCard);
 
     if (normalCards.length === 0) {
-      // ถ้ามีแต่ end card ส่งเป็น text แทน
+      // ถ้าไม่มีการ์ดปกติเลย แต่มี endCard ก็ให้ส่งเป็นข้อความธรรมดาแทน
       if (endCard && endCard.message) {
         return exports.sendTextMessage(recipientPsid, endCard.message);
       }
       return false;
     }
 
-    // ส่งทีละการ์ด: รูปเต็ม + text caption (ทำให้ลูกค้าเห็นรูปชัดเต็มจอ)
-    for (const c of normalCards.slice(0, 10)) {
-      // 1. ส่งรูปเต็ม
-      await exports.sendImageMessage(recipientPsid, c.image);
+    // สร้าง elements จากการ์ดสูงสุด 10 ใบ
+    const elements = normalCards.slice(0, 10).map((c, index) => {
+      // Facebook บังคับให้ต้องมี title ใน Generic Template
+      const title = c.tag ? c.tag : (c.message ? c.message.substring(0, 80) : `รูปภาพที่ ${index + 1}`);
+      const subtitle = (!c.tag && c.message) ? undefined : (c.message ? c.message.substring(0, 80) : undefined);
+      
+      return {
+        title: title.substring(0, 80),
+        subtitle: subtitle,
+        image_url: c.image,
+        default_action: {
+          type: "web_url",
+          url: c.image, // ให้ลูกค้าคลิกรูปแล้วอาจจะเปิด URL เพื่อดูรูปไซส์เต็มได้
+          webview_height_ratio: "full"
+        }
+      };
+    });
 
-      // 2. ถ้ามี tag หรือ message ให้ส่งเป็น text caption ต่อ
-      const captionParts = [];
-      if (c.tag) captionParts.push(`🏷️ ${c.tag}`);
-      if (c.message) captionParts.push(`💬 ${c.message}`);
-      if (captionParts.length > 0) {
-        await exports.sendTextMessage(recipientPsid, captionParts.join("  •  "));
+    // ส่งชุด Generic Template (Carousel Swipe) แบบก้อนเดียว
+    const carouselPayload = {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: elements
+        }
       }
-    }
+    };
 
-    // ส่ง end card เป็น text สุดท้าย (ถ้ามี)
-    if (endCard && endCard.message) {
+    const isSuccess = await exports.sendMessage(recipientPsid, carouselPayload);
+
+    // ถ้ามีการ์ดสรุปปิดท้าย (ดูเพิ่มเติม) ให้ส่งตามหลังเป็น Text
+    if (isSuccess && endCard && endCard.message) {
       await exports.sendTextMessage(recipientPsid, `➡️ ${endCard.message}`);
     }
 
-    console.log(`📤 ส่ง Carousel ไปยัง Facebook (PSID: ${recipientPsid}) สำเร็จ (${normalCards.length} การ์ด)`);
-    return true;
+    console.log(`📤 ส่ง Carousel แบบ Slide ให้ FB (PSID: ${recipientPsid}) สำเร็จ (${elements.length} ใบ)`);
+    return isSuccess;
   } catch (err) {
     console.error("FB sendCarouselMessage error:", err.message);
     return false;
