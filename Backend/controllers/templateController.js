@@ -1,6 +1,25 @@
 const Template = require('../models/template.js');
 const Log = require('../models/log.js');
 
+// --- Simple Memory Cache ---
+const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
+let pickerCache = { data: null, timestamp: 0 };
+const imageCache = new Map(); // id -> { mime, buffer, timestamp }
+const fullTemplateCache = new Map(); // id -> { data, timestamp }
+
+const clearTemplateCaches = (id = null) => {
+    pickerCache.data = null;
+    pickerCache.timestamp = 0;
+    if (id) {
+        imageCache.delete(String(id));
+        fullTemplateCache.delete(String(id));
+    } else {
+        imageCache.clear();
+        fullTemplateCache.clear();
+    }
+};
+// -----------------------------
+
 // ช่วยแปลง user id ชั่วคราว (หรือจะรับจาก req.user ถ้ามี auth)
 const getUsername = (req) => req.user?.username || req.body?.username || 'Admin';
 
@@ -14,6 +33,8 @@ exports.createTemplate = async (req, res) => {
         }
 
         const insertId = await Template.create({ name, type, content, created_by });
+        
+        clearTemplateCaches(); // Invalidate cache
 
         await Log.create({
             user: getUsername(req),
@@ -45,7 +66,15 @@ exports.getAllTemplates = async (req, res) => {
 // ดึง Template สำหรับ TemplatePicker (ไม่รวม base64 รูป)
 exports.getTemplatesForPicker = async (req, res) => {
     try {
+        const now = Date.now();
+        if (pickerCache.data && (now - pickerCache.timestamp < CACHE_TTL)) {
+            return res.status(200).json({ status: 'success', data: pickerCache.data });
+        }
+
         const templates = await Template.findSummaryForPicker();
+        pickerCache.data = templates;
+        pickerCache.timestamp = now;
+
         res.status(200).json({ status: 'success', data: templates });
     } catch (error) {
         console.error('Error in getTemplatesForPicker:', error.message);
@@ -57,6 +86,18 @@ exports.getTemplatesForPicker = async (req, res) => {
 exports.getTemplateImage = async (req, res) => {
     try {
         const { id } = req.params;
+        const now = Date.now();
+
+        // Check Cache
+        if (imageCache.has(String(id))) {
+            const cached = imageCache.get(String(id));
+            if (now - cached.timestamp < CACHE_TTL) {
+                res.set('Content-Type', cached.mime);
+                res.set('Cache-Control', 'public, max-age=3600');
+                return res.send(cached.buffer);
+            }
+        }
+
         const template = await Template.findById(id);
         if (!template) return res.status(404).json({ error: 'Not found' });
 
@@ -78,6 +119,9 @@ exports.getTemplateImage = async (req, res) => {
         const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
         const buffer = Buffer.from(base64, 'base64');
 
+        // Save to cache
+        imageCache.set(String(id), { mime, buffer, timestamp: now });
+
         res.set('Content-Type', mime);
         res.set('Cache-Control', 'public, max-age=3600');
         res.send(buffer);
@@ -91,11 +135,24 @@ exports.getTemplateImage = async (req, res) => {
 exports.getTemplateById = async (req, res) => {
     try {
         const { id } = req.params;
+        const now = Date.now();
+
+        // Check Cache
+        if (fullTemplateCache.has(String(id))) {
+            const cached = fullTemplateCache.get(String(id));
+            if (now - cached.timestamp < CACHE_TTL) {
+                return res.status(200).json({ status: 'success', data: cached.data });
+            }
+        }
+
         const template = await Template.findById(id);
 
         if (!template) {
             return res.status(404).json({ status: 'error', message: 'ไม่พบ Template ที่ต้องการ' });
         }
+
+        // Save to cache
+        fullTemplateCache.set(String(id), { data: template, timestamp: now });
 
         res.status(200).json({ status: 'success', data: template });
     } catch (error) {
@@ -132,6 +189,8 @@ exports.updateTemplate = async (req, res) => {
             return res.status(404).json({ status: 'error', message: 'ไม่พบ Template ที่ต้องการอัพเดท' });
         }
 
+        clearTemplateCaches(id); // Invalidate cache
+
         await Log.create({
             user: getUsername(req),
             avatar: '',
@@ -156,6 +215,8 @@ exports.deleteTemplate = async (req, res) => {
         if (!success) {
             return res.status(404).json({ status: 'error', message: 'ไม่พบ Template ที่ต้องการลบ' });
         }
+
+        clearTemplateCaches(id); // Invalidate cache
 
         await Log.create({
             user: getUsername(req),

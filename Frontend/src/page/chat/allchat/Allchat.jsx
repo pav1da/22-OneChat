@@ -68,8 +68,10 @@ const STATUS_STYLE = {
 };
 
 // === Mini Chat Panel ===
-const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, onSendImage, onSendCarousel }) => {
-    const [replyText, setReplyText] = useState("");
+const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, onSendImage, onSendCarousel, draftRefs, focusedNodeRef }) => {
+    const [replyText, setReplyText] = useState(() => {
+        return draftRefs?.current?.[customer.id] || "";
+    });
     const [pastedImage, setPastedImage] = useState(null);
     const [showEmoji, setShowEmoji] = useState(false);
     const [showTemplatePicker, setShowTemplatePicker] = useState(false);
@@ -77,6 +79,40 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
     const inputRef = useRef(null);
     const fileInputRef = useRef(null);
 
+    // Sync draft changes
+    useEffect(() => {
+        if (draftRefs?.current) {
+            draftRefs.current[customer.id] = replyText;
+        }
+    }, [replyText, customer.id, draftRefs]);
+
+    // Restore focus if this input was the active one before unmount/remount
+    useEffect(() => {
+        if (focusedNodeRef?.current === customer.id && inputRef.current) {
+            const timer = setTimeout(() => {
+                if (inputRef.current) {
+                    inputRef.current.focus();
+                    const len = inputRef.current.value.length;
+                    inputRef.current.setSelectionRange(len, len);
+                }
+            }, 10);
+            return () => clearTimeout(timer);
+        }
+    }, [customer.id, focusedNodeRef]);
+
+    const handleFocus = () => {
+        if (focusedNodeRef) focusedNodeRef.current = customer.id;
+    };
+
+    const handleBlur = () => {
+        if (focusedNodeRef) {
+            setTimeout(() => {
+                if (focusedNodeRef.current === customer.id && document.activeElement !== inputRef.current) {
+                    focusedNodeRef.current = null;
+                }
+            }, 50);
+        }
+    };
     useEffect(() => {
         if (messagesContainerRef.current) {
             messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
@@ -85,12 +121,12 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         // Handle sending image if preview exists
         if (pastedImage) {
             if (onSendImage) onSendImage(customer.id, pastedImage.file);
             setPastedImage(null);
-            
+
             // If there's no text with it, refocus and return
             if (!replyText.trim()) {
                 setTimeout(() => {
@@ -235,9 +271,9 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
                             <div className="image-picker-check" style={{ width: '18px', height: '18px', top: '3px', right: '3px' }}>
                                 <i className="bi bi-check-lg" style={{ fontSize: '10px' }}></i>
                             </div>
-                            <button 
-                                type="button" 
-                                className="image-picker-remove" 
+                            <button
+                                type="button"
+                                className="image-picker-remove"
                                 onClick={() => setPastedImage(null)}
                                 style={{ width: '18px', height: '18px', bottom: '3px', right: '3px' }}
                             >
@@ -266,6 +302,8 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
                     placeholder="พิมพ์ข้อความ..."
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
                     onPaste={handlePaste}
                     onKeyDown={(e) => {
                         if (e.key === "Tab") {
@@ -290,9 +328,9 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
                                 let nextIndex = currentIndex + (e.shiftKey ? -1 : 1);
                                 if (nextIndex >= inputs.length) nextIndex = 0;
                                 if (nextIndex < 0) nextIndex = inputs.length - 1;
-                                
+
                                 inputs[nextIndex].focus();
-                                
+
                                 // Scroll the selected card into view
                                 const targetCustomerId = inputs[nextIndex].id.replace('chat-input-', '');
                                 const card = document.getElementById(`allchat-card-${targetCustomerId}`);
@@ -314,6 +352,8 @@ const AllChat = () => {
     const { messages, customers, sendMessage, sendImageMessage, sendCarouselMessage, unreadCounts, markAsRead, STATUS, updateCustomerStatus, updateCustomerAssign } = useChat();
 
     const [expandedChatIds, setExpandedChatIds] = useState([]);
+    const draftRefs = useRef({});
+    const focusedNodeRef = useRef(null);
     const [contextMenu, setContextMenu] = useState(null);
     const [openSubMenu, setOpenSubMenu] = useState(null);
     const [cols, setCols] = useState(4);
@@ -390,7 +430,7 @@ const AllChat = () => {
     const getSortMsgTime = useCallback((customerId) => {
         const msgs = messages[customerId];
         if (!msgs || msgs.length === 0) return 0;
-        
+
         for (let i = msgs.length - 1; i >= 0; i--) {
             if (msgs[i].sender !== "own") {
                 return msgs[i].created_at ? new Date(msgs[i].created_at).getTime() : 0;
@@ -446,13 +486,13 @@ const AllChat = () => {
 
     const handleContextMenu = useCallback((e, customer) => {
         e.preventDefault();
-        
+
         // คำนวณพิกัดเพื่อไม่ให้เมนูหลุดจอ
         const menuWidth = 160;
         const menuHeight = 150;
         let x = e.clientX;
         let y = e.clientY;
-        
+
         if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
         if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
 
@@ -752,39 +792,44 @@ const AllChat = () => {
                             <p>ไม่พบแชทที่ตรงกับตัวกรอง</p>
                         </div>
                     ) : (
-                        <div className="d-flex w-100" style={{ gap: "1.5rem" }}>
-                            {Array.from({ length: cols }).map((_, colIndex) => {
-                                const colItems = [];
-                                for (let i = 0; i < filteredCustomers.length; i++) {
-                                    if (i % cols === colIndex) {
-                                        const customer = filteredCustomers[i];
-                                        const isExpanded = expandedChatIds.includes(customer.id);
-                                        colItems.push(
-                                            <div key={customer.id} id={`allchat-card-${customer.id}`} className="w-100 mb-3">
-                                                {renderUserCard(customer, isExpanded)}
-                                                {isExpanded && (
-                                                    <div className="mt-2" style={{ width: "100%", animation: "slideDown 0.25s ease-out" }}>
-                                                        <MiniChatPanel
-                                                            customer={customer}
-                                                            chatMessages={messages[customer.id] || []}
-                                                            onOpenFull={handleOpenFullChat}
-                                                            onClose={() => handleCloseMiniChat(customer.id)}
-                                                            onSend={handleSendQuickReply}
-                                                            onSendImage={sendImageMessage}
-                                                            onSendCarousel={sendCarouselMessage}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>,
-                                        );
+                        <div
+                            style={{
+                                display: "flex",
+                                gap: "1.5rem",
+                                alignItems: "flex-start",
+                                width: "100%"
+                            }}
+                        >
+                            {Array.from({ length: cols }).map((_, colIndex) => (
+                                <div key={`col-${colIndex}`} style={{ flex: 1, minWidth: 0 }}>
+                                    {filteredCustomers
+                                        .filter((_, i) => i % cols === colIndex)
+                                        .map((customer) => {
+                                            const isExpanded = expandedChatIds.includes(customer.id);
+                                            return (
+                                                <div key={customer.id} id={`allchat-card-${customer.id}`} className="w-100 mb-3">
+                                                    {renderUserCard(customer, isExpanded)}
+                                                    {isExpanded && (
+                                                        <div className="mt-2" style={{ width: "100%", animation: "slideDown 0.25s ease-out" }}>
+                                                            <MiniChatPanel
+                                                                customer={customer}
+                                                                chatMessages={messages[customer.id] || []}
+                                                                onOpenFull={handleOpenFullChat}
+                                                                onClose={() => handleCloseMiniChat(customer.id)}
+                                                                onSend={handleSendQuickReply}
+                                                                onSendImage={sendImageMessage}
+                                                                onSendCarousel={sendCarouselMessage}
+                                                                draftRefs={draftRefs}
+                                                                focusedNodeRef={focusedNodeRef}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
                                     }
-                                }
-                                return (
-                                    <div key={`col-${colIndex}`} className="d-flex flex-column" style={{ flex: 1, minWidth: 0 }}>
-                                        {colItems}
-                                    </div>
-                                );
-                            })}
+                                </div>
+                            ))}
                         </div>
                     )}
                 </Container>
@@ -812,10 +857,10 @@ const AllChat = () => {
                 >
                     {/* Status Submenu */}
                     <Dropdown drop="end" className="w-100" show={openSubMenu === 'status'}>
-                        <Dropdown.Toggle 
-                            as="div" 
-                            className="context-menu-item d-flex justify-content-between align-items-center px-3 py-2" 
-                            style={{ cursor: "pointer", backgroundColor: openSubMenu === 'status' ? 'var(--bg-hover, #f3f4f6)' : 'transparent', transition: "background-color 0.1s" }} 
+                        <Dropdown.Toggle
+                            as="div"
+                            className="context-menu-item d-flex justify-content-between align-items-center px-3 py-2"
+                            style={{ cursor: "pointer", backgroundColor: openSubMenu === 'status' ? 'var(--bg-hover, #f3f4f6)' : 'transparent', transition: "background-color 0.1s" }}
                             onClick={() => setOpenSubMenu(openSubMenu === 'status' ? null : 'status')}
                         >
                             <span><i className="bi bi-circle-half me-2"></i>สถานะ</span>
@@ -823,8 +868,8 @@ const AllChat = () => {
                         </Dropdown.Toggle>
                         <Dropdown.Menu className="border-0 shadow-sm" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-medium, #e5e7eb)" }}>
                             {Object.entries(STATUS_STYLE).map(([status, style]) => (
-                                <Dropdown.Item 
-                                    key={status} 
+                                <Dropdown.Item
+                                    key={status}
                                     onClick={() => {
                                         updateCustomerStatus(contextMenu.customer.id, status);
                                         setContextMenu(null);
@@ -838,17 +883,17 @@ const AllChat = () => {
 
                     {/* Assignee Submenu */}
                     <Dropdown drop="end" className="w-100" show={openSubMenu === 'assignee'}>
-                        <Dropdown.Toggle 
-                            as="div" 
-                            className="context-menu-item d-flex justify-content-between align-items-center px-3 py-2" 
-                            style={{ cursor: "pointer", backgroundColor: openSubMenu === 'assignee' ? 'var(--bg-hover, #f3f4f6)' : 'transparent', transition: "background-color 0.1s" }} 
+                        <Dropdown.Toggle
+                            as="div"
+                            className="context-menu-item d-flex justify-content-between align-items-center px-3 py-2"
+                            style={{ cursor: "pointer", backgroundColor: openSubMenu === 'assignee' ? 'var(--bg-hover, #f3f4f6)' : 'transparent', transition: "background-color 0.1s" }}
                             onClick={() => setOpenSubMenu(openSubMenu === 'assignee' ? null : 'assignee')}
                         >
                             <span><i className="bi bi-person-check me-2"></i>ผู้รับผิดชอบ</span>
                             <i className="bi bi-chevron-right" style={{ fontSize: "10px" }}></i>
                         </Dropdown.Toggle>
                         <Dropdown.Menu className="border-0 shadow-sm" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-medium, #e5e7eb)", maxHeight: "200px", overflowY: "auto" }}>
-                            <Dropdown.Item 
+                            <Dropdown.Item
                                 onClick={() => {
                                     updateCustomerAssign(contextMenu.customer.id, null);
                                     setContextMenu(null);
@@ -858,7 +903,7 @@ const AllChat = () => {
                             </Dropdown.Item>
                             <Dropdown.Divider style={{ borderColor: "var(--border-medium, #e5e7eb)" }} />
                             {members.map((m) => (
-                                <Dropdown.Item 
+                                <Dropdown.Item
                                     key={m.emp_id}
                                     onClick={() => {
                                         updateCustomerAssign(contextMenu.customer.id, m.emp_id);
@@ -874,10 +919,10 @@ const AllChat = () => {
 
                     {/* Tags Submenu */}
                     <Dropdown drop="end" className="w-100" show={openSubMenu === 'tag'}>
-                        <Dropdown.Toggle 
-                            as="div" 
-                            className="context-menu-item d-flex justify-content-between align-items-center px-3 py-2" 
-                            style={{ cursor: "pointer", backgroundColor: openSubMenu === 'tag' ? 'var(--bg-hover, #f3f4f6)' : 'transparent', transition: "background-color 0.1s" }} 
+                        <Dropdown.Toggle
+                            as="div"
+                            className="context-menu-item d-flex justify-content-between align-items-center px-3 py-2"
+                            style={{ cursor: "pointer", backgroundColor: openSubMenu === 'tag' ? 'var(--bg-hover, #f3f4f6)' : 'transparent', transition: "background-color 0.1s" }}
                             onClick={() => setOpenSubMenu(openSubMenu === 'tag' ? null : 'tag')}
                         >
                             <span><i className="bi bi-tags me-2"></i>แท็ก</span>
@@ -892,21 +937,21 @@ const AllChat = () => {
                                         const cTags = customerTagsMap[contextMenu.customer.id] || [];
                                         const hasTag = cTags.some((ct) => ct.id === t.id);
                                         return (
-                                            <div 
+                                            <div
                                                 key={t.id}
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     handleToggleContextTag(contextMenu.customer.id, t.id);
                                                 }}
-                                                style={{ 
-                                                    cursor: "pointer", 
+                                                style={{
+                                                    cursor: "pointer",
                                                     backgroundColor: hasTag ? t.color : t.color + '1A',
                                                     color: hasTag ? '#fff' : t.color,
                                                     border: `1px solid ${hasTag ? t.color : t.color + '4D'}`,
-                                                    borderRadius: "6px", 
+                                                    borderRadius: "6px",
                                                     padding: "4px 4px",
-                                                    fontSize: "0.7rem", 
+                                                    fontSize: "0.7rem",
                                                     fontWeight: 600,
                                                     display: "flex",
                                                     alignItems: "center",
@@ -917,9 +962,9 @@ const AllChat = () => {
                                                 }}
                                                 title={t.text}
                                             >
-                                                <span style={{ 
-                                                    whiteSpace: "nowrap", 
-                                                    overflow: "hidden", 
+                                                <span style={{
+                                                    whiteSpace: "nowrap",
+                                                    overflow: "hidden",
                                                     textOverflow: "ellipsis",
                                                     maxWidth: "100%"
                                                 }}>

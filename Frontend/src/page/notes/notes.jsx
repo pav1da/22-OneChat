@@ -179,21 +179,11 @@ function Dashboard({ user }) {
       return sortOrder === "newest" ? db - da : da - db;
     });
 
-  // จำนวนช่องใน Grid ทั้งหมด (มีทั้งโน้ตจริงและช่องว่าง)
-  const totalCells = Math.max(
-    20,
-    filteredNotes.length + (4 - (filteredNotes.length % 4 || 4)),
-  );
-
-  // เตรียมช่อง Grid แต่ละช่อง (ถ้า index มีโน้ต จะโชว์โน้ต ถ้าไม่มีก็ว่าง)
-  const cells = Array.from({ length: totalCells }, (_, index) => {
-    const note = filteredNotes[index];
-
-    return (
-      <Col key={index}>
-        {note ? (
-          // การ์ดแสดงรายละเอียดโน้ต
-          <Card
+  // โชว์เฉพาะโน้ตที่มีอยู่จริง ไม่ต้องมี placeholder ว่าง
+  const cells = filteredNotes.map((note, index) => (
+    <Col key={note.id || index}>
+      {/* การ์ดแสดงรายละเอียดโน้ต */}
+      <Card
             className="rounded-4 border-light-subtle"
             style={{ height: "180px", boxShadow: "0 2px 5px rgba(0,0,0,0.05)" }}
           >
@@ -342,19 +332,8 @@ function Dashboard({ user }) {
               </div>
             </Card.Body>
           </Card>
-        ) : (
-          // ช่องว่าง (Placeholder)
-          <div
-            style={{
-              height: "180px",
-              border: "2px dashed #e9ecef",
-              borderRadius: "1rem",
-            }}
-          ></div>
-        )}
-      </Col>
-    );
-  });
+    </Col>
+  ));
 
   return (
     <div className="kanit-regular notes-container">
