@@ -28,6 +28,9 @@ const Member = ({ currentUser }) => {
 
   const [activePopupId, setActivePopupId] = useState(null);
 
+  // ===== Member Detail Popup State =====
+  const [selectedMember, setSelectedMember] = useState(null);
+
   // ===== Edit Modal State =====
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
@@ -244,7 +247,7 @@ const Member = ({ currentUser }) => {
         {displayMembers.map((member) => {
           const online = isUserOnline(member.id);
           return (
-            <div key={member.id} className="member-row">
+            <div key={member.id} className="member-row" onClick={() => setSelectedMember(member)} style={{ cursor: "pointer" }}>
               {/* ชื่อ + Avatar พร้อมตัวบ่งชี้สถานะ online/offline */}
               <div className="col-name">
                 <div className="avatar-wrapper">
@@ -353,6 +356,112 @@ const Member = ({ currentUser }) => {
           <div className="text-center py-5 text-muted">ไม่พบข้อมูลสมาชิก</div>
         )}
       </div>
+
+      {/* ===== Member Detail Popup ===== */}
+      {selectedMember && (
+        <div className="member-detail-overlay" onClick={() => setSelectedMember(null)}>
+          <div className="member-detail-card" onClick={(e) => e.stopPropagation()}>
+            {/* Close Button */}
+            <button className="member-detail-close" onClick={() => setSelectedMember(null)}>
+              <i className="bi bi-x-lg"></i>
+            </button>
+
+            {/* Avatar */}
+            <div className="member-detail-avatar-section">
+              <div className="member-detail-avatar-wrapper">
+                {selectedMember.image ? (
+                  <img
+                    src={selectedMember.image}
+                    alt={selectedMember.name}
+                    className="member-detail-avatar-img"
+                  />
+                ) : (
+                  <div
+                    className="member-detail-avatar-initials"
+                    style={{ backgroundColor: getAvatarColor(selectedMember.name) }}
+                  >
+                    {getInitial(selectedMember.name)}
+                  </div>
+                )}
+                <span className={`member-detail-status-dot ${isUserOnline(selectedMember.id) ? "dot-online" : "dot-offline"}`}></span>
+              </div>
+              <h3 className="member-detail-name">{selectedMember.name}</h3>
+              {selectedMember.displayName && (
+                <span className="member-detail-display-name">{selectedMember.displayName}</span>
+              )}
+            </div>
+
+            {/* Info Rows — ผู้ใช้งาน กับ ตำแหน่ง แยกออกจากกัน */}
+            <div className="member-detail-info">
+              <div className="member-detail-info-row">
+                <div className="member-detail-info-icon" style={{ backgroundColor: "#fff5eb", color: "#F26623" }}>
+                  <i className="bi bi-person-fill"></i>
+                </div>
+                <div className="member-detail-info-content">
+                  <span className="member-detail-info-label">ผู้ใช้งาน</span>
+                  <span className="member-detail-info-value">@{selectedMember.name}</span>
+                </div>
+              </div>
+
+              <div className="member-detail-info-row">
+                <div className="member-detail-info-icon" style={{ backgroundColor: "#eef2ff", color: "#6366f1" }}>
+                  <i className="bi bi-shield-fill-check"></i>
+                </div>
+                <div className="member-detail-info-content">
+                  <span className="member-detail-info-label">ตำแหน่ง</span>
+                  <span className="member-detail-info-value" style={{ textTransform: "uppercase", fontWeight: 600 }}>{selectedMember.role}</span>
+                </div>
+              </div>
+
+              <div className="member-detail-info-row">
+                <div className="member-detail-info-icon" style={{ backgroundColor: "#fef2f2", color: "#ef4444" }}>
+                  <i className="bi bi-chat-dots-fill"></i>
+                </div>
+                <div className="member-detail-info-content">
+                  <span className="member-detail-info-label">สถานะ</span>
+                  <span className={`member-detail-info-value ${isUserOnline(selectedMember.id) ? "text-success" : "text-muted"}`} style={{ fontWeight: 600 }}>
+                    {isUserOnline(selectedMember.id) ? "ออนไลน์" : "ออฟไลน์"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="member-detail-info-row">
+                <div className="member-detail-info-icon" style={{ backgroundColor: "#ecfdf5", color: "#10b981" }}>
+                  <i className="bi bi-envelope-fill"></i>
+                </div>
+                <div className="member-detail-info-content">
+                  <span className="member-detail-info-label">อีเมล</span>
+                  <span className="member-detail-info-value">{selectedMember.email || "-"}</span>
+                </div>
+              </div>
+
+              <div className="member-detail-info-row">
+                <div className="member-detail-info-icon" style={{ backgroundColor: "#eff6ff", color: "#3b82f6" }}>
+                  <i className="bi bi-telephone-fill"></i>
+                </div>
+                <div className="member-detail-info-content">
+                  <span className="member-detail-info-label">เบอร์โทรศัพท์</span>
+                  <span className="member-detail-info-value">{selectedMember.phone || "-"}</span>
+                </div>
+              </div>
+
+              <div className="member-detail-info-row">
+                <div className="member-detail-info-icon" style={{ backgroundColor: "#fdf4ff", color: "#a855f7" }}>
+                  <i className="bi bi-people-fill"></i>
+                </div>
+                <div className="member-detail-info-content">
+                  <span className="member-detail-info-label">ทีมที่สังกัด</span>
+                  <span className="member-detail-info-value">
+                    {selectedMember.teams && selectedMember.teams.length > 0
+                      ? selectedMember.teams.map(t => t.team_name).join(", ")
+                      : "-"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== Delete Confirmation Modal ===== */}
       <Modal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setMemberToDelete(null); }} centered>
