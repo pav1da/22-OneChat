@@ -72,6 +72,8 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
     const [replyText, setReplyText] = useState(() => {
         return draftRefs?.current?.[customer.id] || "";
     });
+    const [replyTo, setReplyTo] = useState(null);
+    const [contextMenu, setContextMenu] = useState(null);
     const [pastedImage, setPastedImage] = useState(null);
     const [showEmoji, setShowEmoji] = useState(false);
     const [showTemplatePicker, setShowTemplatePicker] = useState(false);
@@ -124,7 +126,7 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
 
         // Handle sending image if preview exists
         if (pastedImage) {
-            if (onSendImage) onSendImage(customer.id, pastedImage.file);
+            if (onSendImage) onSendImage(customer.id, pastedImage.file, replyTo);
             setPastedImage(null);
 
             // If there's no text with it, refocus and return
@@ -139,8 +141,9 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
 
         const trimmed = replyText.trim();
         if (!trimmed) return;
-        onSend(customer.id, trimmed);
+        onSend(customer.id, trimmed, replyTo);
         setReplyText("");
+        setReplyTo(null);
         setTimeout(() => {
             const inputField = document.getElementById(`chat-input-${customer.id}`);
             if (inputField) inputField.focus();
@@ -193,50 +196,102 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
             {/* Messages */}
             <div className="mini-chat-messages" ref={messagesContainerRef}>
                 {chatMessages.map((msg) => (
-                    <div key={msg.id} className={`mini-msg ${msg.sender === "own" ? "own" : "customer"}`}>
+                    <div
+                        id={`mini-msg-${customer.id}-${msg.id}`}
+                        key={msg.id}
+                        className={`mini-msg ${msg.sender === "own" ? "own" : "customer"}`}
+                        style={{ transition: 'background-color 0.5s ease' }}
+                        onContextMenu={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setContextMenu({
+                                x: e.pageX,
+                                y: e.pageY,
+                                msg: msg
+                            });
+                        }}
+                    >
                         {msg.sender === "customer" && (
                             <img src={customer.img} alt="" className="mini-avatar" />
                         )}
-                        {msg.message_type === "sticker" ? (
-                            <div style={{ background: "transparent", padding: 0 }}>
-                                <img src={msg.image} alt="sticker" style={{ width: "80px", height: "80px", objectFit: "contain" }} />
-                            </div>
-                        ) : msg.message_type === "carousel" ? (
-                            <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', maxWidth: '260px', scrollbarWidth: 'none' }}>
-                                {(() => {
-                                    try {
-                                        const cards = JSON.parse(msg.text);
-                                        return cards.map((c, i) => (
-                                            <div key={i} style={{ flex: '0 0 200px', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-surface, #fff)' }}>
-                                                {c.isEndCard ? (
-                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px' }}>
-                                                        <span style={{ color: '#42659a', fontWeight: 500, fontSize: '0.85rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
-                                                    </div>
-                                                ) : (
-                                                    <div style={{ position: 'relative', width: '200px', height: '200px' }}>
-                                                        {c.image && <img src={c.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
-                                                        {c.tag && (
-                                                            <div style={{ position: 'absolute', top: '8px', left: '8px', backgroundColor: 'rgba(0,0,0,0.55)', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 500 }}>{c.tag}</div>
-                                                        )}
-                                                        {c.message && (
-                                                            <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.65)', color: '#fff', padding: '3px 12px', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 500, whiteSpace: 'nowrap' }}>{c.message}</div>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ));
-                                    } catch { return <span>Invalid carousel</span>; }
-                                })()}
-                            </div>
-                        ) : msg.image ? (
-                            <img src={msg.image} alt="upload" style={{ maxWidth: "180px", maxHeight: "180px", borderRadius: "8px", display: "block" }} />
-                        ) : isLineEmojiOnly(msg.text) ? (
-                            <span style={{ lineHeight: 1.2 }}>{renderTextWithLineEmoji(msg.text, 36)}</span>
-                        ) : isEmojiOnly(msg.text) ? (
-                            <span style={{ fontSize: "28px", letterSpacing: "2px", lineHeight: 1.2 }}>{msg.text}</span>
-                        ) : (
-                            <div className="bubble">{hasLineEmoji(msg.text) ? renderTextWithLineEmoji(msg.text) : msg.text}</div>
-                        )}
+                        <div className="mini-msg-content-wrapper position-relative" style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: msg.sender === "own" ? "flex-end" : "flex-start" }}>
+                            {/* Quoted Preview */}
+                            {msg.reply_to_id && (
+                                <div
+                                    className="quoted-message pointer"
+                                    onClick={() => {
+                                        const target = document.getElementById(`mini-msg-${customer.id}-${msg.reply_to_id}`);
+                                        if (target) {
+                                            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            target.style.backgroundColor = "rgba(129, 140, 248, 0.2)";
+                                            setTimeout(() => { target.style.backgroundColor = "transparent"; }, 2000);
+                                        }
+                                    }}
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        color: 'var(--text-secondary)',
+                                        backgroundColor: 'var(--bg-input)',
+                                        padding: '2px 8px',
+                                        borderRadius: '6px',
+                                        marginBottom: '-2px',
+                                        borderLeft: `3px solid ${msg.sender === "own" ? "var(--primary-color)" : "var(--border-light)"}`,
+                                        maxWidth: '180px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        opacity: 0.8,
+                                    }}
+                                >
+                                    <span style={{ fontWeight: 600 }}>ตอบกลับ</span>
+                                    <span className="ms-1" style={{ opacity: 0.8 }}>
+                                        {msg.reply_preview_text || (msg.reply_preview_image ? "📷 รูปภาพ" : "ข้อความ")}
+                                    </span>
+                                </div>
+                            )}
+
+                            {msg.message_type === "sticker" ? (
+                                <div style={{ background: "transparent", padding: 0 }}>
+                                    <img src={msg.image} alt="sticker" style={{ width: "80px", height: "80px", objectFit: "contain" }} />
+                                </div>
+                            ) : msg.message_type === "carousel" ? (
+                                <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', maxWidth: '260px', scrollbarWidth: 'none' }}>
+                                    {(() => {
+                                        try {
+                                            const cards = JSON.parse(msg.text);
+                                            return cards.map((c, i) => (
+                                                <div key={i} style={{ flex: '0 0 200px', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-surface, #fff)' }}>
+                                                    {c.isEndCard ? (
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px' }}>
+                                                            <span style={{ color: '#42659a', fontWeight: 500, fontSize: '0.85rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div style={{ position: 'relative', width: '200px', height: '200px' }}>
+                                                            {c.image && <img src={c.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                                                            {c.tag && (
+                                                                <div style={{ position: 'absolute', top: '8px', left: '8px', backgroundColor: 'rgba(0,0,0,0.55)', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 500 }}>{c.tag}</div>
+                                                            )}
+                                                            {c.message && (
+                                                                <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.65)', color: '#fff', padding: '3px 12px', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 500, whiteSpace: 'nowrap' }}>{c.message}</div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ));
+                                        } catch { return <span>Invalid carousel</span>; }
+                                    })()}
+                                </div>
+                            ) : msg.image ? (
+                                <img src={msg.image} alt="upload" style={{ maxWidth: "180px", maxHeight: "180px", borderRadius: "8px", display: "block", cursor: "pointer" }} onClick={() => window.open(msg.image, "_blank")} />
+                            ) : isLineEmojiOnly(msg.text) ? (
+                                <span style={{ lineHeight: 1.2 }}>{renderTextWithLineEmoji(msg.text, 36)}</span>
+                            ) : isEmojiOnly(msg.text) ? (
+                                <span style={{ fontSize: "28px", letterSpacing: "2px", lineHeight: 1.2 }}>{msg.text}</span>
+                            ) : (
+                                <div className="bubble" style={{ whiteSpace: "pre-wrap" }}>{hasLineEmoji(msg.text) ? renderTextWithLineEmoji(msg.text) : msg.text}</div>
+                            )}
+
+
+                        </div>
                         {msg.created_at && (
                             <span className="mini-msg-time">{formatTime(msg.created_at)}</span>
                         )}
@@ -254,6 +309,48 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
                         onClose={() => setShowTemplatePicker(false)}
                     />
                 </div>
+            )}
+
+            {/* Global Context Menu in MiniChatPanel */}
+            {contextMenu && (
+                <>
+                    <div
+                        style={{ position: 'absolute', inset: 0, zIndex: 999 }}
+                        onClick={(e) => { e.stopPropagation(); setContextMenu(null); }}
+                        onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu(null); }}
+                    />
+                    <div
+                        className="shadow-sm border"
+                        style={{
+                            position: 'fixed',
+                            top: contextMenu.y,
+                            left: contextMenu.x,
+                            backgroundColor: 'var(--bg-surface)',
+                            borderRadius: '12px',
+                            padding: '6px 0',
+                            zIndex: 1000,
+                            minWidth: '150px',
+                        }}
+                    >
+                        <button
+                            className="dropdown-item px-3 py-2 d-flex align-items-center justify-content-between"
+                            style={{ fontSize: '0.85rem' }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setReplyTo({
+                                    id: contextMenu.msg.id,
+                                    preview_text: contextMenu.msg.message_type === 'text' ? contextMenu.msg.text : null,
+                                    preview_image: contextMenu.msg.message_type === 'image' ? contextMenu.msg.image : null
+                                });
+                                setContextMenu(null);
+                                inputRef.current?.focus();
+                            }}
+                        >
+                            <span>ตอบกลับข้อความ</span>
+                            <i className="bi bi-reply-fill"></i>
+                        </button>
+                    </div>
+                </>
             )}
 
             {/* Hidden file input */}
@@ -283,6 +380,18 @@ const MiniChatPanel = ({ customer, chatMessages, onOpenFull, onClose, onSend, on
                     </div>
                 </div>
             )}
+
+            {/* Reply Preview Box */}
+            {replyTo && (
+                <div className="reply-preview-bar d-flex align-items-center justify-content-between p-2" style={{ backgroundColor: "var(--bg-surface)", borderTop: "1px solid var(--border-medium)" }}>
+                    <div className="d-flex flex-column" style={{ fontSize: "0.75rem", color: "var(--text-secondary)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                        <span style={{ fontWeight: "600", color: "var(--primary-color)" }}>กำลังตอบกลับ</span>
+                        <span>{replyTo.preview_text || (replyTo.preview_image ? "📷 รูปภาพ" : "ข้อความ")}</span>
+                    </div>
+                    <button type="button" className="btn-close ms-2" style={{ fontSize: "0.5rem" }} onClick={() => setReplyTo(null)}></button>
+                </div>
+            )}
+
             <form className="mini-chat-input" onSubmit={handleSubmit}>
                 <div style={{ position: "relative", display: "flex", alignItems: "center", gap: '2px' }}>
                     {/* Template Picker */}
@@ -557,8 +666,8 @@ const AllChat = () => {
     }, []);
 
     const handleSendQuickReply = useCallback(
-        (customerId, text) => {
-            sendMessage(customerId, text);
+        (customerId, text, replyTo = null) => {
+            sendMessage(customerId, text, replyTo);
         },
         [sendMessage],
     );

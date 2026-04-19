@@ -109,7 +109,10 @@ router.get("/with-teams", auth, async (req, res) => {
   try {
     // ดึง EMP ทั้งหมด
     const [empRows] = await pool.query(
-      "SELECT * FROM EMP ORDER BY created_at ASC"
+      `SELECT e.*, 
+       (SELECT COUNT(*) FROM customers c WHERE c.assigned_to = e.emp_id) as chat_count
+       FROM EMP e 
+       ORDER BY e.created_at ASC`
     );
 
     // ดึง team memberships ทั้งหมดพร้อมชื่อทีม

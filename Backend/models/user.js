@@ -30,7 +30,7 @@ const User = {
     // สร้าง user ใหม่
     create: async ({ username, email, password }) => {
         const [result] = await pool.query(
-            'INSERT INTO EMP (username, name, email, password, role) VALUES (?, ?, ?, ?, ?)',
+            'INSERT INTO EMP (username, display_name, email, password, role) VALUES (?, ?, ?, ?, ?)',
             [username, username, email, password, 'staff']
         );
         return result.insertId;
@@ -39,7 +39,7 @@ const User = {
     // อัพเดท username
     updateUsername: async (id, username) => {
         const [result] = await pool.query(
-            'UPDATE EMP SET username = ?, name = ? WHERE emp_id = ?',
+            'UPDATE EMP SET username = ?, display_name = ? WHERE emp_id = ?',
             [username, username, id]
         );
         return result.affectedRows > 0;

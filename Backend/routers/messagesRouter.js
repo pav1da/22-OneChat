@@ -14,12 +14,12 @@ const fbController = require("../controllers/FbController.js");
 const chatImageStorage = multer.memoryStorage();
 
 const uploadChatImage = multer({
-  storage: chatImageStorage,
-  fileFilter: (req, file, cb) => {
-    const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    cb(null, allowed.includes(file.mimetype));
-  },
-  limits: { fileSize: 10 * 1024 * 1024 },
+    storage: chatImageStorage,
+    fileFilter: (req, file, cb) => {
+        const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+        cb(null, allowed.includes(file.mimetype));
+    },
+    limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 /**
@@ -64,47 +64,47 @@ const uploadChatImage = multer({
  */
 
 router.post(
-  "/upload-image",
-  auth,
-  uploadChatImage.single("image"),
-  async (req, res) => {
-    try {
-      if (!req.file)
-        return res.status(400).json({ message: "กรุณาเลือกรูปภาพ" });
+    "/upload-image",
+    auth,
+    uploadChatImage.single("image"),
+    async (req, res) => {
+        try {
+            if (!req.file)
+                return res.status(400).json({ message: "กรุณาเลือกรูปภาพ" });
 
-      // อัปโหลดไฟล์จาก Buffer เข้า Cloudinary
-      const uploadResponse = await new Promise((resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream(
-            {
-              folder: "admin-chat-images",
-            },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            },
-          )
-          .end(req.file.buffer);
-      });
+            // อัปโหลดไฟล์จาก Buffer เข้า Cloudinary
+            const uploadResponse = await new Promise((resolve, reject) => {
+                cloudinary.uploader
+                    .upload_stream(
+                        {
+                            folder: "admin-chat-images",
+                        },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        },
+                    )
+                    .end(req.file.buffer);
+            });
 
-      // ส่ง URL ของ Cloudinary กลับไปให้ Frontend
-      res.json({
-        message: "อัปโหลดสำเร็จ",
-        filename: uploadResponse.secure_url, // ส่ง Full URL กลับไป
-        url: uploadResponse.secure_url,
-      });
-    } catch (error) {
-      console.error("Upload error:", error);
-      res.status(500).json({ message: "เกิดข้อผิดพลาดในการอัปโหลด" });
-    }
-  },
+            // ส่ง URL ของ Cloudinary กลับไปให้ Frontend
+            res.json({
+                message: "อัปโหลดสำเร็จ",
+                filename: uploadResponse.secure_url, // ส่ง Full URL กลับไป
+                url: uploadResponse.secure_url,
+            });
+        } catch (error) {
+            console.error("Upload error:", error);
+            res.status(500).json({ message: "เกิดข้อผิดพลาดในการอัปโหลด" });
+        }
+    },
 );
 
 // Helper: สร้างวันที่เวลาแบบ MySQL format
 const getLocalDatetime = () => {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
 
 /**
@@ -273,336 +273,368 @@ const getLocalDatetime = () => {
 
 // GET /api/messages — ดึงข้อความทั้งหมด (by customer_id)
 router.get("/", auth, async (req, res) => {
-  try {
-    const grouped = await Message.findAllGrouped();
-    res.json(grouped);
-  } catch (err) {
-    console.error("Get messages error:", err);
-    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อความ" });
-  }
+    try {
+        const grouped = await Message.findAllGrouped();
+        res.json(grouped);
+    } catch (err) {
+        console.error("Get messages error:", err);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อความ" });
+    }
 });
 
 // GET /api/messages/:customerId — ดึงข้อความของลูกค้า
 router.get("/:customerId", auth, async (req, res) => {
-  try {
-    const messages = await Message.findByCustomerId(req.params.customerId);
-    res.json(messages);
-  } catch (err) {
-    console.error("Get messages by customer error:", err);
-    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
-  }
+    try {
+        const messages = await Message.findByCustomerId(req.params.customerId);
+        res.json(messages);
+    } catch (err) {
+        console.error("Get messages by customer error:", err);
+        res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+    }
 });
 
 // POST /api/messages — ส่งข้อความใหม่ + ส่งไปยัง LINE ถ้าเป็นข้อความจาก dashboard
 router.post("/", auth, async (req, res) => {
-  try {
-    const { customer_id, sender, message_type, message_text } = req.body;
+    try {
+        const { customer_id, sender, message_type, message_text, reply_to_id, reply_preview_text, reply_preview_image } = req.body;
 
-    if (!customer_id || !message_text) {
-      return res
-        .status(400)
-        .json({ message: "กรุณาระบุ customer_id และข้อความ" });
-    }
-
-    const newId = await Message.create({
-      customer_id,
-      sender: sender || "own",
-      message_type: message_type || "text",
-      message_text,
-    });
-
-    // ถ้าเป็นข้อความจาก dashboard (own) ให้ส่งไปยัง platform ของลูกค้า
-    if ((sender || "own") === "own") {
-      try {
-        const customer = await Customer.findById(customer_id);
-
-        // === ส่งไปยัง LINE ===
-        if (customer && customer.platform === "line" && customer.platform_id) {
-          const lineMessages = [];
-          
-          if ((message_type || "text") === "text") {
-            lineMessages.push({ type: "text", text: message_text });
-          } else if (message_type === "image") {
-            let imageAbsUrl = message_text;
-
-            // เช็คเผื่อกรณีเป็นรูปเก่าในเครื่อง
-            if (!message_text.startsWith("http")) {
-              const backendUrl = (
-                process.env.BACKEND_URL || "http://localhost:3000"
-              ).replace(/\/$/, "");
-              imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
-            }
-
-            lineMessages.push({
-              type: "image",
-              originalContentUrl: imageAbsUrl,
-              previewImageUrl: imageAbsUrl,
-            });
-          } else if (message_type === "carousel") {
-             // Multi-Card Carousel Payload Mapping
-             try {
-                 const parsedCards = JSON.parse(message_text);
-                 const bubbles = parsedCards.map(c => {
-                     // ----- END CARD -----
-                     if (c.isEndCard || (!c.image && c.message)) {
-                         const endLabel = ((c.message || "").trim()) || "ดูเพิ่มเติม";
-                         const endLabelSafe = endLabel.length > 20 ? endLabel.substring(0, 20) : endLabel;
-                         return {
-                             type: "bubble",
-                             size: "mega",
-                             action: {
-                                 type: "message",
-                                 label: endLabelSafe,
-                                 text: endLabel
-                             },
-                             body: {
-                                 type: "box",
-                                 layout: "vertical",
-                                 paddingAll: "0px",
-                                 justifyContent: "center",
-                                 alignItems: "center",
-                                 backgroundColor: "#f8f9fa",
-                                 contents: [
-                                     {
-                                         type: "text",
-                                         text: endLabel,
-                                         color: "#42659a",
-                                         weight: "bold",
-                                         align: "center",
-                                         gravity: "center"
-                                     }
-                                 ]
-                             }
-                         };
-                     }
-                     
-                     // ----- NORMAL CARD -----
-                     const contents = [];
-                     
-                     // 1. The Image Background
-                     if (c.image && c.image.startsWith("https://")) {
-                         contents.push({
-                             type: "image",
-                             url: c.image,
-                             size: "full",
-                             aspectMode: "cover",
-                             aspectRatio: "1:1",
-                             gravity: "center"
-                         });
-                     } else {
-                         // Fallback for missing/invalid image URL
-                         contents.push({
-                             type: "image",
-                             url: "https://dummyimage.com/600x600/e2e8f0/64748b&text=Image",
-                             size: "full",
-                             aspectMode: "cover",
-                             aspectRatio: "1:1"
-                         });
-                     }
-                     
-                     // 2. Top-Left Tag
-                     if (c.tag && c.tag.trim() !== "") {
-                         contents.push({
-                             type: "box",
-                             layout: "vertical",
-                             position: "absolute",
-                             offsetTop: "16px",
-                             offsetStart: "16px",
-                             backgroundColor: "#00000088",
-                             paddingAll: "6px",
-                             paddingStart: "14px",
-                             paddingEnd: "14px",
-                             cornerRadius: "20px",
-                             contents: [
-                                 {
-                                     type: "text",
-                                     text: c.tag,
-                                     color: "#ffffff",
-                                     size: "sm",
-                                     align: "center",
-                                     weight: "bold"
-                                 }
-                             ]
-                         });
-                     }
-                     
-                     // 3. Bottom-Center Label
-                     if (c.message && c.message.trim() !== "") {
-                         contents.push({
-                             type: "box",
-                             layout: "horizontal",
-                             position: "absolute",
-                             offsetBottom: "16px",
-                             offsetStart: "0px",
-                             offsetEnd: "0px",
-                             justifyContent: "center",
-                             contents: [
-                                 {
-                                     type: "box",
-                                     layout: "vertical",
-                                     backgroundColor: "#000000A6",
-                                     paddingAll: "6px",
-                                     paddingStart: "20px",
-                                     paddingEnd: "20px",
-                                     cornerRadius: "20px",
-                                     contents: [
-                                         {
-                                             type: "text",
-                                             text: c.message,
-                                             color: "#ffffff",
-                                             size: "md",
-                                             align: "center",
-                                             weight: "bold"
-                                         }
-                                     ]
-                                 }
-                             ]
-                         });
-                     }
-                     
-                     const cardActionText = ((c.message || c.tag || "ดูรายละเอียด").trim()) || "ดูรายละเอียด";
-                     const cardActionLabel = cardActionText.length > 20 ? cardActionText.substring(0, 20) : cardActionText;
-                     return {
-                         type: "bubble",
-                         size: "mega",
-                         action: {
-                             type: "message",
-                             label: cardActionLabel,
-                             text: cardActionText
-                         },
-                         body: {
-                             type: "box",
-                             layout: "vertical",
-                             paddingAll: "0px",
-                             position: "relative",
-                             contents: contents
-                         }
-                     };
-                 });
-
-                 if (bubbles.length > 0) {
-                     lineMessages.push({
-                         type: "flex",
-                         altText: "ส่งรูปภาพจาก Card Message",
-                         contents: {
-                             type: "carousel",
-                             contents: bubbles.slice(0, 10) // LINE Limit: max 10 bubbles
-                         }
-                     });
-                 }
-             } catch(err) {
-                 console.error("Failed parsing carousel to line message:", err);
-             }
-          }
-          
-           if (lineMessages.length > 0) {
-             try {
-               // DEBUG: print full payload to backend console
-               console.log("[LINE DEBUG] payload:", JSON.stringify(lineMessages, null, 2));
-               await lineClient.pushMessage({
-                 to: customer.platform_id,
-                 messages: lineMessages,
-               });
-               console.log(`✅ LINE push OK (${customer.cus_name}) type=${lineMessages.map(m=>m.type).join(',')}`);
-             } catch (lineErr) {
-               const errBody = lineErr?.response?.data || lineErr?.message || lineErr;
-               console.error(`❌ LINE pushMessage FAILED (${customer.cus_name}):`, JSON.stringify(errBody, null, 2));
-             }
-           }
+        if (!customer_id || !message_text) {
+            return res
+                .status(400)
+                .json({ message: "กรุณาระบุ customer_id และข้อความ" });
         }
 
-        // === ส่งไปยัง Facebook Messenger ===
-        if (customer && customer.platform === "facebook" && customer.platform_id) {
-          if ((message_type || "text") === "text") {
-            await fbController.sendTextMessage(customer.platform_id, message_text);
-          } else if (message_type === "image") {
-            let imageAbsUrl = message_text;
-            if (!message_text.startsWith("http")) {
-              const backendUrl = (process.env.BACKEND_URL || "http://localhost:3000").replace(/\/$/, "");
-              imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
-            }
-            await fbController.sendImageMessage(customer.platform_id, imageAbsUrl);
-          } else if (message_type === "carousel") {
+        const newId = await Message.create({
+            customer_id,
+            sender: sender || "own",
+            message_type: message_type || "text",
+            message_text,
+            reply_to_id: reply_to_id || null,
+            reply_preview_text: reply_preview_text || null,
+            reply_preview_image: reply_preview_image || null,
+        });
+
+        // ถ้าเป็นข้อความจาก dashboard (own) ให้ส่งไปยัง platform ของลูกค้า
+        if ((sender || "own") === "own") {
             try {
-              const parsedCards = JSON.parse(message_text);
-              await fbController.sendCarouselMessage(customer.platform_id, parsedCards);
-            } catch (fbCarouselErr) {
-              console.error("FB carousel parse error:", fbCarouselErr.message);
+                const customer = await Customer.findById(customer_id);
+
+                // === ส่งไปยัง LINE ===
+                if (customer && customer.platform === "line" && customer.platform_id) {
+                    const lineMessages = [];
+
+                    // ดึง quoteToken ถ้ามี
+                    let quoteToken = null;
+                    if (reply_to_id) {
+                        quoteToken = await Message.getQuoteTokenById(reply_to_id);
+                    }
+
+                    if ((message_type || "text") === "text") {
+                        lineMessages.push({ type: "text", text: message_text });
+                    } else if (message_type === "image") {
+                        let imageAbsUrl = message_text;
+
+                        // เช็คเผื่อกรณีเป็นรูปเก่าในเครื่อง
+                        if (!message_text.startsWith("http")) {
+                            const backendUrl = (
+                                process.env.BACKEND_URL || "http://localhost:3000"
+                            ).replace(/\/$/, "");
+                            imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
+                        }
+
+                        lineMessages.push({
+                            type: "image",
+                            originalContentUrl: imageAbsUrl,
+                            previewImageUrl: imageAbsUrl,
+                        });
+                    } else if (message_type === "carousel") {
+                        // Multi-Card Carousel Payload Mapping
+                        try {
+                            const parsedCards = JSON.parse(message_text);
+                            const bubbles = parsedCards.map(c => {
+                                // ----- END CARD -----
+                                if (c.isEndCard || (!c.image && c.message)) {
+                                    const endLabel = ((c.message || "").trim()) || "ดูเพิ่มเติม";
+                                    const endLabelSafe = endLabel.length > 20 ? endLabel.substring(0, 20) : endLabel;
+                                    return {
+                                        type: "bubble",
+                                        size: "mega",
+                                        action: {
+                                            type: "message",
+                                            label: endLabelSafe,
+                                            text: endLabel
+                                        },
+                                        body: {
+                                            type: "box",
+                                            layout: "vertical",
+                                            paddingAll: "0px",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                            backgroundColor: "#f8f9fa",
+                                            contents: [
+                                                {
+                                                    type: "text",
+                                                    text: endLabel,
+                                                    color: "#42659a",
+                                                    weight: "bold",
+                                                    align: "center",
+                                                    gravity: "center"
+                                                }
+                                            ]
+                                        }
+                                    };
+                                }
+
+                                // ----- NORMAL CARD -----
+                                const contents = [];
+
+                                // 1. The Image Background
+                                if (c.image && c.image.startsWith("https://")) {
+                                    contents.push({
+                                        type: "image",
+                                        url: c.image,
+                                        size: "full",
+                                        aspectMode: "cover",
+                                        aspectRatio: "1:1",
+                                        gravity: "center"
+                                    });
+                                } else {
+                                    // Fallback for missing/invalid image URL
+                                    contents.push({
+                                        type: "image",
+                                        url: "https://dummyimage.com/600x600/e2e8f0/64748b&text=Image",
+                                        size: "full",
+                                        aspectMode: "cover",
+                                        aspectRatio: "1:1"
+                                    });
+                                }
+
+                                // 2. Top-Left Tag
+                                if (c.tag && c.tag.trim() !== "") {
+                                    contents.push({
+                                        type: "box",
+                                        layout: "vertical",
+                                        position: "absolute",
+                                        offsetTop: "16px",
+                                        offsetStart: "16px",
+                                        backgroundColor: "#00000088",
+                                        paddingAll: "6px",
+                                        paddingStart: "14px",
+                                        paddingEnd: "14px",
+                                        cornerRadius: "20px",
+                                        contents: [
+                                            {
+                                                type: "text",
+                                                text: c.tag,
+                                                color: "#ffffff",
+                                                size: "sm",
+                                                align: "center",
+                                                weight: "bold"
+                                            }
+                                        ]
+                                    });
+                                }
+
+                                // 3. Bottom-Center Label
+                                if (c.message && c.message.trim() !== "") {
+                                    contents.push({
+                                        type: "box",
+                                        layout: "horizontal",
+                                        position: "absolute",
+                                        offsetBottom: "16px",
+                                        offsetStart: "0px",
+                                        offsetEnd: "0px",
+                                        justifyContent: "center",
+                                        contents: [
+                                            {
+                                                type: "box",
+                                                layout: "vertical",
+                                                backgroundColor: "#000000A6",
+                                                paddingAll: "6px",
+                                                paddingStart: "20px",
+                                                paddingEnd: "20px",
+                                                cornerRadius: "20px",
+                                                contents: [
+                                                    {
+                                                        type: "text",
+                                                        text: c.message,
+                                                        color: "#ffffff",
+                                                        size: "md",
+                                                        align: "center",
+                                                        weight: "bold"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    });
+                                }
+
+                                const cardActionText = ((c.message || c.tag || "ดูรายละเอียด").trim()) || "ดูรายละเอียด";
+                                const cardActionLabel = cardActionText.length > 20 ? cardActionText.substring(0, 20) : cardActionText;
+                                return {
+                                    type: "bubble",
+                                    size: "mega",
+                                    action: {
+                                        type: "message",
+                                        label: cardActionLabel,
+                                        text: cardActionText
+                                    },
+                                    body: {
+                                        type: "box",
+                                        layout: "vertical",
+                                        paddingAll: "0px",
+                                        position: "relative",
+                                        contents: contents
+                                    }
+                                };
+                            });
+
+                            if (bubbles.length > 0) {
+                                lineMessages.push({
+                                    type: "flex",
+                                    altText: "ส่งรูปภาพจาก Card Message",
+                                    contents: {
+                                        type: "carousel",
+                                        contents: bubbles.slice(0, 10) // LINE Limit: max 10 bubbles
+                                    }
+                                });
+                            }
+                        } catch (err) {
+                            console.error("Failed parsing carousel to line message:", err);
+                        }
+                    }
+
+                    if (lineMessages.length > 0) {
+                        // แนบ quoteToken ไปกับ message ตัวแรกใน array
+                        if (quoteToken) {
+                            lineMessages[0].quoteToken = quoteToken;
+                        }
+
+                        try {
+                            // DEBUG: print full payload to backend console
+                            console.log("[LINE DEBUG] payload:", JSON.stringify(lineMessages, null, 2));
+                            await lineClient.pushMessage({
+                                to: customer.platform_id,
+                                messages: lineMessages,
+                            });
+                            console.log(`✅ LINE push OK (${customer.cus_name}) type=${lineMessages.map(m => m.type).join(',')}`);
+                        } catch (lineErr) {
+                            const errBody = lineErr?.response?.data || lineErr?.message || lineErr;
+                            console.error(`❌ LINE pushMessage FAILED (${customer.cus_name}):`, JSON.stringify(errBody, null, 2));
+
+                            // Retry fallback: ถ้า fail เพราะ quote token หมดอายุ แต่อย่างอื่นปกติ (Usually 400 Bad Request)
+                            if (quoteToken && lineErr?.response?.status === 400) {
+                                console.log("⚠️ Retrying pushMessage WITHOUT quoteToken since it might have expired...");
+                                delete lineMessages[0].quoteToken;
+                                try {
+                                    await lineClient.pushMessage({
+                                        to: customer.platform_id,
+                                        messages: lineMessages,
+                                    });
+                                    console.log(`✅ LINE push Fallback OK (${customer.cus_name})`);
+                                } catch (fallbackErr) {
+                                    console.error(`❌ LINE pushMessage Fallback FAILED:`, fallbackErr?.message);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // === ส่งไปยัง Facebook Messenger ===
+                if (customer && customer.platform === "facebook" && customer.platform_id) {
+                    if ((message_type || "text") === "text") {
+                        await fbController.sendTextMessage(customer.platform_id, message_text);
+                    } else if (message_type === "image") {
+                        let imageAbsUrl = message_text;
+                        if (!message_text.startsWith("http")) {
+                            const backendUrl = (process.env.BACKEND_URL || "http://localhost:3000").replace(/\/$/, "");
+                            imageAbsUrl = `${backendUrl}/uploads/chat-images/${message_text}`;
+                        }
+                        await fbController.sendImageMessage(customer.platform_id, imageAbsUrl);
+                    } else if (message_type === "carousel") {
+                        try {
+                            const parsedCards = JSON.parse(message_text);
+                            await fbController.sendCarouselMessage(customer.platform_id, parsedCards);
+                        } catch (fbCarouselErr) {
+                            console.error("FB carousel parse error:", fbCarouselErr.message);
+                        }
+                    }
+                }
+            } catch (platformErr) {
+                console.error("Platform push message error:", platformErr);
             }
-          }
         }
-      } catch (platformErr) {
-        console.error("Platform push message error:", platformErr);
-      }
-    }
 
-    // ส่ง real-time event ผ่าน Socket.IO
-    const io = req.app.get("io");
-    if (io) {
-      const senderSocketId = req.body.socket_id;
-      const msgPayload = {
-        id: newId,
-        customer_id,
-        sender: sender || "own",
-        message_type: message_type || "text",
-        text: (message_type === "text" || message_type === "carousel") ? message_text : null,
-        image:
-          message_type === "image"
-            ? message_text.startsWith("http")
-              ? message_text
-              : `/uploads/chat-images/${message_text}`
-            : null,
-        created_at: getLocalDatetime(),
-      };
-      if (senderSocketId) {
-        // ส่งให้ทุกคนยกเว้นคนส่ง (เพราะคนส่งทำ optimistic update ไปแล้ว)
-        io.except(senderSocketId).emit("new-message", msgPayload);
-      } else {
-        io.emit("new-message", msgPayload);
-      }
-    }
-
-    // บันทึก Log การส่งข้อความจาก dashboard
-    if ((sender || "own") === "own") {
-      try {
-        const customer = await Customer.findById(customer_id);
-        const customerName = customer?.cus_name || `Customer #${customer_id}`;
-        const adminName = req.user?.username || "unknown";
-        const msgPreview =
-          message_type === "text"
-            ? message_text.length > 50
-              ? message_text.substring(0, 50) + "..."
-              : message_text
-            : message_type === "carousel"
-            ? "(Carousel Message)"
-            : "(รูปภาพ)";
-
-        const logData = {
-          user: adminName,
-          avatar: null,
-          action: "ส่งข้อความ",
-          target: customerName,
-          details: msgPreview,
-        };
-        const logResult = await Log.create(logData);
+        // ส่ง real-time event ผ่าน Socket.IO
         const io = req.app.get("io");
         if (io) {
-          io.emit("new-log", {
-            ...logData,
-            log_id: logResult.insertId,
-            created_at: getLocalDatetime(),
-          });
+            const senderSocketId = req.body.socket_id;
+            const msgPayload = {
+                id: newId,
+                customer_id,
+                sender: sender || "own",
+                message_type: message_type || "text",
+                text: (message_type === "text" || message_type === "carousel") ? message_text : null,
+                image:
+                    message_type === "image"
+                        ? message_text.startsWith("http")
+                            ? message_text
+                            : `/uploads/chat-images/${message_text}`
+                        : null,
+                created_at: getLocalDatetime(),
+                reply_to_id: reply_to_id || null,
+                reply_preview_text: reply_preview_text || null,
+                reply_preview_image: reply_preview_image || null,
+            };
+            if (senderSocketId) {
+                // ส่งให้ทุกคนยกเว้นคนส่ง (เพราะคนส่งทำ optimistic update ไปแล้ว)
+                io.except(senderSocketId).emit("new-message", msgPayload);
+            } else {
+                io.emit("new-message", msgPayload);
+            }
         }
-      } catch (logErr) {
-        console.error("Chat log error:", logErr.message);
-      }
-    }
 
-    res.status(201).json({ message: "ส่งข้อความสำเร็จ", id: newId });
-  } catch (err) {
-    console.error("Send message error:", err);
-    res.status(500).json({ message: "เกิดข้อผิดพลาดในการส่งข้อความ" });
-  }
+        // บันทึก Log การส่งข้อความจาก dashboard
+        if ((sender || "own") === "own") {
+            try {
+                const customer = await Customer.findById(customer_id);
+                const customerName = customer?.cus_name || `Customer #${customer_id}`;
+                const adminName = req.user?.username || "unknown";
+                const msgPreview =
+                    message_type === "text"
+                        ? message_text.length > 50
+                            ? message_text.substring(0, 50) + "..."
+                            : message_text
+                        : message_type === "carousel"
+                            ? "(Carousel Message)"
+                            : "(รูปภาพ)";
+
+                const logData = {
+                    user: adminName,
+                    avatar: null,
+                    action: "ส่งข้อความ",
+                    target: customerName,
+                    details: msgPreview,
+                };
+                const logResult = await Log.create(logData);
+                const io = req.app.get("io");
+                if (io) {
+                    io.emit("new-log", {
+                        ...logData,
+                        log_id: logResult.insertId,
+                        created_at: getLocalDatetime(),
+                    });
+                }
+            } catch (logErr) {
+                console.error("Chat log error:", logErr.message);
+            }
+        }
+
+        res.status(201).json({ message: "ส่งข้อความสำเร็จ", id: newId });
+    } catch (err) {
+        console.error("Send message error:", err);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดในการส่งข้อความ" });
+    }
 });
 
 module.exports = router;

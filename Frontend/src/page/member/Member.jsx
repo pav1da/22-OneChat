@@ -35,9 +35,18 @@ const Member = ({ currentUser }) => {
   const [editPassword, setEditPassword] = useState("");
   const [editSaving, setEditSaving] = useState(false);
 
-  // ===== Delete Modal State =====
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState(null);
+
+  // ===== Info Modal State =====
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [memberInfo, setMemberInfo] = useState(null);
+
+  const handleOpenInfo = (member) => {
+    if (!isAdmin) return;
+    setMemberInfo(member);
+    setShowInfoModal(true);
+  };
 
   // ===== Socket.IO: ดึงฟังก์ชันเช็คสถานะ online จาก SocketContext =====
   const { isUserOnline } = useSocket();
@@ -68,6 +77,7 @@ const Member = ({ currentUser }) => {
             email: u.email,
             phone: u.phone,
             image: u.image || "",
+            chatCount: u.chat_count || 0,
           }));
           setAllMembers(mapped);
         }
@@ -244,7 +254,11 @@ const Member = ({ currentUser }) => {
         {displayMembers.map((member) => {
           const online = isUserOnline(member.id);
           return (
-            <div key={member.id} className="member-row">
+            <div 
+              key={member.id} 
+              className={`member-row ${isAdmin ? "clickable-row" : ""}`} 
+              onClick={() => { if(isAdmin) handleOpenInfo(member); }}
+            >
               {/* ชื่อ + Avatar พร้อมตัวบ่งชี้สถานะ online/offline */}
               <div className="col-name">
                 <div className="avatar-wrapper">
@@ -483,6 +497,98 @@ const Member = ({ currentUser }) => {
             )}
           </Button>
         </Modal.Footer>
+      </Modal>
+
+      {/* ===== Info Member Modal ===== */}
+      <Modal show={showInfoModal} onHide={() => { setShowInfoModal(false); setMemberInfo(null); }} centered className="member-info-modal">
+        <Modal.Header closeButton style={{ borderBottom: "none", paddingBottom: 0 }}>
+        </Modal.Header>
+        <Modal.Body className="text-center p-4">
+          {memberInfo && (
+            <>
+              <div className="mb-3 d-flex justify-content-center position-relative">
+                {memberInfo.image ? (
+                  <img src={memberInfo.image} alt="avatar" className="rounded-circle shadow-sm" style={{ width: "110px", height: "110px", objectFit: "cover" }} />
+                ) : (
+                  <div className="rounded-circle shadow-sm d-flex align-items-center justify-content-center text-white" style={{ width: "110px", height: "110px", fontSize: "3rem", backgroundColor: getAvatarColor(memberInfo.name) }}>
+                    {getInitial(memberInfo.name)}
+                  </div>
+                )}
+                {isUserOnline(memberInfo.id) && (
+                  <span className="position-absolute bottom-0 translate-middle p-2 bg-success border border-light rounded-circle" style={{ right: "50%", marginRight: "-55px", marginBottom: "5px" }}>
+                    <span className="visually-hidden">Online</span>
+                  </span>
+                )}
+              </div>
+              <h4 className="fw-bold mb-4" style={{ color: "var(--text-main)", fontSize: "1.5rem" }}>{memberInfo.displayName || memberInfo.name}</h4>
+              
+              <div className="text-start bg-light p-3 rounded-4 mb-2 shadow-sm" style={{ fontSize: "0.95rem" }}>
+                <div className="d-flex align-items-center mb-3">
+                  <div className="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3" style={{ width: "36px", height: "36px", color: "var(--primary-color)" }}>
+                    <i className="bi bi-person-badge"></i>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "-2px" }}>ผู้ใช้งาน & ตำแหน่ง</div>
+                    <div className="fw-medium text-dark">
+                      @{memberInfo.name} &bull; <span className="text-uppercase" style={{ fontSize: "0.85rem" }}>{memberInfo.role}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center mb-3">
+                  <div className="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3" style={{ width: "36px", height: "36px", color: "var(--primary-color)" }}>
+                    <i className="bi bi-chat-dots-fill"></i>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "-2px" }}>จำนวนแชทที่รับผิดชอบ</div>
+                    <div className="fw-bold" style={{ fontSize: "1.1rem", color: "var(--primary-color)" }}>
+                      {memberInfo.chatCount} แชท
+                    </div>
+                  </div>
+                </div>
+                <div className="d-flex align-items-center mb-3">
+                  <div className="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3" style={{ width: "36px", height: "36px", color: "var(--primary-color)" }}>
+                    <i className="bi bi-envelope"></i>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "-2px" }}>อีเมล</div>
+                    <div className="fw-medium">{memberInfo.email || "-"}</div>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center mb-3">
+                  <div className="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3" style={{ width: "36px", height: "36px", color: "var(--primary-color)" }}>
+                    <i className="bi bi-telephone"></i>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "-2px" }}>เบอร์โทรศัพท์</div>
+                    <div className="fw-medium">{memberInfo.phone || "-"}</div>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-start">
+                  <div className="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3 mt-1" style={{ width: "36px", height: "36px", color: "var(--primary-color)" }}>
+                    <i className="bi bi-people"></i>
+                  </div>
+                  <div className="w-100">
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px" }}>ทีมที่สังกัด</div>
+                    <div className="d-flex flex-wrap gap-2">
+                      {memberInfo.teams && memberInfo.teams.length > 0 ? (
+                        memberInfo.teams.map(t => (
+                          <span key={t.team_id} className="team-badge-pill" style={{ fontSize: "0.80rem", padding: "3px 12px" }}>
+                            {t.team_name}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-muted fw-medium">-</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </Modal.Body>
       </Modal>
     </div>
   );
