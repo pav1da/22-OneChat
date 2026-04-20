@@ -147,6 +147,30 @@ exports.getMe = async (req, res) => {
 };
 
 // =============================================
+// 3.5 PUT /api/users/me/displayname — เปลี่ยนชื่อแสดงผล
+// =============================================
+exports.updateDisplayName = async (req, res) => {
+    try {
+        const { displayName } = req.body;
+
+        if (!displayName) {
+            return res.status(400).json({ message: 'กรุณากรอกชื่อแสดงผล' });
+        }
+
+        await User.updateDisplayName(req.user.emp_id, displayName);
+        const updatedUser = await User.findById(req.user.emp_id);
+
+        // บันทึก log + ส่ง real-time event
+        await createLogAndEmit(req, { user: updatedUser.username, avatar: null, action: 'เปลี่ยนชื่อแสดงผล', target: displayName, details: '' });
+
+        res.json({ message: 'เปลี่ยนชื่อแสดงผลสำเร็จ', user: updatedUser });
+    } catch (err) {
+        console.error('UpdateDisplayName error:', err);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+    }
+};
+
+// =============================================
 // 4. PUT /api/users/me/username — เปลี่ยนชื่อผู้ใช้
 // =============================================
 exports.updateUsername = async (req, res) => {

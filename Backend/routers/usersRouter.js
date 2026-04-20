@@ -175,6 +175,35 @@ router.get('/me', auth, usersController.getMe);
 
 /**
  * @swagger
+ * /api/users/me/displayname:
+ *   put:
+ *     summary: เปลี่ยนชื่อแสดงผล
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [displayName]
+ *             properties:
+ *               displayName:
+ *                 type: string
+ *                 example: "NewDisplayName"
+ *     responses:
+ *       200:
+ *         description: เปลี่ยนชื่อแสดงผลสำเร็จ
+ *       400:
+ *         description: ข้อมูลไม่ครบ
+ *       500:
+ *         description: Server error
+ */
+router.put('/me/displayname', auth, usersController.updateDisplayName);
+
+/**
+ * @swagger
  * /api/users/me/username:
  *   put:
  *     summary: เปลี่ยนชื่อผู้ใช้

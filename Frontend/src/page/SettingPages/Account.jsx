@@ -13,6 +13,7 @@ function Account({ user }) {
     email: "",
     phone: "",
     password: "",
+    displayName: "",
   });
 
   const [imagePreview, setImagePreview] = useState(null);
@@ -50,6 +51,7 @@ function Account({ user }) {
             email: data.email || "",
             phone: data.phone || "",
             password: "",
+            displayName: data.display_name || data.name || data.username || "",
           });
           setImagePreview(data.image || null);
         }
@@ -86,6 +88,8 @@ function Account({ user }) {
     } else {
       if (type === "username") {
         setEditValue(userData.username);
+      } else if (type === "displayName") {
+        setEditValue(userData.displayName);
       }
       setShowModal(true);
     }
@@ -150,6 +154,27 @@ function Account({ user }) {
           savedUser.username = editValue;
           savedUser.name = editValue;
           sessionStorage.setItem("myAppUser", JSON.stringify(savedUser));
+          window.dispatchEvent(new Event("user-updated"));
+        } else {
+          alert(data.message || "เกิดข้อผิดพลาด");
+          return;
+        }
+      } else if (modalType === "displayName") {
+        const res = await fetch("/api/users/me/displayname", {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({ displayName: editValue }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setUserData((prev) => ({ ...prev, displayName: editValue }));
+          const savedUser = JSON.parse(
+            sessionStorage.getItem("myAppUser") || "{}",
+          );
+          savedUser.display_name = editValue;
+          savedUser.displayName = editValue;
+          sessionStorage.setItem("myAppUser", JSON.stringify(savedUser));
+          window.dispatchEvent(new Event("user-updated"));
         } else {
           alert(data.message || "เกิดข้อผิดพลาด");
           return;
@@ -310,6 +335,13 @@ function Account({ user }) {
   // Select modal content based on modalType
   const getModalContent = () => {
     switch (modalType) {
+      case "displayName":
+        return {
+          title: "เปลี่ยนชื่อแสดงผลของคุณ",
+          subtitle: "ชื่อนี้จะแสดงให้เพื่อนร่วมทีมเห็นในระบบแทนชื่อผู้ใช้",
+          label1: "ชื่อแสดงผล",
+        };
+
       case "username":
         return {
           title: "เปลี่ยนชื่อผู้ใช้ของคุณ",
@@ -411,6 +443,23 @@ function Account({ user }) {
 
       {/* SECTION 2: USER INFO */}
       <div style={cardSectionStyle}>
+        {/* Display Name */}
+        <Row className="align-items-center justify-content-between mb-4">
+          <Col>
+            <div className="fw-bold fs-6 mb-1">ชื่อแสดงผล</div>
+            <div style={{ fontSize: "1rem" }}>{userData.displayName || userData.username}</div>
+          </Col>
+          <Col xs="auto">
+            <Button
+              variant="dark"
+              style={btnDarkStyle}
+              onClick={() => handleShowModal("displayName")}
+            >
+              แก้ไข
+            </Button>
+          </Col>
+        </Row>
+
         {/* Username */}
         <Row className="align-items-center justify-content-between mb-4">
           <Col>
@@ -797,31 +846,29 @@ function Account({ user }) {
                   onChange={(e) => setEditValue(e.target.value)}
                   style={{ borderRadius: "8px", padding: "10px" }}
                 />
-
-                {modalContent.helper && (
-                  <Form.Text
-                    className="text-muted"
-                    style={{ fontSize: "0.8rem" }}
-                  >
-                    {modalContent.helper}
-                  </Form.Text>
-                )}
+                <Form.Text className="text-muted" style={{ fontSize: "0.8rem" }}>
+                  {modalContent.helper}
+                </Form.Text>
               </Form.Group>
 
-              <Form.Group className="mb-3">
-                <Form.Label style={{ fontWeight: "600", fontSize: "0.9rem" }}>
-                  {modalContent.label2}
-                </Form.Label>
+              {modalContent.label2 && (
+                <Form.Group className="mb-3">
+                  <Form.Label style={{ fontWeight: "600", fontSize: "0.9rem" }}>
+                    {modalContent.label2} <span style={{ color: "#dc3545" }}>*</span>
+                  </Form.Label>
 
-                <Form.Control
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  style={{ borderRadius: "8px", padding: "10px" }}
-                />
-              </Form.Group>
+                  <Form.Control
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    style={{ borderRadius: "8px", padding: "10px" }}
+                  />
+                </Form.Group>
+              )}
             </Form>
           )}
+
+
         </Modal.Body>
 
         {/* Modal Footer */}
