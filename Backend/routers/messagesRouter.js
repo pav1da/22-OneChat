@@ -7,7 +7,7 @@ const Message = require("../models/message.js");
 const Customer = require("../models/customer.js");
 const Log = require("../models/log.js");
 const cloudinary = require("../config/cloudinary");
-const { lineClient } = require("../controllers/lineController.js");
+const { getLineClientByCustomerId } = require("../controllers/lineController.js");
 const fbController = require("../controllers/FbController.js");
 
 // Multer config for admin-uploaded chat images
@@ -512,8 +512,14 @@ router.post("/", auth, async (req, res) => {
 
                         try {
                             // DEBUG: print full payload to backend console
-                            console.log("[LINE DEBUG] payload:", JSON.stringify(lineMessages, null, 2));
-                            await lineClient.pushMessage({
+                            console.log(`[LINE DEBUG] Sending to customer ${customer.cus_id} on platform_id ${customer.platform_id}`);
+                            
+                            const client = await getLineClientByCustomerId(customer_id);
+                            if (!client) {
+                                throw new Error(`Could not find active LINE client for customer ${customer_id}`);
+                            }
+
+                            await client.pushMessage({
                                 to: customer.platform_id,
                                 messages: lineMessages,
                             });
@@ -527,11 +533,14 @@ router.post("/", auth, async (req, res) => {
                                 console.log("⚠️ Retrying pushMessage WITHOUT quoteToken since it might have expired...");
                                 delete lineMessages[0].quoteToken;
                                 try {
-                                    await lineClient.pushMessage({
-                                        to: customer.platform_id,
-                                        messages: lineMessages,
-                                    });
-                                    console.log(`✅ LINE push Fallback OK (${customer.cus_name})`);
+                                    const client = await getLineClientByCustomerId(customer_id);
+                                    if (client) {
+                                        await client.pushMessage({
+                                            to: customer.platform_id,
+                                            messages: lineMessages,
+                                        });
+                                        console.log(`✅ LINE push Fallback OK (${customer.cus_name})`);
+                                    }
                                 } catch (fallbackErr) {
                                     console.error(`❌ LINE pushMessage Fallback FAILED:`, fallbackErr?.message);
                                 }

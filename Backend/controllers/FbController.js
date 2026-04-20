@@ -200,7 +200,7 @@ exports.sendCarouselMessage = async (recipientPsid, cards) => {
 async function handleTextMessage(io, sender_psid, text, page_id) {
     console.log(`📬 [Facebook] ข้อความ: "${text}" จาก PSID: ${sender_psid}`);
 
-    const { customerId, displayName, pictureUrl, isNew } = await findOrCreateFbCustomer(sender_psid, page_id);
+    const { customerId, displayName, pictureUrl, channelName, isNew } = await findOrCreateFbCustomer(sender_psid, page_id);
 
     // บันทึกข้อความลง chat_messages
     const msgSql =
@@ -218,6 +218,7 @@ async function handleTextMessage(io, sender_psid, text, page_id) {
             cus_picture: pictureUrl,
             platform: "facebook",
             platform_id: sender_psid,
+            channel_name: channelName || "Facebook", // ใช้ channelName
             first_message: text,
         });
     }
@@ -258,7 +259,7 @@ async function handleAttachments(io, sender_psid, attachments, page_id) {
 
             console.log(`${isSticker ? "😀" : "🖼️"} [Facebook] ${isSticker ? "สติกเกอร์" : "รูปภาพ"}จาก PSID: ${sender_psid}`);
 
-            const { customerId, displayName, pictureUrl, isNew } = await findOrCreateFbCustomer(sender_psid, page_id);
+            const { customerId, displayName, pictureUrl, channelName, isNew } = await findOrCreateFbCustomer(sender_psid, page_id);
 
             const msgSql =
                 "INSERT INTO chat_messages (customer_id, sender, message_type, message_text) VALUES (?, 'customer', ?, ?)";
@@ -274,6 +275,7 @@ async function handleAttachments(io, sender_psid, attachments, page_id) {
                     cus_picture: pictureUrl,
                     platform: "facebook",
                     platform_id: sender_psid,
+                    channel_name: channelName || "Facebook", // ใช้ channelName
                     first_message: "",
                 });
             }
@@ -313,22 +315,55 @@ async function handleAttachments(io, sender_psid, attachments, page_id) {
 
 // ค้นหาหรือสร้างลูกค้า Facebook ใน DB
 async function findOrCreateFbCustomer(psid, pageId) {
+    // 1. ค้นหา channel_id ของ Facebook ที่เกี่ยวข้อง
+    let channelId = null;
+    let channelName = "Facebook";
+
+    if (pageId) {
+        const [matchedChannels] = await db.query(
+            "SELECT id, channel_name FROM channels WHERE platform = 'facebook' AND status = 'active' AND channel_id = ? LIMIT 1",
+            [pageId]
+        );
+        if (matchedChannels.length > 0) {
+            channelId = matchedChannels[0].id;
+            channelName = matchedChannels[0].channel_name;
+        }
+    }
+
+    // Fallback ถ้าหาแบบเจาะจงไม่เจอ ให้ใช้เพจแรกสุดแทน
+    if (!channelId) {
+        const [fbChannels] = await db.query(
+            "SELECT id, channel_name FROM channels WHERE platform = 'facebook' AND status = 'active' LIMIT 1"
+        );
+        if (fbChannels.length > 0) {
+            channelId = fbChannels[0].id;
+            channelName = fbChannels[0].channel_name;
+        }
+    }
+
+    if (!channelId) {
+        console.error("❌ [FB findOrCreate] No active Facebook channel found in DB.");
+    }
+
+    // 2. ค้นหาลูกค้าเดิม "ภายใต้ Channel นี้"
     const [existing] = await db.query(
-        "SELECT cus_id, cus_name, cus_picture, updated_at FROM customers WHERE platform = 'facebook' AND platform_id = ?",
-        [psid]
+        "SELECT cus_id, cus_name, cus_picture, updated_at FROM customers WHERE platform = 'facebook' AND platform_id = ? AND channel_id = ?",
+        [psid, channelId]
     );
 
     if (existing.length > 0) {
         const customer = existing[0];
+        console.log(`✅ [FB] Found Existing Customer: ${customer.cus_name} on Page: ${channelName}`);
         return {
             customerId: customer.cus_id,
             displayName: customer.cus_name,
             pictureUrl: customer.cus_picture || "",
+            channelName, // เพิ่ม channelName
             isNew: false,
         };
     }
 
-    // ===== ดึงชื่อ + รูปโปรไฟล์จาก Facebook =====
+    // ===== ดึงชื่อ + รูปโปรไฟล์จาก Facebook (ลูกค้าใหม่สำหรับบอทนี้) =====
     let displayName = `FB User ${psid}`;
     let fbPictureUrl = "";
     let pictureUrl = "";
@@ -352,7 +387,7 @@ async function findOrCreateFbCustomer(psid, pageId) {
         console.error("FB profile direct error:", err.message);
     }
 
-    // วิธีที่ 2: ถ้ายังเป็นชื่อ default → ดึงจาก Conversations API (ใช้ได้แม้ไม่มี pages_read_engagement)
+    // วิธีที่ 2: ถ้ายังเป็นชื่อ default → ดึงจาก Conversations API
     if (displayName === `FB User ${psid}`) {
         try {
             console.log("🔄 Fallback: ดึงชื่อจาก Conversations API...");
@@ -361,7 +396,6 @@ async function findOrCreateFbCustomer(psid, pageId) {
             );
             if (convRes.ok) {
                 const convData = await convRes.json();
-                // ค้นหา PSID ใน participants ของทุก conversation
                 for (const conv of (convData.data || [])) {
                     const participant = conv.participants?.data?.find((p) => p.id === psid);
                     if (participant && participant.name) {
@@ -377,23 +411,6 @@ async function findOrCreateFbCustomer(psid, pageId) {
     }
 
     // ===== ดึงรูปโปรไฟล์ + Upload ไป Cloudinary =====
-    // ลอง Facebook CDN redirect URL
-    if (!fbPictureUrl) {
-        try {
-            const picRes = await fetch(
-                `https://graph.facebook.com/${psid}/picture?type=large&redirect=false&access_token=${FB_TOKEN}`
-            );
-            if (picRes.ok) {
-                const picData = await picRes.json();
-                if (picData.data && picData.data.url && !picData.data.is_silhouette) {
-                    fbPictureUrl = picData.data.url;
-                }
-            }
-        } catch (err) {
-            // ดึงรูปไม่ได้ — ใช้ fallback avatar
-        }
-    }
-
     if (fbPictureUrl) {
         try {
             const uploadResult = await cloudinary.uploader.upload(fbPictureUrl, {
@@ -412,45 +429,25 @@ async function findOrCreateFbCustomer(psid, pageId) {
         }
     }
 
-    // ค้นหา channel_id ของ Facebook ที่ active อยู่
-    let channelId = null;
-
-    if (pageId) {
-        const [matchedChannels] = await db.query(
-            "SELECT id FROM channels WHERE platform = 'facebook' AND status = 'active' AND channel_id = ? LIMIT 1",
-            [pageId]
-        );
-        if (matchedChannels.length > 0) {
-            channelId = matchedChannels[0].id;
-        }
-    }
-
-    // Fallback ถ้าหาแบบเจาะจงไม่เจอ ให้ใช้เพจแรกสุดแทน
-    if (!channelId) {
-        const [fbChannels] = await db.query(
-            "SELECT id FROM channels WHERE platform = 'facebook' AND status = 'active' LIMIT 1"
-        );
-        channelId = fbChannels.length > 0 ? fbChannels[0].id : null;
-    }
-
     await db.query(
         "INSERT INTO customers (platform, platform_id, cus_name, cus_picture, channel_id) VALUES ('facebook', ?, ?, ?, ?)",
         [psid, displayName, pictureUrl, channelId]
     );
 
     const [rows] = await db.query(
-        "SELECT cus_id FROM customers WHERE platform = 'facebook' AND platform_id = ?",
-        [psid]
+        "SELECT cus_id FROM customers WHERE platform = 'facebook' AND platform_id = ? AND channel_id = ?",
+        [psid, channelId]
     );
 
     console.log(
-        `👤 สร้างลูกค้า Facebook ใหม่: ${displayName} (cus_id: ${rows[0].cus_id})`
+        `👤 สร้างลูกค้า Facebook ใหม่สำหรับเพจ ${channelName}: ${displayName} (cus_id: ${rows[0].cus_id})`
     );
 
     return {
         customerId: rows[0].cus_id,
         displayName,
         pictureUrl,
+        channelName, // เพิ่ม channelName
         isNew: true,
     };
 }

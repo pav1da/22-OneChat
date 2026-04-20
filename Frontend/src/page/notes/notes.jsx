@@ -170,7 +170,7 @@ function Dashboard({ user }) {
     .filter(
       (n) =>
         !searchText ||
-        (n.content || "").toLowerCase().includes(searchText.toLowerCase()) ||
+        (n.user || "").toLowerCase().includes(searchText.toLowerCase()) ||
         (n.author || "").toLowerCase().includes(searchText.toLowerCase()),
     )
     .sort((a, b) => {

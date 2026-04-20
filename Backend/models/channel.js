@@ -13,19 +13,19 @@ const Channel = {
         return rows[0] || null;
     },
 
-    create: async ({ platform, channel_name, channel_id, access_token, channel_secret, webhook_url, created_by }) => {
+    create: async ({ platform, channel_name, channel_id, access_token, channel_secret, webhook_url, destination_id, created_by }) => {
         const [result] = await pool.query(
-            `INSERT INTO channels (platform, channel_name, channel_id, access_token, channel_secret, webhook_url, status, created_by)
-             VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`,
-            [platform, channel_name, channel_id || null, access_token || null, channel_secret || null, webhook_url || null, created_by || null]
+            `INSERT INTO channels (platform, channel_name, channel_id, access_token, channel_secret, webhook_url, destination_id, status, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?)`,
+            [platform, channel_name, channel_id || null, access_token || null, channel_secret || null, webhook_url || null, destination_id || null, created_by || null]
         );
         return result.insertId;
     },
 
-    update: async (id, { channel_name, channel_id, access_token, channel_secret, webhook_url }) => {
+    update: async (id, { channel_name, channel_id, access_token, channel_secret, webhook_url, destination_id }) => {
         await pool.query(
-            `UPDATE channels SET channel_name=?, channel_id=?, access_token=?, channel_secret=?, webhook_url=?, updated_at=NOW() WHERE id=?`,
-            [channel_name, channel_id || null, access_token || null, channel_secret || null, webhook_url || null, id]
+            `UPDATE channels SET channel_name=?, channel_id=?, access_token=?, channel_secret=?, webhook_url=?, destination_id=?, updated_at=NOW() WHERE id=?`,
+            [channel_name, channel_id || null, access_token || null, channel_secret || null, webhook_url || null, destination_id || null, id]
         );
     },
 

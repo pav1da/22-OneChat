@@ -9,7 +9,7 @@ const PLATFORMS = [
     { key: 'website',   label: 'Website Chat',       icon: 'bi-globe2',           color: '#6366f1' },
 ];
 
-const EMPTY_FORM = { platform: 'line', channel_name: '', channel_id: '', access_token: '', channel_secret: '', webhook_url: '' };
+const EMPTY_FORM = { platform: 'line', channel_name: '', channel_id: '', access_token: '', channel_secret: '', webhook_url: '', destination_id: '' };
 
 const Connect = () => {
     const [channels, setChannels] = useState([]);
@@ -58,6 +58,7 @@ const Connect = () => {
             access_token: ch.access_token || '',
             channel_secret: ch.channel_secret || '',
             webhook_url: ch.webhook_url || '',
+            destination_id: ch.destination_id || '',
         });
         setShowModal(true);
     };
@@ -259,6 +260,13 @@ const Connect = () => {
 
                             <label className="connect-label" style={{ marginTop: '14px' }}>Channel ID</label>
                             <input className="connect-input" placeholder="เช่น @yourlineoa หรือ Page ID" value={form.channel_id} onChange={e => setForm({ ...form, channel_id: e.target.value })} />
+
+                            {form.platform === 'line' && (
+                                <>
+                                    <label className="connect-label" style={{ marginTop: '14px' }}>Bot User ID (Destination ID) *</label>
+                                    <input className="connect-input" placeholder="เช่น Ua123... (หาได้ใน LINE Messaging API settings)" value={form.destination_id} onChange={e => setForm({ ...form, destination_id: e.target.value })} />
+                                </>
+                            )}
 
                             <label className="connect-label" style={{ marginTop: '14px' }}>Access Token</label>
                             <input className="connect-input" type="password" placeholder="Channel Access Token" value={form.access_token} onChange={e => setForm({ ...form, access_token: e.target.value })} />

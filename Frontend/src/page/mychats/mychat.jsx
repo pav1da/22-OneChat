@@ -250,6 +250,11 @@ const MyChat = ({ currentUser }) => {
     const [globalTags, setGlobalTags] = useState([]);
     const [customerTagsMap, setCustomerTagsMap] = useState({});
 
+    // === Cascading Filter States ===
+    const [allChannels, setAllChannels] = useState([]); // [{ id, platform, channel_name }]
+    const [filterPlatform, setFilterPlatform] = useState("all"); // "all" | "line" | "facebook"
+    const [filterChannelId, setFilterChannelId] = useState("all"); // "all" | id
+
     // Fetch members to show assignee info
     useEffect(() => {
         const fetchMembers = async () => {
@@ -275,6 +280,12 @@ const MyChat = ({ currentUser }) => {
         fetch('/api/tags/customers/all', { headers })
             .then(r => r.ok ? r.json() : {})
             .then(data => setCustomerTagsMap(typeof data === 'object' ? data : {}))
+            .catch(() => { });
+
+        // Fetch all active channels for filtering
+        fetch('/api/channels', { headers })
+            .then(r => r.ok ? r.json() : { data: [] })
+            .then(res => setAllChannels(Array.isArray(res?.data) ? res.data : []))
             .catch(() => { });
     }, []);
 
@@ -319,19 +330,25 @@ const MyChat = ({ currentUser }) => {
                 if (!hasAllTags) return false;
             }
 
-            // 3. Search text
+            // 3. Platform Filter
+            if (filterPlatform !== "all" && c.platform !== filterPlatform) return false;
+
+            // 4. Shop (Channel) Filter
+            if (filterChannelId !== "all" && c.channel_id !== Number(filterChannelId)) return false;
+
+            // 5. Search text
             if (searchText) {
                 const q = searchText.toLowerCase();
                 return c.name.toLowerCase().includes(q) || (c.last && c.last.toLowerCase().includes(q));
             }
             return true;
         }).sort((a, b) => {
-            // 4. Sorting
+            // 6. Sorting
             const timeA = getLastMsgTime(a.id);
             const timeB = getLastMsgTime(b.id);
             return sortOrder === "latest" ? timeB - timeA : timeA - timeB;
         });
-    }, [customers, activeFilter, filterTags, searchText, sortOrder, getLastMsgTime, STATUS, currentUser]);
+    }, [customers, activeFilter, filterTags, filterPlatform, filterChannelId, searchText, sortOrder, getLastMsgTime, STATUS, currentUser, customerTagsMap]);
 
     // === Count per status (for tab badges, filtered by assignee first) ===
     const statusCounts = useMemo(() => {
@@ -488,6 +505,40 @@ const MyChat = ({ currentUser }) => {
                                 </button>
                             ))}
                         </div>
+
+                        {/* Dropdown กรอองช่องทางหลัก */}
+                        <Dropdown onSelect={(val) => { setFilterPlatform(val); setFilterChannelId("all"); }}>
+                            <Dropdown.Toggle as="div" className="nav-search shadow-none pointer">
+                                <i className={`bi bi-${filterPlatform === "line" ? "line" : filterPlatform === "facebook" ? "messenger" : "grid"} me-1`}></i>
+                                {filterPlatform === "all" ? "ทุกช่องทาง" : filterPlatform === "line" ? "LINE OA" : "Messenger"}
+                                <i className="bi bi-chevron-down ms-1" style={{ fontSize: "10px" }}></i>
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu className="p-2 border-0 shadow-sm rounded-3" style={{ backgroundColor: "var(--bg-main)", border: "1px solid var(--border-light)" }}>
+                                <Dropdown.Item eventKey="all" className="rounded"><span style={{ color: "var(--text-main)" }}>ทุกช่องทาง</span></Dropdown.Item>
+                                <Dropdown.Item eventKey="line" className="rounded"><span style={{ color: "var(--text-main)" }}>LINE OA</span></Dropdown.Item>
+                                <Dropdown.Item eventKey="facebook" className="rounded"><span style={{ color: "var(--text-main)" }}>Messenger</span></Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
+
+                        {/* Dropdown กรองชื่อร้าน (Cascading) */}
+                        <Dropdown onSelect={(val) => setFilterChannelId(val)}>
+                            <Dropdown.Toggle as="div" className="nav-search shadow-none pointer">
+                                <i className="bi bi-shop me-1"></i>
+                                {filterChannelId === "all" ? "ทุกร้าน" : allChannels.find(ch => ch.id === Number(filterChannelId))?.channel_name || "เลือกร้าน"}
+                                <i className="bi bi-chevron-down ms-1" style={{ fontSize: "10px" }}></i>
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu className="p-2 border-0 shadow-sm rounded-3" style={{ backgroundColor: "var(--bg-main)", border: "1px solid var(--border-light)", maxHeight: '250px', overflowY: 'auto' }}>
+                                <Dropdown.Item eventKey="all" className="rounded"><span style={{ color: "var(--text-main)" }}>ทุกร้าน</span></Dropdown.Item>
+                                {allChannels
+                                    .filter(ch => filterPlatform === "all" || ch.platform === filterPlatform)
+                                    .map(ch => (
+                                        <Dropdown.Item key={ch.id} eventKey={ch.id.toString()} className="rounded">
+                                            <span style={{ color: "var(--text-main)" }}>{ch.channel_name}</span>
+                                        </Dropdown.Item>
+                                    ))
+                                }
+                            </Dropdown.Menu>
+                        </Dropdown>
 
                         <Dropdown>
                             <Dropdown.Toggle

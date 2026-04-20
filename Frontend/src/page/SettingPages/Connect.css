@@ -376,12 +376,13 @@
 }
 
 .connect-modal {
-  background: var(--bg-card);
+  background: var(--bg-surface, #ffffff);
   border-radius: 16px;
   width: 420px;
   max-width: 90vw;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.2s ease;
+  border: 1px solid var(--border-light);
 }
 
 @keyframes slideUp {

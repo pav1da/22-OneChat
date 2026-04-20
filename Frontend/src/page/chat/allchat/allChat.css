@@ -528,6 +528,11 @@
     white-space: nowrap;
 }
 
+/* Ensure dropdown triggers show pointer */
+.pointer {
+    cursor: pointer !important;
+}
+
 .nav-search:hover {
     background-color: #d4d4d4;
     color: #374151;

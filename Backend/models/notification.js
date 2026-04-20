@@ -49,10 +49,14 @@ const Notification = {
                         e.username AS sender_name, 
                         e.username AS sender_username,
                         COALESCE(c.displayname, c.cus_name) AS customer_name,
-                        c.cus_picture AS customer_avatar
+                        c.cus_picture AS customer_avatar,
+                        ch.platform AS platform,
+                        ch.channel_name AS shop_name,
+                        ch.id AS channel_id
                  FROM notifications n
                  LEFT JOIN EMP e ON n.sender_id = e.emp_id
                  LEFT JOIN customers c ON n.ref_id = c.cus_id AND n.ref_type = 'customer_message'
+                 LEFT JOIN channels ch ON c.channel_id = ch.id
                  WHERE n.receiver_id = ? 
                  ORDER BY COALESCE(n.updated_at, n.created_at) DESC`,
                 [userId]

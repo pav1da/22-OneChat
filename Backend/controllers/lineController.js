@@ -6,14 +6,103 @@ const Log = require("../models/log.js");
 const Notification = require("../models/notification.js");
 const cloudinary = require("../config/cloudinary");
 
-const channelAccessToken = process.env.Channel_ID;
-const channelSecret = process.env.channelSecret;
+// Caching layers for performance
+const credentialCache = new Map(); // destination_id -> { access_token, channel_secret }
+const messagingClientCache = new Map(); // destination_id -> MessagingApiClient
+const blobClientCache = new Map(); // destination_id -> MessagingApiBlobClient
 
-// สร้าง Client ของ LINE (v10 API)
-const client = new line.messagingApi.MessagingApiClient({ channelAccessToken });
-const blobClient = new line.messagingApi.MessagingApiBlobClient({
-    channelAccessToken,
-});
+/**
+ * Helper: ดึง Access Token และ Secret จาก DB (มีระบบ Cache)
+ */
+async function getLineCredentials(destination) {
+    if (!destination) return null;
+    
+    // 1. Check cache first
+    if (credentialCache.has(destination)) {
+        return credentialCache.get(destination);
+    }
+
+    // 2. Cache miss -> Query DB
+    try {
+        const [rows] = await db.query(
+            "SELECT access_token, channel_secret FROM channels WHERE platform = 'line' AND destination_id = ? AND status = 'active' LIMIT 1",
+            [destination]
+        );
+        if (rows.length > 0) {
+            const creds = rows[0];
+            credentialCache.set(destination, creds);
+            return creds;
+        }
+    } catch (err) {
+        console.error("[LINE Cache] DB Error:", err.message);
+    }
+    return null;
+}
+
+/**
+ * Factory: สร้างหรือดึง Messaging Client จาก Cache
+ */
+async function getMessagingClient(destination) {
+    // Check cache first
+    if (messagingClientCache.has(destination)) {
+        return messagingClientCache.get(destination);
+    }
+    
+    // Cache miss -> Get credentials and create client
+    const creds = await getLineCredentials(destination);
+    if (!creds?.access_token) {
+        console.error(`❌ [LINE Factory] Cannot create MessagingClient: No access token for ${destination}`);
+        return null;
+    }
+
+    const client = new line.messagingApi.MessagingApiClient({ 
+        channelAccessToken: creds.access_token 
+    });
+    messagingClientCache.set(destination, client);
+    return client;
+}
+
+/**
+ * Factory: สร้างหรือดึง Blob Client จาก Cache
+ */
+async function getBlobClient(destination) {
+    if (blobClientCache.has(destination)) {
+        return blobClientCache.get(destination);
+    }
+    const creds = await getLineCredentials(destination);
+    if (!creds?.access_token) return null;
+
+    const client = new line.messagingApi.MessagingApiBlobClient({ 
+        channelAccessToken: creds.access_token 
+    });
+    blobClientCache.set(destination, client);
+    return client;
+}
+
+/**
+ * Helper: ล้าง Cache เมื่อมีการแก้ไขตั้งค่า Channel
+ */
+exports.clearCache = (destination) => {
+    if (destination) {
+        console.log(`🧹 [LINE Cache] Clearing cache for destination: ${destination}`);
+        credentialCache.delete(destination);
+        messagingClientCache.delete(destination);
+        blobClientCache.delete(destination);
+    } else {
+        console.log("🧹 [LINE Cache] Clearing ALL caches");
+        credentialCache.clear();
+        messagingClientCache.clear();
+        blobClientCache.clear();
+    }
+};
+
+/**
+ * Helper: สำหรับให้ server.js ดึง Secret มาใช้ Validate Signature
+ */
+exports.getChannelSecret = async (destination) => {
+    const creds = await getLineCredentials(destination);
+    return creds ? creds.channel_secret : null;
+};
 
 // Helper: สร้างวันที่เวลาแบบ MySQL format
 const getLocalDatetime = () => {
@@ -24,32 +113,23 @@ const getLocalDatetime = () => {
 
 // รับข้อมูลจาก Route แล้วแยกกระจายงาน
 exports.handleWebhook = async (req, res) => {
-    console.log("📩 รับข้อมูลจาก LINE แล้ว!");
-    const io = req.app.get("io");
-
-    // ตรวจสอบ status ของ LINE channel จาก channels table
-    // ถ้ามีการตั้งค่าไว้แต่ทุก channel ถูกปิด → ตอบ 200 แต่ไม่ประมวลผล
-    try {
-        const [lineChannels] = await db.query(
-            "SELECT status FROM channels WHERE platform = 'line'",
-        );
-        if (
-            lineChannels.length > 0 &&
-            !lineChannels.some((c) => c.status === "active")
-        ) {
-            console.log("⏸️ LINE channel ถูกปิดทั้งหมด — ไม่ประมวลผล");
-            return res.status(200).send("OK");
-        }
-    } catch (err) {
-        console.error("Channel status check error:", err.message);
+    const destination = req.body.destination;
+    const events = req.body.events || [];
+    
+    console.log(`📩 [LINE Webhook] Received ${events.length} events for destination: ${destination}`);
+    
+    // LINE Verify Handling (Handled in server.js but safe here too)
+    if (events.length === 0) {
+        return res.status(200).send("OK");
     }
 
-    const destination = req.body.destination;
+    const io = req.app.get("io");
 
-    Promise.all(req.body.events.map((event) => handleEvent(event, io, destination)))
+    // Process events with dynamic clients
+    Promise.all(events.map((event) => handleEvent(event, io, destination)))
         .then(() => res.status(200).send("OK"))
         .catch((err) => {
-            console.error(err);
+            console.error("[LINE Webhook Error]", err);
             res.status(500).end();
         });
 };
@@ -60,60 +140,67 @@ async function handleEvent(event, io, destination) {
     const userId = event.source.userId;
 
     try {
-        // ตรวจสอบว่าลูกค้าเคยมีอยู่แล้วหรือยัง (ใช้ cache จาก DB เพื่อลด API call)
+        // 1. ระบุบอท (Channel ID) ที่ได้รับข้อความก่อน
+        let channelId = null;
+        let channelName = "LINE";
+        if (destination) {
+            const [matchedChannels] = await db.query(
+                "SELECT id, channel_name FROM channels WHERE platform = 'line' AND status = 'active' AND destination_id = ? LIMIT 1",
+                [destination]
+            );
+            if (matchedChannels.length > 0) {
+                channelId = matchedChannels[0].id;
+                channelName = matchedChannels[0].channel_name;
+            } else {
+                console.error(`❌ [LINE handleEvent] Critical: Destination ${destination} not found or inactive.`);
+                return;
+            }
+        }
+
+        if (!channelId) {
+            console.error("❌ [LINE handleEvent] Could not resolve channelId. Event ignored.");
+            return;
+        }
+
+        // 2. ตรวจสอบว่าลูกค้าคนนี้ "ในบอทตัวนี้" เคยมีอยู่แล้วหรือยัง
         const [existingRows] = await db.query(
-            "SELECT cus_id, cus_name, displayname, cus_picture, updated_at FROM customers WHERE platform = 'line' AND platform_id = ?",
-            [userId],
+            "SELECT cus_id, cus_name, displayname, cus_picture, updated_at FROM customers WHERE platform = 'line' AND platform_id = ? AND channel_id = ?",
+            [userId, channelId],
         );
         const isNewCustomer = existingRows.length === 0;
 
         let displayName, pictureUrl, customerId;
 
         if (isNewCustomer) {
-            // ลูกค้าใหม่ → เรียก LINE API ดึงโปรไฟล์
+            // ลูกค้าใหม่ (สำหรับบอทนี้) → เรียก LINE API ดึงโปรไฟล์
+            const client = await getMessagingClient(destination);
+            if (!client) throw new Error(`[LINE] No client found for destination ${destination}`);
+
             const profile = await client.getProfile(userId);
             displayName = profile.displayName;
             pictureUrl = profile.pictureUrl || "";
-
-            // ค้นหา channel_id ของ LINE ที่ active อยู่
-            let channelId = null;
-            if (destination) {
-                const [matchedChannels] = await db.query(
-                    "SELECT id FROM channels WHERE platform = 'line' AND status = 'active' AND channel_id = ? LIMIT 1",
-                    [destination]
-                );
-                if (matchedChannels.length > 0) {
-                    channelId = matchedChannels[0].id;
-                }
-            }
-
-            // Fallback ถ้าหาแบบเจาะจงไม่เจอ ให้ใช้เพจแรกสุดแทน
-            if (!channelId) {
-                const [lineChannels] = await db.query(
-                    "SELECT id FROM channels WHERE platform = 'line' AND status = 'active' LIMIT 1"
-                );
-                channelId = lineChannels.length > 0 ? lineChannels[0].id : null;
-            }
 
             await db.query(
                 `INSERT INTO customers (platform, platform_id, cus_name, cus_picture, channel_id) VALUES ('line', ?, ?, ?, ?)`,
                 [userId, displayName, pictureUrl, channelId],
             );
             const [rows] = await db.query(
-                "SELECT cus_id FROM customers WHERE platform = 'line' AND platform_id = ?",
-                [userId],
+                "SELECT cus_id FROM customers WHERE platform = 'line' AND platform_id = ? AND channel_id = ?",
+                [userId, channelId],
             );
             customerId = rows[0].cus_id;
+
+            console.log(`[LINE] New Customer Created per Bot: ${displayName} (UID: ${userId}) on Channel: ${channelName} (ID: ${channelId})`);
 
             if (io) {
                 io.emit("new-customer", {
                     cus_id: customerId,
                     cus_name: displayName,
-                    display_name: null,
-                    displayname: null,
                     cus_picture: pictureUrl,
                     platform: "line",
                     platform_id: userId,
+                    channel_id: channelId,
+                    channel_name: channelName,
                     first_message:
                         event.type === "message" && event.message.type === "text"
                             ? event.message.text
@@ -121,17 +208,18 @@ async function handleEvent(event, io, destination) {
                 });
             }
         } else {
-            // ลูกค้าเก่า → ใช้ข้อมูลจาก DB (ไม่ต้องเรียก LINE API)
+            // ลูกค้าเก่า (ในบอทนี้) → ใช้ข้อมูลจาก DB
             customerId = existingRows[0].cus_id;
             displayName = existingRows[0].displayname || existingRows[0].cus_name;
             pictureUrl = existingRows[0].cus_picture || "";
 
-            // อัพเดทโปรไฟล์ทุก 24 ชม. (fire-and-forget ไม่ block)
+            console.log(`✅ [LINE] Found Existing Customer: ${displayName} on Channel: ${channelName}`);
+
+            // อัพเดทโปรไฟล์ทุก 24 ชม. (fire-and-forget)
             const lastUpdate = new Date(existingRows[0].updated_at);
-            const hoursSinceUpdate =
-                (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60);
+            const hoursSinceUpdate = (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60);
             if (hoursSinceUpdate >= 24) {
-                refreshCustomerProfile(customerId, userId, io)
+                refreshCustomerProfile(customerId, userId, destination)
                     .then(({ name, pic }) => {
                         displayName = name;
                         pictureUrl = pic;
@@ -250,6 +338,9 @@ async function handleEvent(event, io, destination) {
             // Image (รูปภาพ)
             else if (event.message.type === "image") {
                 const messageId = event.message.id;
+                const blobClient = await getBlobClient(destination);
+                if (!blobClient) throw new Error(`[LINE] No blobClient for ${destination}`);
+
                 const stream = await blobClient.getMessageContent(messageId);
                 const chunks = [];
 
@@ -365,7 +456,10 @@ async function handleEvent(event, io, destination) {
 }
 
 // Helper: อัพเดทโปรไฟล์ลูกค้าจาก LINE API (ทุก 24 ชม.)
-async function refreshCustomerProfile(customerId, lineUserId) {
+async function refreshCustomerProfile(customerId, lineUserId, destination) {
+    const client = await getMessagingClient(destination);
+    if (!client) return { name: "", pic: "" };
+
     const profile = await client.getProfile(lineUserId);
     const name = profile.displayName;
     const pic = profile.pictureUrl || "";
@@ -373,7 +467,7 @@ async function refreshCustomerProfile(customerId, lineUserId) {
         "UPDATE customers SET cus_name = ?, cus_picture = ?, updated_at = NOW() WHERE cus_id = ?",
         [name, pic, customerId],
     );
-    console.log(`Profile refreshed: ${name}`);
+    console.log(`[LINE] Profile refreshed: ${name} (UID: ${lineUserId})`);
     return { name, pic };
 }
 
@@ -492,5 +586,21 @@ function processLogAndNotification(
     })();
 }
 
-// Export LINE client เพื่อให้ module อื่นใช้ส่งข้อความกลับไปยัง LINE ได้
-exports.lineClient = client;
+/** 
+ * Export client getter สำหรับ module อื่น (เช่น messagesRouter) 
+ * เพื่อใช้ส่งข้อความกลับไปยัง LINE ตามแต่ละลูกค้า
+ */
+exports.getLineClientByCustomerId = async (customerId) => {
+    try {
+        const [rows] = await db.query(
+            "SELECT ch.destination_id FROM customers c JOIN channels ch ON c.channel_id = ch.id WHERE c.cus_id = ?",
+            [customerId]
+        );
+        if (rows.length > 0 && rows[0].destination_id) {
+            return await getMessagingClient(rows[0].destination_id);
+        }
+    } catch (err) {
+        console.error("[LINE Client Factory] Error fetching client:", err.message);
+    }
+    return null;
+};

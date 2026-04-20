@@ -6,6 +6,7 @@ export default defineConfig({
     plugins: [react()],
     base: '/onechat/',
     server: {
+        host: true, // อนุญาตให้เข้าถึงผ่าน IP ของเครื่องในวง LAN เดียวกัน
         proxy: {
             '/api': {
                 target: 'http://localhost:3000',
