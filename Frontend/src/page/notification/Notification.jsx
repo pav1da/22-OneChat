@@ -197,25 +197,24 @@ function NotificationPage() {
   };
 
   return (
-    <div style={{ height: 'calc(100vh - 70px)', overflowY: 'auto', paddingBottom: '24px' }}>
-    <Container fluid className="kanit-regular px-4">
+    <div className="page-wrap kanit-regular pt-3">
+    <Container fluid>
       {/* --- Header --- */}
-      <div className="d-flex justify-content-end align-items-end mb-4">
+      <div className="d-flex justify-content-end align-items-center mb-3">
         {/* Filters */}
-        <div className="d-flex gap-4 ">
+        <div className="d-flex flex-column flex-sm-row gap-3">
           {/* กรองโดยผู้ใช้ */}
-          <div className="d-flex align-items-center gap-2">
-            <span className="fs-6" style={{ whiteSpace: "nowrap" }}>
+          <div className="d-flex align-items-center gap-3">
+            <span className="text-nowrap" style={{ fontSize: "var(--fs-sm)" }}>
               กรองโดยผู้ใช้ :
             </span>
             <Form.Select
-              size="sm"
-              className="custom-filters py-2"
               value={filterUser}
               onChange={(e) => setFilterUser(e.target.value)}
-              style={{ minWidth: "250px", cursor: "pointer" }}
+              className="bg-light border-0 rounded-3"
+              style={{ minWidth: "200px", fontSize: "var(--fs-sm)", cursor: "pointer" }}
             >
-              <option value="">ทั้งหมด</option>
+              <option value="">ค้นหาสมาชิก</option>
               {uniqueSenders.map((u) => (
                 <option key={u} value={u}>
                   {u}
@@ -225,18 +224,17 @@ function NotificationPage() {
           </div>
 
           {/* กรองโดยการกระทำ */}
-          <div className="d-flex align-items-center gap-2">
-            <span className="fs-6" style={{ whiteSpace: "nowrap" }}>
+          <div className="d-flex align-items-center gap-3">
+            <span className="text-nowrap" style={{ fontSize: "var(--fs-sm)" }}>
               กรองโดยการกระทำ :
             </span>
             <Form.Select
-              size="sm"
-              className="custom-filters py-2"
               value={filterAction}
               onChange={(e) => setFilterAction(e.target.value)}
-              style={{ minWidth: "250px", cursor: "pointer" }}
+              className="bg-light border-0 rounded-3"
+              style={{ minWidth: "200px", fontSize: "var(--fs-sm)", cursor: "pointer" }}
             >
-              <option value="">ทั้งหมด</option>
+              <option value="">ค้นหาการกระทำ</option>
               {uniqueTypes.map((t) => (
                 <option key={t} value={t}>
                   {typeLabel(t)}
@@ -244,11 +242,10 @@ function NotificationPage() {
               ))}
             </Form.Select>
           </div>
-
         </div>
       </div>
       {/* --- Notification List --- */}
-      <div className="d-flex flex-column gap-3">
+      <div className="d-flex flex-column gap-2">
         {loading ? (
           <div className="text-center">
             <Spinner animation="border" variant="secondary" />
@@ -302,7 +299,7 @@ function NotificationPage() {
                   </div>
 
                   {/* Content */}
-                  <div className="py-3 flex-grow-1">
+                  <div className=" flex-grow-1">
                     <div className="fw-bold" style={{ color: "var(--text-main)" }}>{customerName}</div>
                     <div className="notif-text">
                       {latestMsg?.content || "ส่งข้อความ"}
@@ -335,7 +332,7 @@ function NotificationPage() {
 
                 {/* Expanded message list */}
                 {isExpanded && messages.length > 1 && (
-                  <div className="px-3 pb-3" style={{ borderTop: "1px solid var(--border-light)" }}>
+                  <div className="px-3 py-2" style={{ borderTop: "1px solid var(--border-light)" }}>
                     <div style={{ maxHeight: "200px", overflowY: "auto" }}>
                       {messages.slice().reverse().map((msg, idx) => (
                         <div

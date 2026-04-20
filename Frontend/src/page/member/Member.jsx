@@ -230,13 +230,6 @@ const Member = ({ currentUser }) => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button
-            className={`btn-sort ${isSorted ? "active" : ""}`}
-            onClick={() => setIsSorted(!isSorted)}
-          >
-            <i className="bi bi-arrow-down-up"></i>
-            {isSorted ? "เรียงแล้ว" : "เรียงลำดับ"}
-          </button>
         </div>
       </div>
 

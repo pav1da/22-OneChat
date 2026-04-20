@@ -49,14 +49,15 @@
     --status-error: #DC3545;
     --status-warning: #FFC107;
 
-    /* Font Sizes — มาตรฐานสำหรับทั้งโปรเจค */
-    --fs-xs: 0.6875rem;   /* 11px — timestamp, badge */
-    --fs-sm: 0.75rem;     /* 12px — secondary text, captions */
-    --fs-base: 0.8125rem; /* 13px — body text ปกติ */
-    --fs-lg: 0.9375rem;   /* 15px — prominent text, names */
-    --fs-xl: 1.125rem;    /* 18px — section titles */
-    --fs-2xl: 1.5rem;     /* 24px — page titles */
-    --fs-3xl: 1.75rem;    /* 28px — large headings */
+    /* Font Sizes */
+    --fs-xs: 0.625rem;   /* 10px */
+    --fs-sm: 0.75rem;     /* 12px */
+    --fs-base: 0.875rem; /* 14px */
+    --fs-lg: 1rem;   /* 16px */
+    --fs-xl: 1.125rem;    /* 18px */
+    --fs-2xl: 1.25rem;    /* 20px */
+    --fs-3xl: 1.5rem;     /* 24px */
+    --fs-4xl: 1.75rem;    /* 28px */
 }
 
 /* ============ Dark Theme ============ */

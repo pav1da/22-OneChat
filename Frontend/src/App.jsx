@@ -12,10 +12,10 @@ import Inbox from "./page/chat/chat";
 import MyChat from "./page/mychats/mychat";
 import Setting from "./page/SettingPages/Setting";
 import Notifiacation from "./page/notification/Notification";
-import Log from "./page/Log";
+import Log from "./page/log/Log";
 import Member from "./page/member/Member";
 import Teams from "./page/team/team";
-import TokenReport from "./page/TokenReport";
+// import TokenReport from "./page/TokenReport";
 import AllChat from "./page/chat/allchat/Allchat"; 
 import CardMessage from "./page/CardmessagePage/Cardmessage";
 import { ChatProvider } from "./context/ChatContext";
@@ -160,7 +160,7 @@ function AppRoutes({ currentUser, handleLogin, handleLogout }) {
                     <Route path="/notification" element={<Notifiacation />} />
                     <Route path="/member" element={<Member currentUser={currentUser} />} />
                     <Route path="/teams" element={<Teams />} />
-                    <Route path="/tokenreport" element={<TokenReport />} />
+                    {/* <Route path="/tokenreport" element={<TokenReport />} /> */}
                     <Route path="/setting" element={<Setting user={currentUser} />} />
                 </Route>
             </Routes>

@@ -1,8 +1,9 @@
 .page-wrap {
-  height: 100%;
-  background-color: var(--bg-card);
-  border-radius: 20px;
-  width: 100%;
+  overflow: auto;
+  background-color: var(--bg-surface);
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 }
 
 .custom-filters {
@@ -11,6 +12,8 @@
   border: 1px solid var(--border-medium);
   border-radius: 6px;
   color: var(--text-main);
+  font-size: var(--fs-base);
+  padding: 0px 10px;
 }
 
 .custom-filters:focus {
@@ -33,7 +36,7 @@
 }
 
 .notification-card:hover {
-  background-color: var(--bg-hover);
+  background-color: var(--bg-secondary);
   transform: translateY(-2px);
   box-shadow: 0 4px 6px var(--shadow-sm);
 }
@@ -63,9 +66,8 @@
 }
 
 .notif-text {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-base);
   color: var(--text-main);
-  margin-bottom: 4px;
 }
 
 .notif-date {

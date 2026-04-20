@@ -158,18 +158,6 @@ const Sidebar = ({ onLogout, currentUser }) => {
           )}
         </div>
 
-        {/* 2. Command / Search Box */}
-        {/* <div className="saas-command-box">
-          <div className="saas-search-wrapper">
-            <i className="bi bi-search"></i>
-            <Form.Control
-              type="text"
-              placeholder="Search"
-              className="saas-search-input"
-            />
-          </div>
-        </div> */}
-
         {/* 3. Main Navigation */}
         <div className="saas-scroll-area">
           <div className="saas-section-header">

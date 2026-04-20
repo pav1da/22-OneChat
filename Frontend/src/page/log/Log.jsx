@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Form, Spinner } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { io } from "socket.io-client";
+import "./log.css";
 
 const Log = () => {
     const [logs, setLogs] = useState([]);
@@ -127,7 +128,7 @@ const Log = () => {
     };
 
     return (
-        <div className="kanit-regular h-100 d-flex flex-column px-3">
+        <div className="kanit-regular h-100 d-flex flex-column px-3 pt-3 log-container">
             {/* ================= Header Section ================= */}
             <div className="d-flex justify-content-end align-items-center">
                 {/* Filters */}
@@ -240,11 +241,6 @@ const Log = () => {
                                     วันที่ {formatDate(log.created_at)} เวลา{" "}
                                     {formatTime(log.created_at)}
                                 </div>
-                            </div>
-
-                            {/* 3. Icon Chevron */}
-                            <div className="flex-shrink-0 ms-3">
-                                <i className="bi bi-chevron-right text-muted fs-5"></i>
                             </div>
                         </div>
                     ))
