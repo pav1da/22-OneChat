@@ -319,7 +319,7 @@ router.post("/", auth, async (req, res) => {
         // === ส่งไปยัง LINE ===
         if (customer && customer.platform === "line" && customer.platform_id) {
           const lineMessages = [];
-          
+
           if ((message_type || "text") === "text") {
             lineMessages.push({ type: "text", text: message_text });
           } else if (message_type === "image") {
@@ -339,188 +339,154 @@ router.post("/", auth, async (req, res) => {
               previewImageUrl: imageAbsUrl,
             });
           } else if (message_type === "carousel") {
-             // Multi-Card Carousel Payload Mapping
-             try {
-                 const parsedCards = JSON.parse(message_text);
-                 const bubbles = parsedCards.map(c => {
-                     // ----- END CARD -----
-                     if (c.isEndCard || (!c.image && c.message)) {
-                         const endLabel = ((c.message || "").trim()) || "ดูเพิ่มเติม";
-                         const endLabelSafe = endLabel.length > 20 ? endLabel.substring(0, 20) : endLabel;
-                         
-                         let actionObj = {
-                             type: "message",
-                             label: endLabelSafe,
-                             text: endLabel
-                         };
-                         //ใส่ link ในการ์ด
-                         if (c.link && c.link.trim() !== "") {
-                             let uriUrl = c.link.trim();
-                             if (!uriUrl.startsWith("http://") && !uriUrl.startsWith("https://")) {
-                                 uriUrl = "https://" + uriUrl;
-                             }
-                             actionObj = {
-                                 type: "uri",
-                                 label: endLabelSafe,
-                                 uri: uriUrl
-                             };
-                         }
+            // Multi-Card Carousel Payload Mapping
+            try {
+              const parsedCards = JSON.parse(message_text);
+              const bubbles = parsedCards.map(c => {
+                // ----- END CARD -----
+                if (c.isEndCard || (!c.image && c.message)) {
+                  const endLabel = ((c.message || "").trim()) || "ดูเพิ่มเติม";
+                  const endLabelSafe = endLabel.length > 20 ? endLabel.substring(0, 20) : endLabel;
 
-                         return {
-                             type: "bubble",
-                             size: "mega",
-                             action: actionObj, // ใส่ที่ระดับ bubble เพื่อรองรับมือถือ
-                             body: {
-                                 type: "box",
-                                 layout: "vertical",
-                                 paddingAll: "0px",
-                                 justifyContent: "center",
-                                 alignItems: "center",
-                                 backgroundColor: "#f8f9fa",
-                                 action: actionObj, // ใส่พ่วงที่ระดับ box ภายในเพื่อให้รองรับใน LINE บนคอมพิวเตอร์ด้วย
-                                 contents: [
-                                     {
-                                         type: "text",
-                                         text: endLabel,
-                                         color: "#42659a",
-                                         weight: "bold",
-                                         align: "center",
-                                         gravity: "center"
-                                     }
-                                 ]
-                             }
-                         };
-                     }
-                     
-                     // ----- NORMAL CARD -----
-                     const contents = [];
-                     
-                     // 1. The Image Background
-                     if (c.image && c.image.startsWith("https://")) {
-                         contents.push({
-                             type: "image",
-                             url: c.image,
-                             size: "full",
-                             aspectMode: "cover",
-                             aspectRatio: "1:1",
-                             gravity: "center"
-                         });
-                     } else {
-                         // Fallback for missing/invalid image URL
-                         contents.push({
-                             type: "image",
-                             url: "https://dummyimage.com/600x600/e2e8f0/64748b&text=Image",
-                             size: "full",
-                             aspectMode: "cover",
-                             aspectRatio: "1:1"
-                         });
-                     }
-                     
-                     // 2. Top-Left Tag
-                     if (c.tag && c.tag.trim() !== "") {
-                         contents.push({
-                             type: "box",
-                             layout: "vertical",
-                             position: "absolute",
-                             offsetTop: "16px",
-                             offsetStart: "16px",
-                             backgroundColor: "#00000088",
-                             paddingAll: "6px",
-                             paddingStart: "14px",
-                             paddingEnd: "14px",
-                             cornerRadius: "20px",
-                             contents: [
-                                 {
-                                     type: "text",
-                                     text: c.tag,
-                                     color: "#ffffff",
-                                     size: "sm",
-                                     align: "center",
-                                     weight: "bold"
-                                 }
-                             ]
-                         });
-                     }
-                     
-                     // 3. Bottom-Center Label
-                     if (c.message && c.message.trim() !== "") {
-                         contents.push({
-                             type: "box",
-                             layout: "horizontal",
-                             position: "absolute",
-                             offsetBottom: "16px",
-                             offsetStart: "0px",
-                             offsetEnd: "0px",
-                             justifyContent: "center",
-                             contents: [
-                                 {
-                                     type: "box",
-                                     layout: "vertical",
-                                     backgroundColor: "#000000A6",
-                                     paddingAll: "6px",
-                                     paddingStart: "20px",
-                                     paddingEnd: "20px",
-                                     cornerRadius: "20px",
-                                     contents: [
-                                         {
-                                             type: "text",
-                                             text: c.message,
-                                             color: "#ffffff",
-                                             size: "md",
-                                             align: "center",
-                                             weight: "bold"
-                                         }
-                                     ]
-                                 }
-                             ]
-                         });
-                     }
-                     
-                     const cardActionText = ((c.message || c.tag || "ดูรายละเอียด").trim()) || "ดูรายละเอียด";
-                     const cardActionLabel = cardActionText.length > 20 ? cardActionText.substring(0, 20) : cardActionText;
-                     return {
-                         type: "bubble",
-                         size: "mega",
-                         // ลบ action ออก เพื่อที่ลูกค้ากดที่การ์ดแล้วจะไม่มีข้อความเด้งตอบกลับในแชท
-                         body: {
-                             type: "box",
-                             layout: "vertical",
-                             paddingAll: "0px",
-                             position: "relative",
-                             contents: contents
-                         }
-                     };
-                 });
+                  let actionObj = {
+                    type: "message",
+                    label: endLabelSafe,
+                    text: endLabel
+                  };
+                }
 
-                 if (bubbles.length > 0) {
-                     lineMessages.push({
-                         type: "flex",
-                         altText: "ส่งรูปภาพจาก Card Message",
-                         contents: {
-                             type: "carousel",
-                             contents: bubbles.slice(0, 10) // LINE Limit: max 10 bubbles
-                         }
-                     });
-                 }
-             } catch(err) {
-                 console.error("Failed parsing carousel to line message:", err);
-             }
+                // ----- NORMAL CARD -----
+                const contents = [];
+
+                // 1. The Image Background
+                if (c.image && c.image.startsWith("https://")) {
+                  contents.push({
+                    type: "image",
+                    url: c.image,
+                    size: "full",
+                    aspectMode: "cover",
+                    aspectRatio: "1:1",
+                    gravity: "center"
+                  });
+                } else {
+                  // Fallback for missing/invalid image URL
+                  contents.push({
+                    type: "image",
+                    url: "https://dummyimage.com/600x600/e2e8f0/64748b&text=Image",
+                    size: "full",
+                    aspectMode: "cover",
+                    aspectRatio: "1:1"
+                  });
+                }
+
+                // 2. Top-Left Tag
+                if (c.tag && c.tag.trim() !== "") {
+                  contents.push({
+                    type: "box",
+                    layout: "vertical",
+                    position: "absolute",
+                    offsetTop: "16px",
+                    offsetStart: "16px",
+                    backgroundColor: "#ffffff",
+                    borderWidth: "1px",
+                    borderColor: "#cccccc",
+                    paddingAll: "6px",
+                    paddingStart: "14px",
+                    paddingEnd: "14px",
+                    cornerRadius: "20px",
+                    contents: [
+                      {
+                        type: "text",
+                        text: c.tag,
+                        color: "#666666",
+                        size: "sm",
+                        align: "center",
+                        weight: "regular"
+                      }
+                    ]
+                  });
+                }
+
+                // 3. Bottom-Center Label
+                if (c.message && c.message.trim() !== "") {
+                  contents.push({
+                    type: "box",
+                    layout: "horizontal",
+                    position: "absolute",
+                    offsetBottom: "16px",
+                    offsetStart: "0px",
+                    offsetEnd: "0px",
+                    justifyContent: "center",
+                    contents: [
+                      {
+                        type: "box",
+                        layout: "vertical",
+                        backgroundColor: "#000000A6",
+                        paddingAll: "6px",
+                        paddingStart: "20px",
+                        paddingEnd: "20px",
+                        cornerRadius: "20px",
+                        width: "50%",
+                        contents: [
+                          {
+                            type: "text",
+                            text: c.message,
+                            color: "#ffffff",
+                            size: "sm",
+                            align: "center",
+                            weight: "bold"
+                          }
+                        ]
+                      }
+                    ]
+                  });
+                }
+
+                const cardActionText = ((c.message || c.tag || "ดูรายละเอียด").trim()) || "ดูรายละเอียด";
+                const cardActionLabel = cardActionText.length > 20 ? cardActionText.substring(0, 20) : cardActionText;
+                return {
+                  type: "bubble",
+                  size: "kilo",
+                  // ลบ action ออก เพื่อที่ลูกค้ากดที่การ์ดแล้วจะไม่มีข้อความเด้งตอบกลับในแชท
+                  body: {
+                    type: "box",
+                    layout: "vertical",
+                    paddingAll: "0px",
+                    position: "relative",
+                    contents: contents
+                  }
+                };
+              });
+
+              if (bubbles.length > 0) {
+                lineMessages.push({
+                  type: "flex",
+                  altText: "ส่งรูปภาพจาก Card Message",
+                  contents: {
+                    type: "carousel",
+                    contents: bubbles.slice(0, 10) // LINE Limit: max 10 bubbles
+                  }
+                });
+              }
+            } catch (err) {
+              console.error("Failed parsing carousel to line message:", err);
+            }
           }
-          
-           if (lineMessages.length > 0) {
-             try {
-               // DEBUG: print full payload to backend console
-               console.log("[LINE DEBUG] payload:", JSON.stringify(lineMessages, null, 2));
-               await lineClient.pushMessage({
-                 to: customer.platform_id,
-                 messages: lineMessages,
-               });
-               console.log(`✅ LINE push OK (${customer.cus_name}) type=${lineMessages.map(m=>m.type).join(',')}`);
-             } catch (lineErr) {
-               const errBody = lineErr?.response?.data || lineErr?.message || lineErr;
-               console.error(`❌ LINE pushMessage FAILED (${customer.cus_name}):`, JSON.stringify(errBody, null, 2));
-             }
-           }
+
+          if (lineMessages.length > 0) {
+            try {
+              // DEBUG: print full payload to backend console
+              console.log("[LINE DEBUG] payload:", JSON.stringify(lineMessages, null, 2));
+              await lineClient.pushMessage({
+                to: customer.platform_id,
+                messages: lineMessages,
+              });
+              console.log(`✅ LINE push OK (${customer.cus_name}) type=${lineMessages.map(m => m.type).join(',')}`);
+            } catch (lineErr) {
+              const errBody = lineErr?.response?.data || lineErr?.message || lineErr;
+              console.error(`❌ LINE pushMessage FAILED (${customer.cus_name}):`, JSON.stringify(errBody, null, 2));
+            }
+          }
         }
 
         // === ส่งไปยัง Facebook Messenger ===
@@ -586,8 +552,8 @@ router.post("/", auth, async (req, res) => {
               ? message_text.substring(0, 50) + "..."
               : message_text
             : message_type === "carousel"
-            ? "(Carousel Message)"
-            : "(รูปภาพ)";
+              ? "(Carousel Message)"
+              : "(รูปภาพ)";
 
         const logData = {
           user: adminName,

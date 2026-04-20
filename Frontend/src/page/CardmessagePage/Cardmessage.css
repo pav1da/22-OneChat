@@ -397,9 +397,9 @@
 
 /* The visual rendering of an Image Template */
 .cm-preview-card {
-  width: 280px;
-  height: auto;
-  min-height: 280px;
+  width: 240px;
+  height: 240px;
+  min-height: 240px;
   background: var(--bg-surface, #fff);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
@@ -592,9 +592,9 @@
 
 /* The visual rendering of an Image Template */
 .cm-preview-card {
-  width: 280px;
-  height: 280px;
-  min-height: 280px;
+  width: 240px;
+  height: 240px;
+  min-height: 240px;
   background: var(--bg-surface, #fff);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
@@ -614,28 +614,29 @@
 
 .cm-tag-top-left {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  background-color: rgba(0, 0, 0, 0.55);
-  color: white;
-  padding: 4px 10px;
+  top: 16px;
+  left: 16px;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  color: #666666;
+  padding: 5px 14px;
   border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: normal;
   z-index: 10;
 }
 
 .cm-tag-bottom-center {
   position: absolute;
-  bottom: 12px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.65);
-  color: white;
-  padding: 4px 16px;
+  background-color: #000000a6;
+  color: #ffffff;
+  padding: 6px 20px;
   border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: bold;
   z-index: 10;
   white-space: nowrap;
 }

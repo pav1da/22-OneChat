@@ -890,19 +890,19 @@ const Inbox = ({ currentUser }) => {
                                                     const cards = JSON.parse(msg.text);
                                                     return cards.map((c, i) => (
                                                         <div key={i} className="carousel-card" style={{
-                                                            flex: '0 0 250px',
+                                                            flex: '0 0 240px',
                                                             backgroundColor: 'var(--bg-surface)',
                                                             borderRadius: '16px',
                                                             overflow: 'hidden',
                                                             boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                                                         }}>
-                                                            {/* ขนาดภาพ 250x250*/}
+                                                            {/* ขนาดภาพ 240x240*/}
                                                             {c.isEndCard ? (
-                                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '250px' }}>
+                                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
                                                                     <span style={{ color: '#42659a', fontWeight: '500', fontSize: '1.1rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
                                                                 </div>
                                                             ) : (
-                                                                <div style={{ position: 'relative', width: '250px', height: '250px' }}>
+                                                                <div style={{ position: 'relative', width: '240px', height: '240px' }}>
                                                                     {c.image && (
                                                                         //เลื่อนดูภาพแบบ Carousel สไลด์ผ่านเมาส์/นิ้ว อย่างเดียว 
                                                                         <img src={c.image} alt="carousel-card" draggable="false" style={{
@@ -910,13 +910,15 @@ const Inbox = ({ currentUser }) => {
                                                                         }} />
                                                                     )}
                                                                     {c.tag && (
-                                                                        <div style={{ position: 'absolute', top: '14px', left: '14px', backgroundColor: 'rgba(255, 255, 255, 1)', color: 'gray', padding: '4px 14px', borderRadius: '16px', fontSize: '0.80rem', fontWeight: 500, whiteSpace: 'nowrap', zIndex: 10 , border: '1px solid #888'  }}>
+                                                                        <div style={{ position: 'absolute', top: '16px', left: '16px', backgroundColor: '#ffffff', color: '#666666', border: '1px solid #cccccc', padding: '5px 14px', borderRadius: '20px', fontSize: '14px', fontWeight: 'normal', whiteSpace: 'nowrap', zIndex: 10 }}>
                                                                             {c.tag}
                                                                         </div>
                                                                     )}
                                                                     {c.message && (
-                                                                        <div style={{ position: 'absolute', bottom: '14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', padding: '6px 18px', borderRadius: '20px', fontSize: '0.95rem', fontWeight: 500, whiteSpace: 'nowrap',display: 'inline-block', zIndex: 10 }}>
-                                                                            {c.message}
+                                                                        <div style={{ position: 'absolute', bottom: '16px', left: '0', right: '0', display: 'flex', justifyContent: 'center', zIndex: 10 }}>
+                                                                            <div style={{ backgroundColor: '#000000a6', color: '#ffffff', padding: '6px 20px', borderRadius: '20px', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                                                                                {c.message}
+                                                                            </div>
                                                                         </div>
                                                                     )}
                                                                 </div>
