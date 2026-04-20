@@ -190,12 +190,12 @@ const Sidebar = ({ onLogout, currentUser }) => {
               label="Template"
               isActive={isActivePath("/cardmessage")}
             />
-            <SidebarItem
+            {/* <SidebarItem
               to="/spam"
               icon="bi bi-exclamation-diamond"
               label="กล่องสแปม"
               isActive={isActivePath("/spam")}
-            />
+            /> */}
           </Nav>
 
           <hr className="saas-divider" />

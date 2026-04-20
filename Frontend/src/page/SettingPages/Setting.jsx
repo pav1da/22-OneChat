@@ -18,7 +18,7 @@ import "./SettingPage.css";
 import Account from "./Account";
 import Notifications from "./Notifications";
 import Chats from "./Chats";
-import Ai from "./Ai";
+// import Ai from "./Ai";
 import Connect from "./Connect";
 import Policy from "./Policy";
 import Contact from "./Contact";
@@ -60,8 +60,8 @@ function Setting({ user }) {
         return <Chats />;
       case "tags":
         return <Tags />;
-      case "ai":
-        return <Ai />;
+      // case "ai":
+      //   return <Ai />;
       case "appearance":
         return <Appearance theme={theme} toggleTheme={toggleTheme} />;
       case "policy":
@@ -210,7 +210,7 @@ function Setting({ user }) {
                   <Nav.Link eventKey="tags">
                     <TagsIcon size={16} /> จัดการแท็ก
                   </Nav.Link>
-                  <Nav.Link eventKey="ai">
+                  {/* <Nav.Link eventKey="ai">
                     <span
                       style={{
                         fontWeight: "bold",
@@ -221,7 +221,7 @@ function Setting({ user }) {
                       AI
                     </span>{" "}
                     เอไอ เมต้าแชท
-                  </Nav.Link>
+                  </Nav.Link> */}
                   <Nav.Link eventKey="appearance">
                     <PaintBucket size={16} /> ธีม
                   </Nav.Link>

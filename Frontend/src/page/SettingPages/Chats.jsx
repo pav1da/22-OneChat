@@ -4,9 +4,9 @@ import { Form } from 'react-bootstrap';
 function Chats() {
     // ข้อมูลสำหรับรายการตั้งค่า 3 ตัวบน
     const chatSettings = [
-        { title: 'สำรองข้อมูลการแชท', subtitle: 'สำรองข้อมูล บลาๆ' },
-        { title: 'ลบข้อมูลแชท', subtitle: 'ลบข้อมูลแชท บลาๆ' },
-        { title: 'ห้องแชทที่ซ่อน', subtitle: 'ห้องแชทที่ซ่อน บลาๆ' },
+        { title: 'สำรองข้อมูลการแชท', subtitle: 'บันทึกประวัติการแชท' },
+        { title: 'ลบข้อมูลแชท', subtitle: 'ลบประวัติแชทถาวร' },
+        { title: 'ห้องแชทที่ซ่อน', subtitle: 'จัดการและกู้คืนแชทที่ถูกซ่อนเป็นสแปม' },
     ];
 
     return (

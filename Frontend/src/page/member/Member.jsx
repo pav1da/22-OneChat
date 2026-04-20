@@ -252,7 +252,7 @@ const Member = ({ currentUser }) => {
               className={`member-row ${isAdmin ? "clickable-row" : ""}`} 
               onClick={() => { if(isAdmin) handleOpenInfo(member); }}
             >
-              {/* ชื่อ + Avatar พร้อมตัวบ่งชี้สถานะ online/offline */}
+              {/* ชื่อ + Avatar */}
               <div className="col-name">
                 <div className="avatar-wrapper">
                   {member.image ? (
@@ -272,10 +272,10 @@ const Member = ({ currentUser }) => {
                   <span className={`avatar-status-dot ${online ? "dot-online" : "dot-offline"}`}></span>
                 </div>
                 <div className="member-name-group">
-                  <span className="member-username">{member.name}</span>
                   {member.displayName && (
                     <span className="member-display-name">{member.displayName}</span>
                   )}
+                  <span className="member-username">{member.name}</span>
                 </div>
               </div>
 
@@ -521,9 +521,21 @@ const Member = ({ currentUser }) => {
                     <i className="bi bi-person-badge"></i>
                   </div>
                   <div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "-2px" }}>ผู้ใช้งาน & ตำแหน่ง</div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "-2px" }}>ผู้ใช้งาน</div>
                     <div className="fw-medium text-dark">
-                      @{memberInfo.name} &bull; <span className="text-uppercase" style={{ fontSize: "0.85rem" }}>{memberInfo.role}</span>
+                      @{memberInfo.name}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center mb-3">
+                  <div className="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3" style={{ width: "36px", height: "36px", color: "var(--primary-color)" }}>
+                    <i className="bi bi-info-lg"></i>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "-2px" }}>ตำแหน่ง</div>
+                    <div className="fw-medium text-dark">
+                      <span className="text-uppercase" style={{ fontSize: "0.85rem" }}>{memberInfo.role}</span>
                     </div>
                   </div>
                 </div>

@@ -452,12 +452,6 @@ function Account({ user }) {
             <div style={{ fontSize: "1rem" }}>{userData.phone}</div>
           </Col>
           <Col xs="auto" className="d-flex align-items-center gap-3">
-            <span
-              className="text-muted small"
-              style={{ cursor: "pointer", fontSize: "0.9rem" }}
-            >
-              ลบ
-            </span>
             <Button
               variant="dark"
               style={btnDarkStyle}
