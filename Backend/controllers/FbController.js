@@ -158,12 +158,8 @@ exports.sendCarouselMessage = async (recipientPsid, cards) => {
       return {
         title: title.substring(0, 80),
         subtitle: subtitle,
-        image_url: c.image,
-        default_action: {
-          type: "web_url",
-          url: c.image, // ให้ลูกค้าคลิกรูปแล้วอาจจะเปิด URL เพื่อดูรูปไซส์เต็มได้
-          webview_height_ratio: "full"
-        }
+        image_url: c.image
+        // ปิดระบบ: เอากล่อง default_action ออก ลูกค้าจะได้กดที่ตัวรูปภาพแล้วไม่เด้งขึ้นมาขยายเต็มจอ
       };
     });
 
@@ -180,9 +176,36 @@ exports.sendCarouselMessage = async (recipientPsid, cards) => {
 
     const isSuccess = await exports.sendMessage(recipientPsid, carouselPayload);
 
-    // ถ้ามีการ์ดสรุปปิดท้าย (ดูเพิ่มเติม) ให้ส่งตามหลังเป็น Text
+    // ถ้ามีการ์ดสรุปปิดท้าย (ดูเพิ่มเติม) ให้ส่งตามหลัง
     if (isSuccess && endCard && endCard.message) {
-      await exports.sendTextMessage(recipientPsid, `➡️ ${endCard.message}`);
+      if (endCard.link) {
+        let fbUrl = endCard.link.trim();
+        if (!fbUrl.startsWith("http://") && !fbUrl.startsWith("https://")) {
+            fbUrl = "https://" + fbUrl;
+        }
+        
+        // ถ้าระบุลิงก์ ให้ส่งเป็น Facebook Button Template เพื่อมีปุ่มลิงก์สี่เหลี่ยมแนบไป
+        const buttonPayload = {
+          attachment: {
+            type: "template",
+            payload: {
+              template_type: "button",
+              text: "➡️ " + endCard.message.substring(0, 640), // FB จำกัดข้อความข้างบนปุ่ม
+              buttons: [
+                {
+                  type: "web_url",
+                  url: fbUrl,
+                  title: "คลิกเพื่อดูรายละเอียด"
+                }
+              ]
+            }
+          }
+        };
+        await exports.sendMessage(recipientPsid, buttonPayload);
+      } else {
+        // ถ้าไม่มีลิงก์ ก็ส่งข้อความสรุปเป็น Text ธรรมดา
+        await exports.sendTextMessage(recipientPsid, `➡️ ${endCard.message}`);
+      }
     }
 
     console.log(`📤 ส่ง Carousel แบบ Slide ให้ FB (PSID: ${recipientPsid}) สำเร็จ (${elements.length} ใบ)`);

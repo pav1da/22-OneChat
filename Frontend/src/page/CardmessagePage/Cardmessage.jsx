@@ -138,7 +138,7 @@ const Cardmessage = () => {
     setShow(false);
     setEditingItem(null);
     setNewItem({ type: "รูปภาพ", title: "", image: "", message: "" });
-    setCards([{ id: 1, image: "", message: "", tag: "", isEndCard: false }]);
+    setCards([{ id: 1, image: "", message: "", tag: "", isEndCard: false, link: "" }]);
     setActiveCardIndex(0);
   };
 
@@ -146,7 +146,7 @@ const Cardmessage = () => {
     if (cards.length >= 10) return;
     const newCards = [
       ...cards,
-      { id: Date.now(), image: "", message: "", tag: "", isEndCard: false },
+      { id: Date.now(), image: "", message: "", tag: "", isEndCard: false, link: "" },
     ];
     setCards(newCards);
     setActiveCardIndex(newCards.length - 1);
@@ -162,6 +162,7 @@ const Cardmessage = () => {
         message: "ดูเพิ่มเติม",
         tag: "",
         isEndCard: true,
+        link: "",
       },
     ];
     setCards(newCards);
@@ -290,6 +291,7 @@ const Cardmessage = () => {
                             message: c.message || "",
                             tag: c.tag || "",
                             isEndCard: c.isEndCard || false,
+                            link: c.link || "",
                           }));
                         } else {
                           restoredCards = [
@@ -299,6 +301,7 @@ const Cardmessage = () => {
                               message: content?.message || "",
                               tag: "",
                               isEndCard: false,
+                              link: "",
                             },
                           ];
                         }
@@ -396,6 +399,7 @@ const Cardmessage = () => {
             message: c.message || "",
             tag: c.tag || "",
             isEndCard: c.isEndCard || false,
+            link: c.link || "",
           }));
         } else {
           previewCards = [
@@ -405,6 +409,7 @@ const Cardmessage = () => {
               message: content?.message || "",
               tag: "",
               isEndCard: false,
+              link: "",
             },
           ];
         }
@@ -441,6 +446,7 @@ const Cardmessage = () => {
           message: c.message,
           tag: c.tag || "",
           isEndCard: c.isEndCard || false,
+          link: c.link || "",
         })),
       };
     } else {
@@ -479,7 +485,7 @@ const Cardmessage = () => {
       setShow(false);
       setEditingItem(null);
       setNewItem({ type: "รูปภาพ", title: "", image: "", message: "" });
-      setCards([{ id: 1, image: "", message: "", tag: "", isEndCard: false }]);
+      setCards([{ id: 1, image: "", message: "", tag: "", isEndCard: false, link: "" }]);
       setActiveCardIndex(0);
       fetchItems();
     } catch (error) {
@@ -830,6 +836,20 @@ const Cardmessage = () => {
                             value={cards[activeCardIndex]?.message || ""}
                             onChange={(e) =>
                               handleUpdateCard("message", e.target.value)
+                            }
+                          />
+                        </Form.Group>
+                        <Form.Group className="mt-3 mb-0">
+                          <Form.Label className="cm-form-label">
+                            ลิงก์เว็บไซต์ (URL)
+                          </Form.Label>
+                          <Form.Control
+                            type="url"
+                            placeholder="https://..."
+                            className="cm-custom-input"
+                            value={cards[activeCardIndex]?.link || ""}
+                            onChange={(e) =>
+                              handleUpdateCard("link", e.target.value)
                             }
                           />
                         </Form.Group>

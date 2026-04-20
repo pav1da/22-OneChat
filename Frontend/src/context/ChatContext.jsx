@@ -339,6 +339,8 @@ export const ChatProvider = ({ children }) => {
               message: c.message ? c.message.trim() : "ดูรายละเอียด",
               tag: c.tag || "",
               isEndCard: true,
+              //เพิ่ม link
+              link: c.link || null,
             };
           }
 

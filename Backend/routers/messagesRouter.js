@@ -347,14 +347,29 @@ router.post("/", auth, async (req, res) => {
                      if (c.isEndCard || (!c.image && c.message)) {
                          const endLabel = ((c.message || "").trim()) || "ดูเพิ่มเติม";
                          const endLabelSafe = endLabel.length > 20 ? endLabel.substring(0, 20) : endLabel;
+                         
+                         let actionObj = {
+                             type: "message",
+                             label: endLabelSafe,
+                             text: endLabel
+                         };
+                         //ใส่ link ในการ์ด
+                         if (c.link && c.link.trim() !== "") {
+                             let uriUrl = c.link.trim();
+                             if (!uriUrl.startsWith("http://") && !uriUrl.startsWith("https://")) {
+                                 uriUrl = "https://" + uriUrl;
+                             }
+                             actionObj = {
+                                 type: "uri",
+                                 label: endLabelSafe,
+                                 uri: uriUrl
+                             };
+                         }
+
                          return {
                              type: "bubble",
                              size: "mega",
-                             action: {
-                                 type: "message",
-                                 label: endLabelSafe,
-                                 text: endLabel
-                             },
+                             action: actionObj, // ใส่ที่ระดับ bubble เพื่อรองรับมือถือ
                              body: {
                                  type: "box",
                                  layout: "vertical",
@@ -362,6 +377,7 @@ router.post("/", auth, async (req, res) => {
                                  justifyContent: "center",
                                  alignItems: "center",
                                  backgroundColor: "#f8f9fa",
+                                 action: actionObj, // ใส่พ่วงที่ระดับ box ภายในเพื่อให้รองรับใน LINE บนคอมพิวเตอร์ด้วย
                                  contents: [
                                      {
                                          type: "text",
@@ -465,11 +481,7 @@ router.post("/", auth, async (req, res) => {
                      return {
                          type: "bubble",
                          size: "mega",
-                         action: {
-                             type: "message",
-                             label: cardActionLabel,
-                             text: cardActionText
-                         },
+                         // ลบ action ออก เพื่อที่ลูกค้ากดที่การ์ดแล้วจะไม่มีข้อความเด้งตอบกลับในแชท
                          body: {
                              type: "box",
                              layout: "vertical",
