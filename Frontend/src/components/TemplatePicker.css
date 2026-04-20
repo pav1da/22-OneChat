@@ -409,11 +409,12 @@
 }
 
 .tp-preview-image-box {
-  max-width: 100%;
-  max-height: 100%;
-  border-radius: 12px;
+  width: 240px;
+  height: 240px;
+  min-height: 240px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -422,9 +423,9 @@
   margin-bottom: auto;
 }
 .tp-preview-image-box img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .tp-preview-no-image {
   padding: 40px;

@@ -350,13 +350,15 @@ const TemplatePicker = ({ onSelectText, onSelectImage, onSelectCarousel, onClose
                                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                                     />
                                     {c.tag && (
-                                        <div style={{ position: 'absolute', top: '12px', left: '12px', backgroundColor: 'rgba(0, 0, 0, 0.55)', color: 'white', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 500, zIndex: 10 }}>
+                                        <div style={{ position: 'absolute', top: '16px', left: '16px', backgroundColor: '#ffffff', color: '#666666', border: '1px solid #cccccc', padding: '5px 14px', borderRadius: '20px', fontSize: '14px', fontWeight: 'normal', whiteSpace: 'nowrap', zIndex: 10 }}>
                                             {c.tag}
                                         </div>
                                     )}
                                     {c.message && (
-                                        <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0, 0, 0, 0.65)', color: 'white', padding: '4px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 500, zIndex: 10, whiteSpace: 'nowrap' }}>
-                                            {c.message}
+                                        <div style={{ position: 'absolute', bottom: '16px', left: '0', right: '0', display: 'flex', justifyContent: 'center', zIndex: 10 }}>
+                                            <div style={{ backgroundColor: '#000000a6', color: '#ffffff', padding: '6px 20px', borderRadius: '20px', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                                                {c.message}
+                                            </div>
                                         </div>
                                     )}
                                 </div>

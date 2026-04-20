@@ -1007,132 +1007,134 @@ const Inbox = ({ currentUser }) => {
                                             </div>
                                         )}
 
-                                        {msg.message_type === "carousel" ? (
-                                            <div
-                                                className="chat-carousel-wrapper"
-                                                style={{
-                                                    display: 'flex',
-                                                    overflowX: 'auto',
-                                                    gap: '12px',
-                                                    maxWidth: '100%',
-                                                    paddingBottom: '12px', /* ให้พื้นที่ scrollbar */
-                                                    cursor: 'grab'
-                                                }}
-                                                onMouseDown={(e) => {
-                                                    const ele = e.currentTarget;
-                                                    ele.dataset.isDown = "true";
-                                                    ele.style.cursor = "grabbing";
-                                                    ele.dataset.startX = e.pageX - ele.offsetLeft;
-                                                    ele.dataset.scrollLeft = ele.scrollLeft;
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    const ele = e.currentTarget;
-                                                    ele.dataset.isDown = "false";
-                                                    ele.style.cursor = "grab";
-                                                }}
-                                                onMouseUp={(e) => {
-                                                    const ele = e.currentTarget;
-                                                    ele.dataset.isDown = "false";
-                                                    ele.style.cursor = "grab";
-                                                }}
-                                                onMouseMove={(e) => {
-                                                    const ele = e.currentTarget;
-                                                    if (ele.dataset.isDown !== "true") return;
-                                                    e.preventDefault();
-                                                    const x = e.pageX - ele.offsetLeft;
-                                                    const walk = (x - parseFloat(ele.dataset.startX)) * 1.5; // ความเร็วในการลาก
-                                                    ele.scrollLeft = parseFloat(ele.dataset.scrollLeft) - walk;
-                                                }}
-                                            >
-                                                {(() => {
-                                                    try {
-                                                        const cards = JSON.parse(msg.text);
-                                                        return cards.map((c, i) => (
-                                                            <div key={i} className="carousel-card" style={{
-                                                                flex: '0 0 250px',
-                                                                backgroundColor: 'var(--bg-surface)',
-                                                                borderRadius: '16px',
-                                                                overflow: 'hidden',
-                                                                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-                                                            }}>
-                                                                {/* ขนาดภาพ 250x250*/}
-                                                                {c.isEndCard ? (
-                                                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '250px' }}>
-                                                                        <span style={{ color: '#42659a', fontWeight: '500', fontSize: '1.1rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div style={{ position: 'relative', width: '250px', height: '250px' }}>
-                                                                        {c.image && (
-                                                                            //เลื่อนดูภาพแบบ Carousel สไลด์ผ่านเมาส์/นิ้ว อย่างเดียว 
-                                                                            <img src={c.image} alt="carousel-card" draggable="false" style={{
-                                                                                width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none'
-                                                                            }} />
-                                                                        )}
-                                                                        {c.tag && (
-                                                                            <div style={{ position: 'absolute', top: '14px', left: '14px', backgroundColor: 'rgba(255, 255, 255, 1)', color: 'gray', padding: '4px 14px', borderRadius: '16px', fontSize: '0.80rem', fontWeight: 500, whiteSpace: 'nowrap', zIndex: 10, border: '1px solid #888' }}>
-                                                                                {c.tag}
-                                                                            </div>
-                                                                        )}
-                                                                        {c.message && (
-                                                                            <div style={{ position: 'absolute', bottom: '14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', padding: '6px 18px', borderRadius: '20px', fontSize: '0.95rem', fontWeight: 500, whiteSpace: 'nowrap', display: 'inline-block', zIndex: 10 }}>
+                                    {msg.message_type === "carousel" ? (
+                                        <div 
+                                            className="chat-carousel-wrapper" 
+                                            style={{
+                                                display: 'flex',
+                                                overflowX: 'auto',
+                                                gap: '12px',
+                                                maxWidth: '100%',
+                                                paddingBottom: '12px', /* ให้พื้นที่ scrollbar */
+                                                cursor: 'grab'
+                                            }}
+                                            onMouseDown={(e) => {
+                                                const ele = e.currentTarget;
+                                                ele.dataset.isDown = "true";
+                                                ele.style.cursor = "grabbing";
+                                                ele.dataset.startX = e.pageX - ele.offsetLeft;
+                                                ele.dataset.scrollLeft = ele.scrollLeft;
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                const ele = e.currentTarget;
+                                                ele.dataset.isDown = "false";
+                                                ele.style.cursor = "grab";
+                                            }}
+                                            onMouseUp={(e) => {
+                                                const ele = e.currentTarget;
+                                                ele.dataset.isDown = "false";
+                                                ele.style.cursor = "grab";
+                                            }}
+                                            onMouseMove={(e) => {
+                                                const ele = e.currentTarget;
+                                                if (ele.dataset.isDown !== "true") return;
+                                                e.preventDefault();
+                                                const x = e.pageX - ele.offsetLeft;
+                                                const walk = (x - parseFloat(ele.dataset.startX)) * 1.5; // ความเร็วในการลาก
+                                                ele.scrollLeft = parseFloat(ele.dataset.scrollLeft) - walk;
+                                            }}
+                                        >
+                                            {(() => {
+                                                try {
+                                                    const cards = JSON.parse(msg.text);
+                                                    return cards.map((c, i) => (
+                                                        <div key={i} className="carousel-card" style={{
+                                                            flex: '0 0 240px',
+                                                            backgroundColor: 'var(--bg-surface)',
+                                                            borderRadius: '16px',
+                                                            overflow: 'hidden',
+                                                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                                                        }}>
+                                                            {/* ขนาดภาพ 240x240*/}
+                                                            {c.isEndCard ? (
+                                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
+                                                                    <span style={{ color: '#42659a', fontWeight: '500', fontSize: '1.1rem' }}>{c.message || "ดูเพิ่มเติม"}</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div style={{ position: 'relative', width: '240px', height: '240px' }}>
+                                                                    {c.image && (
+                                                                        //เลื่อนดูภาพแบบ Carousel สไลด์ผ่านเมาส์/นิ้ว อย่างเดียว 
+                                                                        <img src={c.image} alt="carousel-card" draggable="false" style={{
+                                                                            width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none'
+                                                                        }} />
+                                                                    )}
+                                                                    {c.tag && (
+                                                                        <div style={{ position: 'absolute', top: '16px', left: '16px', backgroundColor: '#ffffff', color: '#666666', border: '1px solid #cccccc', padding: '5px 14px', borderRadius: '20px', fontSize: '14px', fontWeight: 'normal', whiteSpace: 'nowrap', zIndex: 10 }}>
+                                                                            {c.tag}
+                                                                        </div>
+                                                                    )}
+                                                                    {c.message && (
+                                                                        <div style={{ position: 'absolute', bottom: '16px', left: '0', right: '0', display: 'flex', justifyContent: 'center', zIndex: 10 }}>
+                                                                            <div style={{ backgroundColor: '#000000a6', color: '#ffffff', padding: '6px 20px', borderRadius: '20px', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                                                                                 {c.message}
                                                                             </div>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ));
-                                                    } catch (e) { return <span>Invalid Carousel Data</span>; }
-                                                })()}
-                                            </div>
-                                        ) : msg.message_type === "sticker" ? (
-                                            <div className="sticker">
-                                                <img
-                                                    src={msg.image}
-                                                    alt="sticker"
-                                                    loading="lazy"
-                                                    decoding="async"
-                                                    style={{
-                                                        width: "100px",
-                                                        height: "100px",
-                                                        objectFit: "contain",
-                                                    }}
-                                                />
-                                            </div>
-                                        ) : msg.image ? (
-                                            <div className="chat-image">
-                                                <img
-                                                    src={msg.image}
-                                                    alt="upload"
-                                                    loading="lazy"
-                                                    decoding="async"
-                                                    style={{
-                                                        maxWidth: "260px",
-                                                        maxHeight: "360px",
-                                                        borderRadius: "10px",
-                                                        objectFit: "cover",
-                                                        cursor: "pointer",
-                                                    }}
-                                                    onClick={() => window.open(msg.image, "_blank")}
-                                                />
-                                            </div>
-                                        ) : isLineEmojiOnly(msg.text) && msg.message_type !== 'carousel' ? (
-                                            <div className="emoji-only">
-                                                <span>{renderTextWithLineEmoji(msg.text, 40)}</span>
-                                            </div>
-                                        ) : isEmojiOnly(msg.text) && msg.message_type !== 'carousel' ? (
-                                            <div className="emoji-only">
-                                                <span>{msg.text}</span>
-                                            </div>
-                                        ) : msg.message_type !== 'carousel' ? (
-                                            <div className="texts">
-                                                <p className={msg.sender === "own" ? "own" : ""}>
-                                                    {hasLineEmoji(msg.text)
-                                                        ? renderTextWithLineEmoji(msg.text)
-                                                        : msg.text}
-                                                </p>
-                                            </div>
-                                        ) : null}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ));
+                                                } catch (e) { return <span>Invalid Carousel Data</span>; }
+                                            })()}
+                                        </div>
+                                    ) : msg.message_type === "sticker" ? (
+                                        <div className="sticker">
+                                            <img
+                                                src={msg.image}
+                                                alt="sticker"
+                                                loading="lazy"
+                                                decoding="async"
+                                                style={{
+                                                    width: "100px",
+                                                    height: "100px",
+                                                    objectFit: "contain",
+                                                }}
+                                            />
+                                        </div>
+                                    ) : msg.image ? (
+                                        <div className="chat-image">
+                                            <img
+                                                src={msg.image}
+                                                alt="upload"
+                                                loading="lazy"
+                                                decoding="async"
+                                                style={{
+                                                    maxWidth: "260px",
+                                                    maxHeight: "360px",
+                                                    borderRadius: "10px",
+                                                    objectFit: "cover",
+                                                    cursor: "pointer",
+                                                }}
+                                                onClick={() => window.open(msg.image, "_blank")}
+                                            />
+                                        </div>
+                                    ) : isLineEmojiOnly(msg.text) && msg.message_type !== 'carousel' ? (
+                                        <div className="emoji-only">
+                                            <span>{renderTextWithLineEmoji(msg.text, 40)}</span>
+                                        </div>
+                                    ) : isEmojiOnly(msg.text) && msg.message_type !== 'carousel' ? (
+                                        <div className="emoji-only">
+                                            <span>{msg.text}</span>
+                                        </div>
+                                    ) : msg.message_type !== 'carousel' ? (
+                                        <div className="texts">
+                                            <p className={msg.sender === "own" ? "own" : ""}>
+                                                {hasLineEmoji(msg.text)
+                                                    ? renderTextWithLineEmoji(msg.text)
+                                                    : msg.text}
+                                            </p>
+                                        </div>
+                                    ) : null}
 
 
                                     </div>
