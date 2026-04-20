@@ -162,7 +162,6 @@ const Cardmessage = () => {
         message: "ดูเพิ่มเติม",
         tag: "",
         isEndCard: true,
-        link: "",
       },
     ];
     setCards(newCards);
@@ -204,19 +203,17 @@ const Cardmessage = () => {
       setItemToDelete(null);
     }
   };
-  //ค้นหา และ เรียงลำดับ
+
   const filteredItems = items.filter(
     (item) =>
       item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.type.toLowerCase().includes(search.toLowerCase())||
-      //ค้นหาด้วย วันที่  เดือน
-       `${new Date(item.createdTimestamp).getMonth() + 1}-${new Date(item.createdTimestamp).getDate()}`.includes(search)
+      item.type.toLowerCase().includes(search.toLowerCase()),
   );
-  //เรียงลำดับ
+
   const sortedItems = [...filteredItems].sort((a, b) => {
     return sortDesc ? b.createdTimestamp - a.createdTimestamp : a.createdTimestamp - b.createdTimestamp;
   });
-  //กรองประเภท
+
   const textItems = sortedItems.filter(item => item.type === "ข้อความ");
   const imageItems = sortedItems.filter(item => item.type === "รูปภาพ");
 
@@ -293,7 +290,6 @@ const Cardmessage = () => {
                             message: c.message || "",
                             tag: c.tag || "",
                             isEndCard: c.isEndCard || false,
-                            link: c.link || "",
                           }));
                         } else {
                           restoredCards = [
@@ -303,7 +299,6 @@ const Cardmessage = () => {
                               message: content?.message || "",
                               tag: "",
                               isEndCard: false,
-                              link: "",
                             },
                           ];
                         }
@@ -401,7 +396,6 @@ const Cardmessage = () => {
             message: c.message || "",
             tag: c.tag || "",
             isEndCard: c.isEndCard || false,
-            link: c.link || "",
           }));
         } else {
           previewCards = [
@@ -411,7 +405,6 @@ const Cardmessage = () => {
               message: content?.message || "",
               tag: "",
               isEndCard: false,
-              link: "",
             },
           ];
         }
@@ -448,7 +441,6 @@ const Cardmessage = () => {
           message: c.message,
           tag: c.tag || "",
           isEndCard: c.isEndCard || false,
-          link: c.link || "",
         })),
       };
     } else {
@@ -487,7 +479,7 @@ const Cardmessage = () => {
       setShow(false);
       setEditingItem(null);
       setNewItem({ type: "รูปภาพ", title: "", image: "", message: "" });
-      setCards([{ id: 1, image: "", message: "", tag: "", isEndCard: false, link: "" }]);
+      setCards([{ id: 1, image: "", message: "", tag: "", isEndCard: false }]);
       setActiveCardIndex(0);
       fetchItems();
     } catch (error) {
@@ -769,7 +761,7 @@ const Cardmessage = () => {
                     >
                       เพิ่มการ์ด
                     </button>
-                    {/* <button
+                    <button
                       className="cm-tab-btn-add-end ms-2"
                       onClick={(e) => {
                         e.preventDefault();
@@ -777,7 +769,7 @@ const Cardmessage = () => {
                       }}
                     >
                       เพิ่มการ์ดปิดท้าย
-                    </button> */}
+                    </button>
                   </div>
                 )}
 
@@ -818,7 +810,7 @@ const Cardmessage = () => {
                   </Form.Group>
 
                   {/* ถ้าเป็นการ์ดปิดท้าย ไม่ต้องอัพรูปลง Flex แต่ให้ใส่ Action เเทนได้ */}
-                  {/* {newItem.type === "รูปภาพ" &&
+                  {newItem.type === "รูปภาพ" &&
                     cards[activeCardIndex]?.isEndCard && (
                       <div
                         className="mt-4 p-3 bg-white"
@@ -826,7 +818,6 @@ const Cardmessage = () => {
                           borderRadius: "8px",
                           border: "1px dashed #cbd5e1",
                         }}
-                        
                       >
                         <Form.Group className="mb-0">
                           <Form.Label className="cm-form-label">
@@ -839,25 +830,11 @@ const Cardmessage = () => {
                             value={cards[activeCardIndex]?.message || ""}
                             onChange={(e) =>
                               handleUpdateCard("message", e.target.value)
-                            } */}
-                  {/* />
-                        </Form.Group>
-                        <Form.Group className="mt-3 mb-0">
-                          <Form.Label className="cm-form-label">
-                            ลิงก์เว็บไซต์ (URL)
-                          </Form.Label>
-                          <Form.Control
-                            type="url"
-                            placeholder="https://..."
-                            className="cm-custom-input"
-                            value={cards[activeCardIndex]?.link || ""}
-                            onChange={(e) =>
-                              handleUpdateCard("link", e.target.value)
                             }
                           />
                         </Form.Group>
                       </div>
-                    )} */}
+                    )}
 
                   {/* ถ้าเป็นรูปภาพปกติ → อัพโหลดรูป + tag overlay */}
                   {newItem.type === "รูปภาพ" &&

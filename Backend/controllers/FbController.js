@@ -150,19 +150,23 @@ exports.sendCarouselMessage = async (recipientPsid, cards) => {
             return false;
         }
 
-    // สร้าง elements จากการ์ดสูงสุด 10 ใบ
-    const elements = normalCards.slice(0, 10).map((c, index) => {
-      // Facebook บังคับให้ต้องมี title ใน Generic Template
-      const title = c.tag ? c.tag : (c.message ? c.message.substring(0, 80) : `รูปภาพที่ ${index + 1}`);
-      const subtitle = (!c.tag && c.message) ? undefined : (c.message ? c.message.substring(0, 80) : undefined);
-      
-      return {
-        title: title.substring(0, 80),
-        subtitle: subtitle,
-        image_url: c.image
-        // ปิดระบบ: เอากล่อง default_action ออก ลูกค้าจะได้กดที่ตัวรูปภาพแล้วไม่เด้งขึ้นมาขยายเต็มจอ
-      };
-    });
+        // สร้าง elements จากการ์ดสูงสุด 10 ใบ
+        const elements = normalCards.slice(0, 10).map((c, index) => {
+            // Facebook บังคับให้ต้องมี title ใน Generic Template
+            const title = c.tag ? c.tag : (c.message ? c.message.substring(0, 80) : `รูปภาพที่ ${index + 1}`);
+            const subtitle = (!c.tag && c.message) ? undefined : (c.message ? c.message.substring(0, 80) : undefined);
+
+            return {
+                title: title.substring(0, 80),
+                subtitle: subtitle,
+                image_url: c.image,
+                default_action: {
+                    type: "web_url",
+                    url: c.image, // ให้ลูกค้าคลิกรูปแล้วอาจจะเปิด URL เพื่อดูรูปไซส์เต็มได้
+                    webview_height_ratio: "full"
+                }
+            };
+        });
 
         // ส่งชุด Generic Template (Carousel Swipe) แบบก้อนเดียว
         const carouselPayload = {

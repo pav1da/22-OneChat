@@ -165,7 +165,7 @@ function Dashboard({ user }) {
     );
   };
 
-  // กรองและเรียงลำดับโน้ต ค้นหาด้วยผู้สร้างและเนื้อหา
+  // กรองและเรียงลำดับโน้ต
   const filteredNotes = notes
     .filter(
       (n) =>

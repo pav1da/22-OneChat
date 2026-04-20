@@ -22,7 +22,7 @@ function Contact() {
           <p className="mb-1 fs-6 mt-3">โทรศัพท์</p>
           <p className="mb-1 fs-6 text-muted">02-123-4567</p>
           <p className="text-muted fs-6">
-            (เปิดให้บริการ วันจันทร์-ศุกร์ เวลา 09:00–18:00 น.)
+            (เปิดให้บริการวันจันทร์-ศุกร์ เวลา 09:00–18:00 น.)
           </p>
         </div>
       </div>
