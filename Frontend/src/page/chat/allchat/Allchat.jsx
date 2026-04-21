@@ -1691,36 +1691,40 @@ const AllChat = () => {
                     setContextMenu(null);
                   }}
                 >
-                  {m.image ? (
-                    <img
-                      src={m.image}
-                      alt=""
-                      style={{
-                        width: "20px",
-                        height: "20px",
-                        borderRadius: "50%",
-                        marginRight: "8px",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      className="d-flex align-items-center justify-content-center text-white"
-                      style={{
-                        width: "20px",
-                        height: "20px",
-                        borderRadius: "50%",
-                        marginRight: "8px",
-                        flexShrink: 0,
-                        backgroundColor: getAvatarColor(m.username),
-                        fontSize: "10px",
-                        fontWeight: "600",
-                      }}
-                    >
-                      {getInitial(m.username)}
-                    </div>
-                  )}
-                  {m.username}
+                  <div className="d-flex align-items-center">
+                    {m.image ? (
+                      <img
+                        src={m.image}
+                        alt=""
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "50%",
+                          marginRight: "8px",
+                          objectFit: "cover",
+                          flexShrink: 0,
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className="d-flex align-items-center justify-content-center text-white"
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "50%",
+                          marginRight: "8px",
+                          flexShrink: 0,
+                          backgroundColor: getAvatarColor(m.username),
+                          fontSize: "10px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        {getInitial(m.username)}
+                      </div>
+                    )}
+                    <span>{m.username}</span>
+                  </div>
+
                 </Dropdown.Item>
               ))}
             </Dropdown.Menu>

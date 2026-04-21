@@ -2,7 +2,7 @@ const Template = require('../models/template.js');
 const Log = require('../models/log.js');
 
 // --- Simple Memory Cache ---
-const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
+const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 ชั่วโมง — เวลาที่ข้อมูลใน Cache จะหมดอายุ
 let pickerCache = { data: null, timestamp: 0 };
 const imageCache = new Map(); // id -> { mime, buffer, timestamp }
 const fullTemplateCache = new Map(); // id -> { data, timestamp }
