@@ -4,23 +4,11 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./member.css";
 // นำเข้า useSocket จาก SocketContext เพื่อใช้ตรวจสอบสถานะ online/offline ของ user
 import { useSocket } from "../../context/SocketContext";
+import { getAvatarColor, getInitial } from "../../utils/avatarUtils";
 
 const Member = ({ currentUser }) => {
   // ================== 1. STATE MANAGEMENT ==================
   const [allMembers, setAllMembers] = useState([]);
-
-  // ===== Avatar Helpers =====
-  const avatarColors = [
-    '#F26623', '#E8913A', '#D4614B', '#C7956D',
-    '#5B8C5A', '#3A7CA5', '#6C5B7B', '#C06C84',
-    '#355C7D', '#F67280', '#2A9D8F', '#264653',
-  ];
-  const getAvatarColor = (name) => {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return avatarColors[Math.abs(hash) % avatarColors.length];
-  };
-  const getInitial = (name) => (name ? name.charAt(0).toUpperCase() : '?');
 
   // Search & Sort (Member Section)
   const [searchTerm, setSearchTerm] = useState("");
@@ -264,9 +252,9 @@ const Member = ({ currentUser }) => {
                   ) : (
                     <div
                       className={`member-avatar-initials ${online ? "avatar-online" : "avatar-offline"}`}
-                      style={{ backgroundColor: getAvatarColor(member.name) }}
+                      style={{ backgroundColor: getAvatarColor(member.email || member.id || member.name) }}
                     >
-                      {getInitial(member.name)}
+                      {getInitial(member.displayName || member.name)}
                     </div>
                   )}
                   <span className={`avatar-status-dot ${online ? "dot-online" : "dot-offline"}`}></span>
@@ -503,8 +491,8 @@ const Member = ({ currentUser }) => {
                 {memberInfo.image ? (
                   <img src={memberInfo.image} alt="avatar" className="rounded-circle shadow-sm" style={{ width: "110px", height: "110px", objectFit: "cover" }} />
                 ) : (
-                  <div className="rounded-circle shadow-sm d-flex align-items-center justify-content-center text-white" style={{ width: "110px", height: "110px", fontSize: "3rem", backgroundColor: getAvatarColor(memberInfo.name) }}>
-                    {getInitial(memberInfo.name)}
+                  <div className="rounded-circle shadow-sm d-flex align-items-center justify-content-center text-white" style={{ width: "110px", height: "110px", fontSize: "3rem", backgroundColor: getAvatarColor(memberInfo.email || memberInfo.id || memberInfo.name) }}>
+                    {getInitial(memberInfo.displayName || memberInfo.name)}
                   </div>
                 )}
                 {isUserOnline(memberInfo.id) && (

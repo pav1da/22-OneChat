@@ -761,7 +761,7 @@ const Cardmessage = () => {
                     >
                       เพิ่มการ์ด
                     </button>
-                    <button
+                    {/* <button
                       className="cm-tab-btn-add-end ms-2"
                       onClick={(e) => {
                         e.preventDefault();
@@ -769,7 +769,7 @@ const Cardmessage = () => {
                       }}
                     >
                       เพิ่มการ์ดปิดท้าย
-                    </button>
+                    </button> */}
                   </div>
                 )}
 
@@ -797,7 +797,8 @@ const Cardmessage = () => {
                         ประเภทการ์ด
                       </span>
                       <Form.Select
-                        className="cm-custom-select w-auto"
+                        className="cm-custom-select"
+                        style={{width: "125px"}}
                         value={newItem.type}
                         onChange={(e) =>
                           setNewItem({ ...newItem, type: e.target.value })
@@ -810,7 +811,7 @@ const Cardmessage = () => {
                   </Form.Group>
 
                   {/* ถ้าเป็นการ์ดปิดท้าย ไม่ต้องอัพรูปลง Flex แต่ให้ใส่ Action เเทนได้ */}
-                  {newItem.type === "รูปภาพ" &&
+                  {/* {newItem.type === "รูปภาพ" &&
                     cards[activeCardIndex]?.isEndCard && (
                       <div
                         className="mt-4 p-3 bg-white"
@@ -834,7 +835,8 @@ const Cardmessage = () => {
                           />
                         </Form.Group>
                       </div>
-                    )}
+                    )
+                  } */}
 
                   {/* ถ้าเป็นรูปภาพปกติ → อัพโหลดรูป + tag overlay */}
                   {newItem.type === "รูปภาพ" &&

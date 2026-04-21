@@ -39,8 +39,8 @@ const User = {
     // อัพเดท username
     updateUsername: async (id, username) => {
         const [result] = await pool.query(
-            'UPDATE EMP SET username = ?, display_name = ? WHERE emp_id = ?',
-            [username, username, id]
+            'UPDATE EMP SET username = ? WHERE emp_id = ?',
+            [username, id]
         );
         return result.affectedRows > 0;
     },

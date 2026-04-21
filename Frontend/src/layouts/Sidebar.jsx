@@ -7,6 +7,7 @@ import { io } from "socket.io-client";
 import axios from "axios";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Sidebar.css";
+import { getAvatarColor, getInitial } from "../utils/avatarUtils";
 
 // ==========================================
 // Component ย่อยสำหรับ Menu Item (SaaS Style)
@@ -81,7 +82,7 @@ const Sidebar = ({ onLogout, currentUser }) => {
     currentUser?.image?.startsWith("http")
       ? currentUser.image
       : null;
-  const userName = currentUser?.name || "Workspace";
+  const userName = currentUser?.displayName || currentUser?.name || currentUser?.username || "Workspace";
   const userRole = currentUser?.role || "user";
   const isPrivilegedUserLocal = userRole === "manager" || userRole === "admin";
 
@@ -133,10 +134,14 @@ const Sidebar = ({ onLogout, currentUser }) => {
                   src={userImage}
                   alt="Profile"
                   className="saas-header-avatar"
+                  style={{ objectFit: 'cover' }}
                 />
               ) : (
-                <div className="saas-header-avatar d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)', fontSize: '0.55rem', fontWeight: '500' }}>
-                  No IMG
+                <div 
+                  className="saas-header-avatar d-flex align-items-center justify-content-center text-white" 
+                  style={{ backgroundColor: getAvatarColor(currentUser?.email || currentUser?.emp_id || userName), fontSize: '1.2rem', fontWeight: '500' }}
+                >
+                  {getInitial(userName)}
                 </div>
               )}
               <span className="saas-header-title">{userName}</span>

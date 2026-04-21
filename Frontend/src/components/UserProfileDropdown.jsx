@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarColor, getInitial } from "../utils/avatarUtils";
 import "./UserProfileDropdown.css";
 
 const UserProfileDropdown = ({
@@ -44,10 +45,13 @@ const UserProfileDropdown = ({
       <div className="upd-top">
         <div className="upd-avatar-wrapper">
           {userImage ? (
-            <img src={userImage} alt="user" className="upd-avatar-large" />
+            <img src={userImage} alt="user" className="upd-avatar-large" style={{ objectFit: 'cover' }} />
           ) : (
-            <div className="upd-avatar-large d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '500', borderRadius: '50%' }}>
-              No IMG
+            <div 
+              className="upd-avatar-large d-flex align-items-center justify-content-center text-white" 
+              style={{ backgroundColor: getAvatarColor(userEmail || userName), fontSize: '1.8rem', fontWeight: '500', borderRadius: '50%' }}
+            >
+              {getInitial(userName)}
             </div>
           )}
         </div>

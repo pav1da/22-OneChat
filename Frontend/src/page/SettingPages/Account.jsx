@@ -4,6 +4,7 @@ import { Container, Row, Col, Button, Modal, Form } from "react-bootstrap";
 // =============================================
 // ACCOUNT COMPONENT
 // =============================================
+import { getAvatarColor, getInitial } from "../../utils/avatarUtils";
 function Account({ user }) {
   // =============================================
   // 1. STATE MANAGEMENT
@@ -415,8 +416,11 @@ function Account({ user }) {
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               ) : (
-                <div className="d-flex align-items-center justify-content-center h-100 text-muted">
-                  No IMG
+                <div 
+                  className="d-flex align-items-center justify-content-center h-100 text-white"
+                  style={{ backgroundColor: getAvatarColor(userData.email || userData.username), fontSize: "2rem", fontWeight: "500" }}
+                >
+                  {getInitial(userData.displayName || userData.username)}
                 </div>
               )}
             </div>
@@ -447,7 +451,7 @@ function Account({ user }) {
         <Row className="align-items-center justify-content-between mb-4">
           <Col>
             <div className="fw-bold fs-6 mb-1">ชื่อแสดงผล</div>
-            <div style={{ fontSize: "1rem" }}>{userData.displayName || userData.username}</div>
+            <div style={{ fontSize: "1rem" }}>{userData.displayName}</div>
           </Col>
           <Col xs="auto">
             <Button

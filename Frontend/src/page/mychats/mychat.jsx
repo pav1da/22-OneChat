@@ -3,6 +3,7 @@ import { Container, Dropdown, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../../context/ChatContext";
 import EmojiPicker from "../../components/EmojiPicker";
+import { getAvatarColor, getInitial } from "../../utils/avatarUtils";
 import "../chat/allchat/allChat.css";
 
 // Helper: ตรวจว่าข้อความเป็น emoji ล้วนหรือไม่
@@ -441,12 +442,21 @@ const MyChat = ({ currentUser }) => {
                     <div className="staff-group d-flex align-items-center gap-1">
                         {assignedMember ? (
                             <>
-                                <img
-                                    src={assignedMember.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(assignedMember.username)}&background=random&size=40`}
-                                    alt={assignedMember.username}
-                                    className="border"
-                                    style={{ width: "20px", height: "20px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-                                />
+                                {assignedMember.image ? (
+                                    <img
+                                        src={assignedMember.image}
+                                        alt={assignedMember.username}
+                                        className="border"
+                                        style={{ width: "20px", height: "20px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+                                    />
+                                ) : (
+                                    <div 
+                                        className="border d-flex align-items-center justify-content-center text-white"
+                                        style={{ width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0, backgroundColor: getAvatarColor(assignedMember.email || assignedMember.emp_id || assignedMember.username), fontSize: "10px", fontWeight: "600" }}
+                                    >
+                                        {getInitial(assignedMember.username)}
+                                    </div>
+                                )}
                                 <span style={{ fontSize: "0.7rem", color: "#374151", fontWeight: 500, whiteSpace: "nowrap" }}>
                                     {assignedMember.username}
                                 </span>
