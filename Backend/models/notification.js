@@ -32,6 +32,7 @@ const db = require('../config/db.js');
 })();
 
 const Notification = {
+    // สร้างการแจ้งเตือนใหม่
     create: async ({ text, sender_id, receiver_id, type, ref_id, ref_type }) => {
         const [result] = await db.query(
             `INSERT INTO notifications 
@@ -42,6 +43,7 @@ const Notification = {
         return result;
     },
 
+    // ดึงข้อมูลการแจ้งเตือนทั้งหมดของผู้ใช้รายบุคคล
     getByUser: async (userId) => {
         try {
             const [rows] = await db.query(
@@ -78,6 +80,7 @@ const Notification = {
         }
     },
 
+    // ทำเครื่องหมายการแจ้งเตือนว่าอ่านแล้วตาม ID
     markAsRead: async (id) => {
         const [result] = await db.query(
             `UPDATE notifications 
@@ -88,6 +91,7 @@ const Notification = {
         return result;
     },
 
+    // ทำเครื่องหมายการแจ้งเตือนทั้งหมดของผู้ใช้ว่าอ่านแล้ว
     markAllAsRead: async (userId) => {
         const [result] = await db.query(
             `UPDATE notifications 
@@ -98,6 +102,7 @@ const Notification = {
         return result;
     },
 
+    // ดึงจำนวนการแจ้งเตือนที่ยังไม่ได้อ่าน
     getUnreadCount: async (userId) => {
         const [rows] = await db.query(
             `SELECT text FROM notifications 
@@ -117,6 +122,7 @@ const Notification = {
     },
 
     // หา notification ที่ยังไม่อ่านของลูกค้าคนนี้ (สำหรับ grouping)
+    // ค้นหาการแจ้งเตือนที่ยังไม่ได้อ่านของลูกค้ารายเจาะจง (ใช้จัดการ grouping)
     findUnreadByCustomer: async (customerId, receiverId) => {
         const [rows] = await db.query(
             `SELECT * FROM notifications 
@@ -129,6 +135,7 @@ const Notification = {
     },
 
     // อัพเดท notification ด้วยข้อความใหม่ (เพิ่มข้อความเข้าไป)
+    // อัปเดตการแจ้งเตือนเดิมด้วยข้อความใหม่ (Append ข้อความเข้าไปใน Array JSON)
     updateWithNewMessage: async (id, newMessage) => {
         // ดึง notification ปัจจุบัน
         const current = await Notification.getById(id);
@@ -171,6 +178,7 @@ const Notification = {
     },
 
     // ดึง notification by ID
+    // ดึงข้อมูลการแจ้งเตือนรายข้อความตาม ID
     getById: async (id) => {
         const [rows] = await db.query(
             `SELECT * FROM notifications WHERE id = ?`,

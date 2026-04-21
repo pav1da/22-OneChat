@@ -66,6 +66,7 @@ const auth = require('../middleware/auth.js');
  *       500:
  *         description: Server error
  */
+// POST /api/notifications — สร้างการแจ้งเตือนใหม่
 router.post('/', async (req, res) => {
     try {
         const result = await Notification.create(req.body);
@@ -104,6 +105,7 @@ router.post('/', async (req, res) => {
  *       500:
  *         description: Server error
  */
+// GET /api/notifications — ดึงการแจ้งเตือนของผู้ใช้ปัจจุบัน
 router.get('/', auth, async (req, res) => {
     try {
         const userId = req.user.id || req.user.emp_id;
@@ -138,6 +140,7 @@ router.get('/', auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// GET /api/notifications/unread-count — ดึงจำนวนการแจ้งเตือนที่ยังไม่ได้อ่าน
 router.get('/unread-count', auth, async (req, res) => {
     try {
         const userId = req.user.id || req.user.emp_id;
@@ -172,6 +175,7 @@ router.get('/unread-count', auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// PUT /api/notifications/:id/read — ทำเครื่องหมายการแจ้งเตือนว่าอ่านแล้ว
 router.put('/:id/read', auth, async (req, res) => {
     try {
         const result = await Notification.markAsRead(req.params.id);
@@ -197,6 +201,7 @@ router.put('/:id/read', auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// PUT /api/notifications/mark-all-read — ทำเครื่องหมายการแจ้งเตือนทั้งหมดว่าอ่านแล้ว
 router.put('/mark-all-read', auth, async (req, res) => {
     try {
         const userId = req.user.id || req.user.emp_id;

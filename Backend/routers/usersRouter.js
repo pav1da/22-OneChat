@@ -110,6 +110,7 @@ const upload = require('../middleware/upload.js');
  *       500:
  *         description: Server error
  */
+// POST /api/users/register — ลงทะเบียนผู้ใช้งานใหม่
 router.post('/register', usersController.register);
 
 /**
@@ -147,6 +148,7 @@ router.post('/register', usersController.register);
  *       500:
  *         description: Server error
  */
+// POST /api/users/login — เข้าสู่ระบบสมาชิก
 router.post('/login', usersController.login);
 
 /**
@@ -171,6 +173,7 @@ router.post('/login', usersController.login);
  *       500:
  *         description: Server error
  */
+// GET /api/users/me — ดึงข้อมูลส่วนตัวของผู้ใช้ปัจจุบัน
 router.get('/me', auth, usersController.getMe);
 
 /**
@@ -200,6 +203,7 @@ router.get('/me', auth, usersController.getMe);
  *       500:
  *         description: Server error
  */
+// PUT /api/users/me/displayname — อัปเดตชื่อแสดงผล (Display Name)
 router.put('/me/displayname', auth, usersController.updateDisplayName);
 
 /**
@@ -244,6 +248,7 @@ router.put('/me/displayname', auth, usersController.updateDisplayName);
  *       500:
  *         description: Server error
  */
+// PUT /api/users/me/username — เปลี่ยนชื่อผู้ใช้ (Username)
 router.put('/me/username', auth, usersController.updateUsername);
 
 /**
@@ -278,6 +283,7 @@ router.put('/me/username', auth, usersController.updateUsername);
  *       500:
  *         description: Server error
  */
+// PUT /api/users/me/email — เปลี่ยนอีเมล (Email)
 router.put('/me/email', auth, usersController.updateEmail);
 
 /**
@@ -309,6 +315,7 @@ router.put('/me/email', auth, usersController.updateEmail);
  *       500:
  *         description: Server error
  */
+// PUT /api/users/me/phone — เปลี่ยนเบอร์โทรศัพท์ (Phone)
 router.put('/me/phone', auth, usersController.updatePhone);
 
 /**
@@ -343,6 +350,7 @@ router.put('/me/phone', auth, usersController.updatePhone);
  *       500:
  *         description: Server error
  */
+// PUT /api/users/me/password — เปลี่ยนรหัสผ่าน (Password)
 router.put('/me/password', auth, usersController.updatePassword);
 
 /**
@@ -386,6 +394,7 @@ router.put('/me/password', auth, usersController.updatePassword);
  *       500:
  *         description: Server error
  */
+// PUT /api/users/me/avatar — อัปโหลดรูปโปรไฟล์ (Avatar)
 router.put('/me/avatar', auth, upload.single('image'), usersController.updateAvatar);
 
 /**
@@ -416,6 +425,7 @@ router.put('/me/avatar', auth, upload.single('image'), usersController.updateAva
  *       500:
  *         description: Server error
  */
+// DELETE /api/users/:id — ลบข้อมูลผู้ใช้งาน (Admin เท่านั้น)
 router.delete('/:id', auth, authorize('admin'), usersController.deleteUser);
 
 /**
@@ -442,8 +452,10 @@ router.delete('/:id', auth, authorize('admin'), usersController.deleteUser);
  *       500:
  *         description: Server error
  */
+// GET /api/users — ดึงรายชื่อผู้ใช้ทั้งหมด
 router.get('/', auth, usersController.getAllUsers);
 
+// GET /api/users/:id — ดึงข้อมูลผู้ใช้ตาม ID
 router.get('/:id', auth, usersController.getUserById);
 
 module.exports = router;

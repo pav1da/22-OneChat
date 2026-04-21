@@ -1,6 +1,7 @@
 const db = require('../config/db.js');
 
 const Log = {
+    // ดึง Log ทั้งหมด พร้อมกรองเงื่อนไขและดึงรูปโปรไฟล์พนักงาน
     findAll: async (filters) => {
         let sql = `
             SELECT LOGS.*, EMP.image AS current_avatar 
@@ -31,6 +32,7 @@ const Log = {
         });
     },
 
+    // สร้าง Log ใหม่บันทึกกิจกรรมลงในระบบ
     create: async ({ user, avatar, action, target, details }) => {
         const sql = `
       INSERT INTO LOGS (user, avatar, action, target, details)

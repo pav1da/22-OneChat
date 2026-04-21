@@ -57,6 +57,7 @@ const auth = require('../middleware/auth.js');
  *       500:
  *         description: Server error
  */
+// GET /api/notification-settings — ดึงค่าการตั้งค่าการแจ้งเตือนของผู้ใช้ปัจจุบัน
 router.get('/', auth, controller.getNotification);
 
 /**
@@ -101,6 +102,7 @@ router.get('/', auth, controller.getNotification);
  *       500:
  *         description: Server error
  */
+// PATCH /api/notification-settings — อัปเดตการตั้งค่าการแจ้งเตือนของผู้ใช้ปัจจุบัน
 router.patch('/', auth, controller.updateNotification);
 
 module.exports = router;

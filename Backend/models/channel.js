@@ -1,6 +1,7 @@
 const pool = require('../config/db.js');
 
 const Channel = {
+    // ดึงช่องทางการเชื่อมต่อทั้งหมด
     findAll: async () => {
         const [rows] = await pool.query(
             'SELECT * FROM channels ORDER BY created_at DESC'
@@ -8,11 +9,13 @@ const Channel = {
         return rows;
     },
 
+    // ดึงข้อมูลช่องทางการเชื่อมต่อตาม ID
     findById: async (id) => {
         const [rows] = await pool.query('SELECT * FROM channels WHERE id = ?', [id]);
         return rows[0] || null;
     },
 
+    // สร้างช่องทางการเชื่อมต่อใหม่
     create: async ({ platform, channel_name, channel_id, access_token, channel_secret, webhook_url, destination_id, created_by }) => {
         const [result] = await pool.query(
             `INSERT INTO channels (platform, channel_name, channel_id, access_token, channel_secret, webhook_url, destination_id, status, created_by)
@@ -22,6 +25,7 @@ const Channel = {
         return result.insertId;
     },
 
+    // อัปเดตข้อมูลช่องทางการเชื่อมต่อ
     update: async (id, { channel_name, channel_id, access_token, channel_secret, webhook_url, destination_id }) => {
         await pool.query(
             `UPDATE channels SET channel_name=?, channel_id=?, access_token=?, channel_secret=?, webhook_url=?, destination_id=?, updated_at=NOW() WHERE id=?`,
@@ -29,10 +33,12 @@ const Channel = {
         );
     },
 
+    // เปลี่ยนสถานะการใช้งาน (active/inactive)
     toggleStatus: async (id, status) => {
         await pool.query('UPDATE channels SET status=?, updated_at=NOW() WHERE id=?', [status, id]);
     },
 
+    // ลบช่องทางการเชื่อมต่อตาม ID
     deleteById: async (id) => {
         await pool.query('DELETE FROM channels WHERE id=?', [id]);
     },

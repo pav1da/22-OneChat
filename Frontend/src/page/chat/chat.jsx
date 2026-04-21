@@ -1666,18 +1666,6 @@ const Inbox = ({ currentUser }) => {
                                         </div>
                                     )}
                                 </Modal.Body>
-                                <Modal.Footer className="border-top-0 pt-0 justify-content-center pb-4">
-                                    <button
-                                        className="btn btn-light rounded-pill px-5 py-2"
-                                        style={{ fontSize: "0.95rem", fontWeight: 500, backgroundColor: "#f3f4f6", border: "none", color: "#4b5563" }}
-                                        onClick={() => {
-                                            setShowTagInput(false);
-                                            setNewTagText("");
-                                        }}
-                                    >
-                                        ยกเลิก
-                                    </button>
-                                </Modal.Footer>
                             </Modal>
                         </div>
 

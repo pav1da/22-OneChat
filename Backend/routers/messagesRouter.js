@@ -72,7 +72,7 @@ router.post(
             if (!req.file)
                 return res.status(400).json({ message: "กรุณาเลือกรูปภาพ" });
 
-            // อัปโหลดไฟล์จาก Buffer เข้า Cloudinary
+            // อัปโหลดไฟล์เข้า Cloudinary
             const uploadResponse = await new Promise((resolve, reject) => {
                 cloudinary.uploader
                     .upload_stream(
@@ -90,7 +90,7 @@ router.post(
             // ส่ง URL ของ Cloudinary กลับไปให้ Frontend
             res.json({
                 message: "อัปโหลดสำเร็จ",
-                filename: uploadResponse.secure_url, // ส่ง Full URL กลับไป
+                filename: uploadResponse.secure_url, 
                 url: uploadResponse.secure_url,
             });
         } catch (error) {
@@ -323,7 +323,7 @@ router.post("/", auth, async (req, res) => {
                 if (customer && customer.platform === "line" && customer.platform_id) {
                     const lineMessages = [];
 
-                    // ดึง quoteToken ถ้ามี
+                    // ดึง quoteToken ถ้ามี (ข้อความตอบกลับ)
                     let quoteToken = null;
                     if (reply_to_id) {
                         quoteToken = await Message.getQuoteTokenById(reply_to_id);
@@ -352,39 +352,6 @@ router.post("/", auth, async (req, res) => {
                         try {
                             const parsedCards = JSON.parse(message_text);
                             const bubbles = parsedCards.map(c => {
-                                // ----- END CARD -----
-                                if (c.isEndCard || (!c.image && c.message)) {
-                                    const endLabel = ((c.message || "").trim()) || "ดูเพิ่มเติม";
-                                    const endLabelSafe = endLabel.length > 20 ? endLabel.substring(0, 20) : endLabel;
-                                    return {
-                                        type: "bubble",
-                                        size: "mega",
-                                        action: {
-                                            type: "message",
-                                            label: endLabelSafe,
-                                            text: endLabel
-                                        },
-                                        body: {
-                                            type: "box",
-                                            layout: "vertical",
-                                            paddingAll: "0px",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                            backgroundColor: "#f8f9fa",
-                                            contents: [
-                                                {
-                                                    type: "text",
-                                                    text: endLabel,
-                                                    color: "#42659a",
-                                                    weight: "bold",
-                                                    align: "center",
-                                                    gravity: "center"
-                                                }
-                                            ]
-                                        }
-                                    };
-                                }
-
                                 // ----- NORMAL CARD -----
                                 const contents = [];
 

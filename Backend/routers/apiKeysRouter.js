@@ -69,6 +69,7 @@ const auth = require('../middleware/auth.js');
  *       500:
  *         description: Server error
  */
+// GET /api/api-keys — ดึง API Keys ทั้งหมด
 router.get('/', auth, async (req, res) => {
     try {
         const keys = await ApiKey.findAll();
@@ -126,6 +127,7 @@ router.get('/', auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// POST /api/api-keys — สร้าง API Key ใหม่ 
 router.post('/', auth, async (req, res) => {
     try {
         const { name, type } = req.body;
@@ -196,6 +198,7 @@ router.post('/', auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// PUT /api/api-keys/:id/toggle — เปิด/ปิดการใช้งาน API Key
 router.put('/:id/toggle', auth, async (req, res) => {
     try {
         const { enabled } = req.body;
@@ -239,6 +242,7 @@ router.put('/:id/toggle', auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// POST /api/api-keys/reset-personal — รีเซ็ต Personal API Key ของผู้ใช้
 router.post('/reset-personal', auth, async (req, res) => {
     try {
         const newKey = await ApiKey.resetPersonal(req.user.emp_id);

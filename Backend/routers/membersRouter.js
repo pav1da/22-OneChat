@@ -105,6 +105,7 @@ const auth = require("../middleware/auth.js");
  *       500:
  *         description: Server error
  */
+// GET /api/members/with-teams — ดึงข้อมูลสมาชิกทั้งหมดพร้อมรายชื่อทีมที่สังกัด
 router.get("/with-teams", auth, async (req, res) => {
   try {
     // ดึง EMP ทั้งหมด
@@ -172,6 +173,7 @@ router.get("/with-teams", auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// GET /api/members — ดึงข้อมูลสมาชิก (EMP) ทั้งหมดในระบบ
 router.get("/", auth, async (req, res) => {
   try {
     // ใช้ SELECT * เพื่อดึงทุก field จากตาราง EMP แล้วลบ password ออก
@@ -218,6 +220,7 @@ router.get("/", auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// GET /api/members/:id — ดึงข้อมูลสมาชิกรายบุคคลตาม ID
 router.get("/:id", auth, async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM EMP WHERE emp_id = ?", [

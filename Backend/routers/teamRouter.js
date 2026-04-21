@@ -114,6 +114,7 @@ const authorize = require("../middleware/authorize.js");
  *       500:
  *         description: Server error
  */
+// GET /api/teams — ดึงข้อมูลทีมทั้งหมดพร้อมรายชื่อสมาชิกในแต่ละทีม
 router.get("/", auth, async (req, res) => {
   try {
     // 1. ดึงทีมทั้งหมด
@@ -178,6 +179,7 @@ router.get("/", auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// POST /api/teams — สร้างทีมใหม่ (Admin/Manager เท่านั้น)
 router.post("/", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const { team_name } = req.body;
@@ -224,6 +226,7 @@ router.post("/", auth, authorize("admin", "manager"), async (req, res) => {
  *       500:
  *         description: Server error
  */
+// GET /api/teams/available-members — ดึงรายชื่อพนักงานทั้งหมดที่สามารถเพิ่มเข้าทีมได้
 router.get("/available-members", auth, async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -277,6 +280,7 @@ router.get("/available-members", auth, async (req, res) => {
  *       500:
  *         description: Server error
  */
+// PUT /api/teams/:id — แก้ไขข้อมูลทีม (เช่น เปลี่ยนชื่อทีม)
 router.put("/:id", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const { team_name } = req.body;
@@ -325,6 +329,7 @@ router.put("/:id", auth, authorize("admin", "manager"), async (req, res) => {
  *       500:
  *         description: Server error
  */
+// DELETE /api/teams/:id — ลบทีมออกจากระบบ
 router.delete("/:id", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const [result] = await pool.query(
@@ -389,6 +394,7 @@ router.delete("/:id", auth, authorize("admin", "manager"), async (req, res) => {
  *       500:
  *         description: Server error
  */
+// POST /api/teams/:id/members — เพิ่มสมาชิกใหม่เข้าไปในทีม
 router.post("/:id/members", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const teamId = req.params.id;
@@ -466,6 +472,7 @@ router.post("/:id/members", auth, authorize("admin", "manager"), async (req, res
  *       500:
  *         description: Server error
  */
+// DELETE /api/teams/:id/members/:empId — ลบสมาชิกออกจากทีม
 router.delete("/:id/members/:empId", auth, authorize("admin", "manager"), async (req, res) => {
   try {
     const [result] = await pool.query(

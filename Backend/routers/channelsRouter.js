@@ -88,6 +88,7 @@ const auth = require('../middleware/auth.js');
  *       500:
  *         description: Server error
  */
+// GET /api/channels — ดึงช่องทางการเชื่อมต่อทั้งหมด (LINE, Facebook, etc.)
 router.get('/', auth, channelController.getAllChannels);
 
 /**
@@ -125,6 +126,7 @@ router.get('/', auth, channelController.getAllChannels);
  *       500:
  *         description: Server error
  */
+// GET /api/channels/:id — ดึงข้อมูลช่องทางการเชื่อมต่อตาม ID
 router.get('/:id', auth, channelController.getChannelById);
 
 /**
@@ -187,6 +189,7 @@ router.get('/:id', auth, channelController.getChannelById);
  *       500:
  *         description: Server error
  */
+// POST /api/channels — เพิ่มช่องทางการเชื่อมต่อใหม่
 router.post('/', auth, channelController.createChannel);
 
 /**
@@ -248,6 +251,7 @@ router.post('/', auth, channelController.createChannel);
  *       500:
  *         description: Server error
  */
+// PUT /api/channels/:id — แก้ไขข้อมูลช่องทางการเชื่อมต่อ
 router.put('/:id', auth, channelController.updateChannel);
 
 /**
@@ -298,6 +302,7 @@ router.put('/:id', auth, channelController.updateChannel);
  *       500:
  *         description: Server error
  */
+// PUT /api/channels/:id/toggle — เปิด/ปิดการใช้งานช่องทาง
 router.put('/:id/toggle', auth, channelController.toggleChannel);
 
 /**
@@ -336,6 +341,7 @@ router.put('/:id/toggle', auth, channelController.toggleChannel);
  *       500:
  *         description: Server error
  */
+// DELETE /api/channels/:id — ลบช่องทางการเชื่อมต่อ
 router.delete('/:id', auth, channelController.deleteChannel);
 
 module.exports = router;

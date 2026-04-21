@@ -74,6 +74,7 @@ const Log = require('../models/log.js');
  *       500:
  *         description: Server error
  */
+// GET /api/logs — ดึงประวัติกิจกรรม (Logs) ทั้งหมด
 router.get('/', async (req, res) => {
     try {
         const logs = await Log.findAll(req.query);
@@ -129,6 +130,7 @@ router.get('/', async (req, res) => {
  *       500:
  *         description: Server error
  */
+// POST /api/logs — บันทึกกิจกรรมใหม่ลงในระบบ
 router.post('/', async (req, res) => {
     try {
         const result = await Log.create(req.body);
